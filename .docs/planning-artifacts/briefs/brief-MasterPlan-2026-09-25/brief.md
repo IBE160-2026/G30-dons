@@ -2,7 +2,7 @@
 title: "Product Brief: MasterPlan"
 status: final
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-10-19
 ---
 
 # Product Brief: MasterPlan
@@ -16,7 +16,7 @@ Today these events are coordinated through group chats, notes and people's memor
 - **Helpers accept or decline each task** from a link.
 - **AI-written email reminders keep helpers on track.**
 
-The organizer sees, across all her events, what's confirmed, declined or overdue. Evaluations are summarized by AI and stored in an anonymized experience bank, so each event improves the next plan.
+The organizer sees, across all her events, what's confirmed, declined or overdue. Later, evaluations will be summarized by AI and stored in an anonymized experience bank, so each event improves the next plan.
 
 Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI and due in November 2026.
 
@@ -24,7 +24,7 @@ Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI
 
 **The reluctant organizer.** A private individual who has ended up in charge of a big event without the skills, or the wish, to run it, and who fits it around a busy and stressful life. *Example:* a maid of honor organizing a bachelorette party (15 guests, 6 months away) and the wedding (80 guests, 8 months away) with five helpers. She needs to be told what has to happen and when, and she needs to trust that the helpers will actually do their tasks.
 
-**The helpers.** Friends and family who have taken on part of the work. They open their tasks from a link with nothing to set up, or they create a login to follow the whole plan.
+**The helpers.** Friends and family who have taken on part of the work. They open their tasks from a link with nothing to set up, usually on a phone after the link was shared in a chat app. (A helper login to follow the whole plan comes in stage 2.)
 
 ## The Problem
 
@@ -42,7 +42,7 @@ The reluctant organizer lacks both **knowing what to do** and **a way to make ot
 1. **A plan without being a planner.** She picks an event template and describes the event. The AI drafts the tasks with sensible deadlines, and she adjusts the draft.
 2. **Clear responsibility.** Helpers get a link and answer **yes or no** to each task, with an optional message. They can change their answer later.
 3. **Follow-through.** **AI-written email reminders** are personal, respectful and direct, the way a good manager speaks to a team member. **One overview across all events** shows what's confirmed, declined, overdue and due soon.
-4. **Learning.** **Evaluations during and after events**, such as a check-in after the bachelorette party, are summarized by AI. Anonymized lessons feed a shared **experience bank** that improves future plans.
+4. **Learning (stage 2).** **Evaluations during and after events**, such as a check-in after the bachelorette party, are summarized by AI. Anonymized lessons feed a shared **experience bank** that improves future plans.
 
 ## What Makes This Different
 
@@ -58,18 +58,20 @@ There is no technical moat. The advantage is a clear focus on one user and one p
 
 Version 1 is a web app, built solo in about two months.
 
-**Must work:** the full loop of plan → follow through → learn.
-1. Login for organizers. Helpers can create a login if they want.
+**Must work (version 1):** the core loop of plan → follow through. It is built in this order, and each step is finished and stable before the next one starts.
+1. Login for organizers.
 2. Events created from templates by event type, with several events running at once.
 3. An AI-drafted, editable plan. If the AI fails, the template works as a fallback.
-4. Tasks assigned by link, with yes/no answers and optional messages.
-5. AI-written reminders by email.
-6. An organizer overview across all events.
-7. Evaluations during and after events, with an AI summary.
-8. A minimum experience bank: evaluations stored anonymized and available to the AI.
-9. Calendar export (Google Calendar or .ics) and task links that can be shared into chat apps.
+4. Tasks assigned by link, with yes/no answers and optional messages. The link works without login and is easy to share into chat apps.
+5. An organizer overview across all events.
+6. One type of AI-written reminder by email.
 
-**If there's time:** a guest list, plus idea suggestions and comments from helpers.
+**Stage 2 (if there's time), in priority order:**
+1. Evaluations during and after events, with an AI summary.
+2. A minimum experience bank: evaluations stored anonymized and available to the AI.
+3. Login for helpers, so they can follow the whole plan.
+4. Calendar export (.ics).
+5. A guest list, plus idea suggestions and comments from helpers.
 
 **Not in version 1:**
 - mobile app
@@ -80,16 +82,32 @@ Version 1 is a web app, built solo in about two months.
 - text-message reminders
 - two-way chat integration
 
+**Running without keys (test mode).** Anyone can run the app locally by following the README, without our API keys or paid accounts:
+- **AI:** without a language-model key, the app uses fixed mock responses for the plan draft and reminders. The template fallback also covers this.
+- **Email:** in test mode, emails are written to a log or a local test inbox instead of being sent.
+- **Setup:** a `.env.example` file lists every setting. A seeded test organizer has a ready-made event with helpers and tasks in different statuses.
+- **Secrets:** API keys and email settings are never committed.
+
 ## Success Criteria
 
-**Product.** Before the November deadline, 2–3 friends run a realistic test event as helpers.
+**Functional (testable).** Each criterion becomes at least one automated test.
+1. **Link access:** a helper can open a task link without logging in, and sees only their own tasks. A changed or invalid link gives no access.
+2. **Yes/no:** a helper can accept a task, or decline it with a message. The organizer then sees the new status and the message in the overview.
+3. **Changing an answer:** a helper can change a yes to a no, or the reverse, and the overview updates.
+4. **Status rules:** a task is *open* until it is answered, then *accepted* or *declined*. An accepted, unfinished task is *due soon* within 3 days of its deadline, and *overdue* after the deadline.
+5. **AI fallback:** if the AI call fails or returns an invalid plan, the event is created from the template, and the organizer is told.
+6. **Editing:** the organizer can add, change, delete and reassign every task in an AI-drafted plan.
+7. **Overview:** given a fixed set of test events, the overview shows the expected number of tasks in each status, per event.
+8. **Reminders:** a reminder is created at the right time for an accepted task that is due soon, and for an unanswered task. In test mode it lands in the test inbox and is marked as written by AI.
+
+**Product (evaluation).** Before the November deadline, 2–3 friends run a realistic test event as helpers. These goals depend on how the helpers behave, so they are used to evaluate the product, not as tests.
 - **No task is silently forgotten.** Every task ends up done or openly declined.
 - **Answers:** at least **80%** of tasks get a yes or no within 3 days.
 - **On time:** at least **80%** of accepted tasks are done by their deadline.
-- **AI output:** the AI plan needs only adjustments, not a rewrite. Helpers find the reminders helpful, not annoying. The AI summary of the evaluation is accurate.
+- **AI output:** the AI plan needs only adjustments, not a rewrite. Helpers find the reminders helpful, not annoying.
 
 **Course.**
-- **Code and functionality (70%):** the must-work features run end to end, with documentation of how AI was used and how quality was ensured (BMad planning trail, reviews, tests).
+- **Code and functionality (70%):** the must-work features run end to end, the functional criteria pass as tests, and the app runs from the README in test mode. This is backed by documentation of how AI was used and how quality was ensured (BMad planning trail, reviews, tests).
 - **Reflection report (30%):** the development process, the influence of AI, and the ethical and technical issues.
 
 **Key ethical constraints:**
@@ -100,7 +118,7 @@ Version 1 is a web app, built solo in about two months.
 ## Vision
 
 The goal is to become **the place people go when they have to organize something big**, and a tool they enjoy enough to return to. The roadmap has four steps:
-1. **A richer web platform:** the full experience bank shaping every plan; budget, cost-splitting and RSVP; voting and idea and visual boards.
+1. **A richer web platform:** the stage 2 features first, then the full experience bank shaping every plan; budget, cost-splitting and RSVP; voting and idea and visual boards.
 2. **More templates for more people:** students' projects, trips, reunions and more.
 3. **A template marketplace:** professional planners sell their expertise to private individuals.
 4. **A mobile app.**
