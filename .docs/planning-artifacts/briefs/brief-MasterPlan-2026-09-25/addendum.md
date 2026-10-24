@@ -43,7 +43,7 @@ The examiner's criteria, as provided by the founder:
 
 ## Parked for later versions
 
-Not in version 1. Calendar export and sharing links into chat apps *are* in version 1; only two-way chat integration is parked.
+Not in version 1. Sharing links into chat apps *is* in version 1. Calendar export (.ics) moved to stage 2 after the teacher's feedback, and two-way chat integration is parked.
 
 - **Professional planners** (wedding planners, event management) as an audience. They run many events at once for clients and would need reusable templates, client and supplier contacts, an overview across events and possibly invoicing. One possible connection: professionals' experience could become templates and guidance for private individuals.
 - **Everyday-life task management.** Cut from version 1 because Todoist and Google are strongest there.
