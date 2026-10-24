@@ -4,6 +4,11 @@ export const ERROR_TEXTS = {
   invalid_credentials: 'Feil e-post eller passord.',
   email_in_use: 'E-postadressen er allerede i bruk.',
   not_found: 'Siden finnes ikke.',
+  unknown_template: 'Velg en mal.',
+  event_date_invalid: 'Skriv inn en gyldig dato.',
+  event_date_in_past: 'Datoen kan ikke være tilbake i tid.',
+  deadline_invalid: 'Skriv inn en gyldig frist.',
+  deadline_in_past: 'Fristen kan ikke være tilbake i tid.',
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_TEXTS;

@@ -6,6 +6,12 @@ export const paths = {
   register: () => '/registrer',
   login: () => '/logg-inn',
   logout: () => '/logg-ut',
+  newEvent: () => '/events/new',
+  events: () => '/events',
+  event: (eventId: number | string) => `/events/${eventId}`,
+  tasks: (eventId: number | string) => `/events/${eventId}/tasks`,
+  task: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}`,
+  deleteTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/delete`,
 } as const;
 
 export function absoluteUrl(appBaseUrl: string, path: string): string {

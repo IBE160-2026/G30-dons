@@ -1,0 +1,48 @@
+<%- include('partials/top', { title: 'Nytt arrangement' }) %>
+<section class="card form-card">
+  <h1>Nytt arrangement</h1>
+  <form method="post" action="<%= paths.events() %>" novalidate>
+    <fieldset>
+      <legend>Mal</legend>
+      <% for (const t of templates) { %>
+        <label class="choice">
+          <input type="radio" name="templateKey" value="<%= t.key %>" <%= values.templateKey === t.key ? 'checked' : '' %> required>
+          <%= t.name %>
+        </label>
+      <% } %>
+      <% if (errors.templateKey) { %><p class="field-error"><%= errors.templateKey %></p><% } %>
+    </fieldset>
+
+    <label for="eventDate">Når</label>
+    <input id="eventDate" name="eventDate" type="date" min="<%= today %>" value="<%= values.eventDate || '' %>" required>
+    <% if (errors.eventDate) { %><p class="field-error"><%= errors.eventDate %></p><% } %>
+
+    <label for="name">Navn <span class="muted">(valgfritt, ellers navnet på malen)</span></label>
+    <input id="name" name="name" type="text" maxlength="100" value="<%= values.name || '' %>">
+    <% if (errors.name) { %><p class="field-error"><%= errors.name %></p><% } %>
+
+    <label for="occasion">Hva <span class="muted">(valgfritt)</span></label>
+    <input id="occasion" name="occasion" type="text" maxlength="200" value="<%= values.occasion || '' %>">
+    <% if (errors.occasion) { %><p class="field-error"><%= errors.occasion %></p><% } %>
+
+    <label for="location">Hvor <span class="muted">(valgfritt)</span></label>
+    <input id="location" name="location" type="text" maxlength="200" value="<%= values.location || '' %>">
+    <% if (errors.location) { %><p class="field-error"><%= errors.location %></p><% } %>
+
+    <label for="guestCount">Antall gjester <span class="muted">(valgfritt)</span></label>
+    <input id="guestCount" name="guestCount" type="number" min="0" max="10000" inputmode="numeric" value="<%= values.guestCount || '' %>">
+    <% if (errors.guestCount) { %><p class="field-error"><%= errors.guestCount %></p><% } %>
+
+    <label for="todo">Hva må gjøres <span class="muted">(valgfritt)</span></label>
+    <textarea id="todo" name="todo" rows="3" maxlength="2000"><%= values.todo || '' %></textarea>
+    <% if (errors.todo) { %><p class="field-error"><%= errors.todo %></p><% } %>
+
+    <label for="otherInfo">Annen informasjon <span class="muted">(valgfritt)</span></label>
+    <textarea id="otherInfo" name="otherInfo" rows="3" maxlength="2000"><%= values.otherInfo || '' %></textarea>
+    <% if (errors.otherInfo) { %><p class="field-error"><%= errors.otherInfo %></p><% } %>
+
+    <button type="submit">Opprett arrangement</button>
+  </form>
+  <p><a href="<%= paths.overview() %>">Avbryt</a></p>
+</section>
+<%- include('partials/bottom') %>

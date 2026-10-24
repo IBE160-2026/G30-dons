@@ -1,0 +1,6 @@
+<nav class="tabs" aria-label="Arrangementer">
+  <% for (const e of allEvents) { %>
+    <a href="<%= paths.event(e.id) %>" class="tab<%= e.id === event.id ? ' current' : '' %>"<%- e.id === event.id ? ' aria-current="page"' : '' %>><%= e.name %></a>
+  <% } %>
+  <a href="<%= paths.newEvent() %>" class="tab new">+ Nytt</a>
+</nav>

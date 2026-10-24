@@ -11,3 +11,7 @@
 - source_spec: `.docs/implementation-artifacts/spec-1-1-project-setup-and-organizer-login.md`
   summary: Document in the Story 1.7 deploy guide that `TEST_MODE=false` needs HTTPS (or a proxy sending `X-Forwarded-Proto: https`), otherwise login and register return 500.
   evidence: cookie-session refuses to set a secure cookie on a plain-HTTP request. Render sends the header and `trust proxy` is set, so only a local production-mode run hits it.
+
+- source_spec: `.docs/implementation-artifacts/spec-1-2-create-events-from-templates-and-edit-the-plan.md`
+  summary: Add a failure-path test proving that `createEvent` leaves no event row when inserting its tasks fails.
+  evidence: Replacing `db.transaction` in `src/services/events.ts` with sequential inserts breaks no test today. Forcing a mid-transaction failure needs a seam (for example an injectable `createPlanTasks`); add it with Epic 2's `draftPlan` path.

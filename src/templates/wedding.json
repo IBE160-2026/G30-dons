@@ -1,0 +1,29 @@
+{
+  "key": "wedding",
+  "name": "Bryllup",
+  "defaultPlan": [
+    { "title": "Sette budsjett", "daysBeforeEvent": 180 },
+    { "title": "Planlegge og booke vielse", "daysBeforeEvent": 175 },
+    { "title": "Lage gjesteliste", "daysBeforeEvent": 170 },
+    { "title": "Bestille lokale", "daysBeforeEvent": 160 },
+    { "title": "Bestille fotograf", "daysBeforeEvent": 150 },
+    { "title": "Bestille musikk eller DJ", "daysBeforeEvent": 140 },
+    { "title": "Bestille save the date-kort", "daysBeforeEvent": 135 },
+    { "title": "Sende ut «save the date»", "daysBeforeEvent": 120 },
+    { "title": "Planlegge meny", "daysBeforeEvent": 110 },
+    { "title": "Bestille mat og drikke", "daysBeforeEvent": 100 },
+    { "title": "Kjøpe eller leie antrekk", "daysBeforeEvent": 90 },
+    { "title": "Sende invitasjoner", "daysBeforeEvent": 75 },
+    { "title": "Brudekjoleprøving", "daysBeforeEvent": 60 },
+    { "title": "Bestille blomster", "daysBeforeEvent": 60 },
+    { "title": "Smoking- eller dressprøving", "daysBeforeEvent": 45 },
+    { "title": "Bestille kake", "daysBeforeEvent": 45 },
+    { "title": "Planlegge bordplassering", "daysBeforeEvent": 21 },
+    { "title": "Kjøpe pynt", "daysBeforeEvent": 14 },
+    { "title": "Lage bordkort", "daysBeforeEvent": 10 },
+    { "title": "Lage program for dagen", "daysBeforeEvent": 10 },
+    { "title": "Bekrefte alle leverandører", "daysBeforeEvent": 7 },
+    { "title": "Hente antrekk", "daysBeforeEvent": 3 },
+    { "title": "Pynte lokalet", "daysBeforeEvent": 1 }
+  ]
+}

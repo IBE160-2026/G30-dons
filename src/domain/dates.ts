@@ -32,6 +32,18 @@ export function daysBetween(a: string, b: string): number {
   return toDayNumber(b) - toDayNumber(a);
 }
 
+const nbFormatter = new Intl.DateTimeFormat('nb-NO', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** A calendar date in Norwegian, for example "15. januar 2027". */
+export function formatDateNb(date: string): string {
+  return nbFormatter.format(toDayNumber(date) * DAY_MS);
+}
+
 export function addDays(date: string, n: number): string {
   return new Date((toDayNumber(date) + n) * DAY_MS).toISOString().slice(0, 10);
 }

@@ -6,15 +6,21 @@ import helmet from 'helmet';
 import type { Clock } from './clock.ts';
 import type { Config } from './config.ts';
 import type { Db } from './db/client.ts';
+import { formatDateNb } from './domain/dates.ts';
+import { DomainError } from './domain/errors.ts';
 import { flashMiddleware } from './routes/middleware.ts';
 import { authRoutes } from './routes/organizer/auth.ts';
+import { eventRoutes } from './routes/organizer/events.ts';
 import { overviewRoutes } from './routes/organizer/overview.ts';
 import { paths } from './routes/paths.ts';
+import { loadTemplates } from './templates/index.ts';
 
 export interface AppDeps {
   config: Config;
   db: Db;
   clock: Clock;
+  /** Folder with the template JSON files; tests point it elsewhere. */
+  templatesDir?: URL;
 }
 
 const viewsDir = fileURLToPath(new URL('./views', import.meta.url));
@@ -22,7 +28,9 @@ const publicDir = fileURLToPath(new URL('../public', import.meta.url));
 
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function createApp({ config, db, clock }: AppDeps): Express {
+export function createApp({ config, db, clock, templatesDir }: AppDeps): Express {
+  // AD-8: an invalid template file stops startup here.
+  const templates = loadTemplates(templatesDir);
   const app = express();
 
   app.engine('ejs', ejs.renderFile);
@@ -35,6 +43,7 @@ export function createApp({ config, db, clock }: AppDeps): Express {
   // Set first, so the error page can render even when a later middleware fails.
   app.use((_req, res, next) => {
     res.locals.paths = paths;
+    res.locals.formatDate = formatDateNb;
     res.locals.organizer = undefined;
     res.locals.flash = undefined;
     next();
@@ -60,12 +69,18 @@ export function createApp({ config, db, clock }: AppDeps): Express {
 
   app.use(authRoutes(db, clock));
   app.use(overviewRoutes(db));
+  app.use(eventRoutes(db, clock, templates));
 
   app.use((_req, res) => {
     res.status(404).render('404');
   });
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+    // Another organizer's id, or one that does not exist, is a plain 404 (FR-2).
+    if (err instanceof DomainError && err.code === 'not_found') {
+      res.status(404).render('404');
+      return;
+    }
     // Client errors from the body parser (413, 400) keep their status; everything else is a 500.
     const status = Number(err?.status ?? err?.statusCode);
     const clientError = Number.isInteger(status) && status >= 400 && status < 500;

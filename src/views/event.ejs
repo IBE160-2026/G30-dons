@@ -1,0 +1,61 @@
+<%- include('partials/top', { title: event.name }) %>
+<%- include('partials/event-tabs') %>
+<%
+  const blank = (v) => (v === null || v === undefined || v === '' ? '–' : v);
+  const add = typeof locals.add !== 'undefined' ? locals.add : { values: {}, errors: {} };
+  const edit = typeof locals.edit !== 'undefined' ? locals.edit : undefined;
+%>
+<div class="event-layout">
+  <section class="card info-box">
+    <h1><%= event.name %></h1>
+    <dl>
+      <dt>Når</dt><dd><%= formatDate(event.eventDate) %></dd>
+      <dt>Hva</dt><dd><%= blank(event.occasion) %></dd>
+      <dt>Hvor</dt><dd><%= blank(event.location) %></dd>
+      <dt>Antall gjester</dt><dd><%= blank(event.guestCount) %></dd>
+      <dt>Hva må gjøres</dt><dd class="pre"><%= blank(event.todo) %></dd>
+      <dt>Annen informasjon</dt><dd class="pre"><%= blank(event.otherInfo) %></dd>
+    </dl>
+  </section>
+
+  <section class="card tasks">
+    <h2>Oppgaver (<%= tasks.length %>)</h2>
+    <% if (tasks.length === 0) { %>
+      <p class="muted">Ingen oppgaver ennå.</p>
+    <% } %>
+    <ul class="task-list">
+      <% for (const task of tasks) {
+           const editing = edit && edit.taskId === task.id;
+           const v = editing ? edit.values : { title: task.title, deadline: task.deadline };
+           const errs = editing ? edit.errors : {}; %>
+        <li class="task">
+          <form method="post" action="<%= paths.task(event.id, task.id) %>" class="task-form" novalidate>
+            <label class="visually-hidden" for="title-<%= task.id %>">Oppgave</label>
+            <input id="title-<%= task.id %>" name="title" type="text" maxlength="120" value="<%= v.title %>" required>
+            <label class="visually-hidden" for="deadline-<%= task.id %>">Frist</label>
+            <input id="deadline-<%= task.id %>" name="deadline" type="date" value="<%= v.deadline %>" required>
+            <button type="submit" class="small">Lagre</button>
+          </form>
+          <form method="post" action="<%= paths.deleteTask(event.id, task.id) %>" class="inline">
+            <button type="submit" class="small secondary">Slett</button>
+          </form>
+          <p class="task-meta muted">Frist <%= formatDate(task.deadline) %></p>
+          <% if (errs.title) { %><p class="field-error"><%= errs.title %></p><% } %>
+          <% if (errs.deadline) { %><p class="field-error"><%= errs.deadline %></p><% } %>
+        </li>
+      <% } %>
+    </ul>
+
+    <h3>Ny oppgave</h3>
+    <form method="post" action="<%= paths.tasks(event.id) %>" class="task-form" novalidate>
+      <label class="visually-hidden" for="new-title">Oppgave</label>
+      <input id="new-title" name="title" type="text" maxlength="120" placeholder="Hva skal gjøres?" value="<%= add.values.title || '' %>" required>
+      <label class="visually-hidden" for="new-deadline">Frist</label>
+      <input id="new-deadline" name="deadline" type="date" min="<%= today %>" value="<%= add.values.deadline || '' %>" required>
+      <button type="submit" class="small">Legg til</button>
+    </form>
+    <% if (add.errors.title) { %><p class="field-error"><%= add.errors.title %></p><% } %>
+    <% if (add.errors.deadline) { %><p class="field-error"><%= add.errors.deadline %></p><% } %>
+  </section>
+</div>
+<%- include('partials/bottom') %>

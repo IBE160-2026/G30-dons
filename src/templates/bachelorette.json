@@ -1,0 +1,22 @@
+{
+  "key": "bachelorette",
+  "name": "Utdrikningslag",
+  "defaultPlan": [
+    { "title": "Avklare dato i hemmelighet", "daysBeforeEvent": 60 },
+    { "title": "Lage gjesteliste", "daysBeforeEvent": 50 },
+    { "title": "Sette budsjett per person", "daysBeforeEvent": 45 },
+    { "title": "Sende invitasjon", "daysBeforeEvent": 40 },
+    { "title": "Bestille lokale eller overnattingssted", "daysBeforeEvent": 35 },
+    { "title": "Bestemme program og aktiviteter", "daysBeforeEvent": 30 },
+    { "title": "Bestille aktivitet", "daysBeforeEvent": 25 },
+    { "title": "Bestille bord på restaurant", "daysBeforeEvent": 21 },
+    { "title": "Lage matplan", "daysBeforeEvent": 20 },
+    { "title": "Samle inn penger", "daysBeforeEvent": 14 },
+    { "title": "Bekrefte planen med partneren", "daysBeforeEvent": 14 },
+    { "title": "Kjøpe kostymer og rekvisitter", "daysBeforeEvent": 10 },
+    { "title": "Lage quiz og leker", "daysBeforeEvent": 7 },
+    { "title": "Ordne transport", "daysBeforeEvent": 5 },
+    { "title": "Innkjøp av mat og drikke", "daysBeforeEvent": 2 },
+    { "title": "Bekrefte tidsplanen med alle", "daysBeforeEvent": 1 }
+  ]
+}
