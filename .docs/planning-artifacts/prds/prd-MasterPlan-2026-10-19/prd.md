@@ -102,7 +102,7 @@ All later sections use these terms exactly.
   - **Done:** finished. Set by the helper or the organizer.
   - **Can't be done:** the helper accepted but reports they cannot finish it.
 - **Urgent:** an Accepted task that is due within 3 days or past its deadline.
-- **Needs a helper:** a task that is Unassigned, Declined or Can't be done, or that is Open and either was assigned 7 or more days ago or is due within 3 days.
+- **Needs a helper:** a task that is Unassigned, Declined or Can't be done, or that is Open and either was assigned 7 or more days ago or is due within 3 days or past its deadline.
 - **On track:** an event with no Urgent tasks and no tasks in Needs a helper.
 - **Reminder:** a fixed-text email to a helper about one Accepted task, containing a reminder link.
 - **Reminder link:** a link that shows the helper only their Accepted tasks.
@@ -272,6 +272,7 @@ The system derives task states exactly as defined in the Glossary.
 - Urgent, Needs a helper and On track are recalculated against the current date every time a page is shown.
 - An Open task counts as Needs a helper when it was assigned 7 or more days ago (counted from the time of assignment), or when it is due within 3 days, however recently it was assigned.
 - An Unassigned task always counts as Needs a helper, so an event with Unassigned tasks is never On track.
+- Events whose date has passed are left out of Urgent and Needs a helper.
 
 #### FR-22: Live updates · Must
 After any answer, report or edit, the overview and the event view show the new state the next time they load.
@@ -327,7 +328,7 @@ One command (`npm test`, documented in the README) runs the full automated test 
 - **NFR-1 Mobile helper page:** the helper page and the reminder link work on phone screens from 360 px wide, with no sideways scrolling and easy-to-tap buttons.
 - **NFR-2 Security:** helper links follow FR-12. Passwords are stored only as salted hashes. Organizer pages require login (FR-1, FR-2).
 - **NFR-3 Privacy:** the app stores only what the core loop needs: organizer account, event fields, helper emails, tasks and messages. Only the template fields are sent to the AI, never helper emails.
-- **NFR-4 Zero running costs:** v1 costs nothing to run. Any hosting, language model or email service must be free at course-project volume, and everything works without them in test mode.
+- **NFR-4 Near-zero running costs:** hosting, database and email use free services at course-project volume. The only paid service is the AI plan draft, capped by prepaid credit and a spend limit of at most $5. Everything works without any of them in test mode, and the API is never called for helpers or by the examiner.
 - **NFR-5 Simplicity:** one web app with one database. Reminders use the simplest scheduler that meets FR-17.
 - **NFR-6 AI response time:** if the plan draft takes too long, the template fallback is used (FR-6). [ASSUMPTION: the limit is 30 seconds.]
 - **NFR-7 Respect:** reminders are respectful and direct, the way a good manager speaks to a team member. They never manipulate or guilt-trip, and use no humor, which could read as passive-aggressive. The organizer can edit or override every plan draft (FR-7).
@@ -355,7 +356,7 @@ One command (`npm test`, documented in the README) runs the full automated test 
 
 **Stage 2, in priority order:** evaluations with an AI summary; a minimum anonymized experience bank; helper login; calendar export (.ics); guest list with idea suggestions and comments; AI-written reminders, clearly marked as written by AI.
 
-**Out of scope:** native mobile app, professional planners, everyday task management, budget, cost-splitting and RSVP, voting and visual boards, SMS reminders, two-way chat integration, paid services of any kind.
+**Out of scope:** native mobile app, professional planners, everyday task management, budget, cost-splitting and RSVP, voting and visual boards, SMS reminders, two-way chat integration, any paid service other than the capped AI API (NFR-4).
 
 ## 9. Success Metrics
 
@@ -377,6 +378,6 @@ One command (`npm test`, documented in the README) runs the full automated test 
 
 ## 10. Open Questions
 
-1. **Free services:** which hosting, language model and email service meet NFR-4 and NFR-8 at zero cost? The architecture step decides.
+1. **Services (resolved in the architecture step):** see `.docs/planning-artifacts/architecture/architecture-MasterPlan-2026-10-24/`.
 2. **Story count:** the teacher warned that the number of stories could grow. The epics-and-stories step handles this.
 3. **AI time limit:** NFR-6 assumes 30 seconds. The architecture step confirms it once the language model is chosen.

@@ -25,6 +25,6 @@ Detail for downstream documents (UX spec, architecture), not requirements.
 
 ## Tech notes (for bmad-architecture)
 
-- Prerequisites: Node.js 20 or newer, Git.
+- Prerequisites: Node.js 22 or newer (Node 20 reached end of life in April 2026), Git.
 - README Quick Start: `git clone`, `cd masterplan`, `npm install`, copy `.env.example` to `.env`, `npm run seed`, `npm run dev`, open the local URL.
 - `npm test` runs the full suite against a separate test database.
