@@ -1,0 +1,16 @@
+<%- include('partials/top', { title: 'Logg inn' }) %>
+<section class="card narrow">
+  <h1>Logg inn</h1>
+  <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="<%= paths.login() %>" novalidate>
+    <label for="email">E-post</label>
+    <input id="email" name="email" type="email" autocomplete="email" value="<%= values.email || '' %>" required>
+
+    <label for="password">Passord</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+    <button type="submit">Logg inn</button>
+  </form>
+  <p>Ny her? <a href="<%= paths.register() %>">Opprett konto</a></p>
+</section>
+<%- include('partials/bottom') %>

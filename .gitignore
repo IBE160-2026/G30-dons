@@ -6,6 +6,9 @@ dist/
 build/
 .vercel/
 .turbo/
+
+# MasterPlan local SQLite database
+data/
 *.tsbuildinfo
 next-env.d.ts
 npm-debug.log*

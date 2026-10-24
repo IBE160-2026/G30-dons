@@ -1,0 +1,78 @@
+import { fileURLToPath } from 'node:url';
+import cookieSession from 'cookie-session';
+import ejs from 'ejs';
+import express, { type ErrorRequestHandler, type Express } from 'express';
+import helmet from 'helmet';
+import type { Clock } from './clock.ts';
+import type { Config } from './config.ts';
+import type { Db } from './db/client.ts';
+import { flashMiddleware } from './routes/middleware.ts';
+import { authRoutes } from './routes/organizer/auth.ts';
+import { overviewRoutes } from './routes/organizer/overview.ts';
+import { paths } from './routes/paths.ts';
+
+export interface AppDeps {
+  config: Config;
+  db: Db;
+  clock: Clock;
+}
+
+const viewsDir = fileURLToPath(new URL('./views', import.meta.url));
+const publicDir = fileURLToPath(new URL('../public', import.meta.url));
+
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function createApp({ config, db, clock }: AppDeps): Express {
+  const app = express();
+
+  app.engine('ejs', ejs.renderFile);
+  app.set('view engine', 'ejs');
+  app.set('views', viewsDir);
+  app.disable('x-powered-by');
+  // Render terminates TLS at its proxy; trust it so secure cookies work there.
+  if (!config.testMode) app.set('trust proxy', 1);
+
+  // Set first, so the error page can render even when a later middleware fails.
+  app.use((_req, res, next) => {
+    res.locals.paths = paths;
+    res.locals.organizer = undefined;
+    res.locals.flash = undefined;
+    next();
+  });
+  app.use(helmet());
+  app.use(express.static(publicDir));
+  app.use(express.urlencoded({ extended: false, limit: '50kb' }));
+  app.use(
+    cookieSession({
+      name: 'mp_session',
+      keys: [config.sessionSecret],
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: !config.testMode,
+      maxAge: SESSION_MAX_AGE_MS,
+    }),
+  );
+  app.use(flashMiddleware);
+
+  app.get(paths.health(), (_req, res) => {
+    res.status(200).type('text/plain').send('ok');
+  });
+
+  app.use(authRoutes(db, clock));
+  app.use(overviewRoutes(db));
+
+  app.use((_req, res) => {
+    res.status(404).render('404');
+  });
+
+  const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+    // Client errors from the body parser (413, 400) keep their status; everything else is a 500.
+    const status = Number(err?.status ?? err?.statusCode);
+    const clientError = Number.isInteger(status) && status >= 400 && status < 500;
+    if (!clientError) console.error(err);
+    res.status(clientError ? status : 500).render('error');
+  };
+  app.use(errorHandler);
+
+  return app;
+}

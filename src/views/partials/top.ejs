@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · MasterPlan</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="<%= paths.overview() %>">MasterPlan</a>
+    <% if (organizer) { %>
+      <form method="post" action="<%= paths.logout() %>" class="inline">
+        <span class="who"><%= organizer.name %></span>
+        <button type="submit" class="link-button">Logg ut</button>
+      </form>
+    <% } %>
+  </header>
+  <main class="page">
+    <% if (flash) { %>
+      <p class="flash" role="status"><%= flash %></p>
+    <% } %>
