@@ -1,0 +1,64 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 10-24-2026 19:41
+last_updated: 10-24-2026 19:41
+project: MasterPlan
+project_key: NOKEY
+tracking_system: file-system
+story_location: .docs/implementation-artifacts
+development_status:
+  epic-1: backlog
+  1-1-project-setup-and-organizer-login: backlog
+  1-2-create-events-from-templates-and-edit-the-plan: backlog
+  1-3-add-helpers-assign-tasks-and-copy-links: backlog
+  1-4-ola-answers-on-his-phone: backlog
+  1-5-overview-and-event-view-show-what-needs-attention: backlog
+  1-6-seed-data-and-examiner-guide: backlog
+  1-7-deploy-for-the-friends-test: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-ai-plan-draft-with-mock-and-fallback: backlog
+  2-2-connect-the-anthropic-api-with-a-spending-cap: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-reminders-and-the-test-inbox: backlog
+  3-2-real-email-through-the-gmail-api: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-send-helper-links-by-email: backlog
+  4-2-test-mode-controls: backlog
+  4-3-correct-or-remove-a-helper: backlog
+  4-4-undo-reopen-and-change-answers: backlog
+  4-5-edit-and-delete-events: backlog
+  epic-4-retrospective: optional

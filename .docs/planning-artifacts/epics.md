@@ -189,7 +189,7 @@ So that only I can reach my events.
 **Given** the test suite
 **When** I run `npm test`
 **Then** Vitest runs with `loadConfig` given an explicit test environment rather than `.env`, a fresh SQLite file database and a fixed clock, and prints a pass/fail summary (FR27, AD-10)
-**And** `config.ts` validates every setting. With `TEST_MODE=false` and a missing `SESSION_SECRET` or `APP_BASE_URL`, the app refuses to start (FR23, AD-10)
+**And** `config.ts` validates every setting. With `TEST_MODE=false` and a missing `SESSION_SECRET`, `APP_BASE_URL` or `MAIL_TRANSPORT`, or an unknown `MAIL_TRANSPORT` value, the app refuses to start. `disabled` is accepted from this story on; `gmail` and its settings are added in Story 3.2 (FR23, AD-10)
 **And** the session cookie is `httpOnly` and `sameSite=lax`, and helmet is on (AD-16)
 
 ### Story 1.2: Create events from templates and edit the plan
@@ -208,6 +208,10 @@ So that I have a starting plan instead of a blank page.
 **Given** a template task whose computed deadline is before today
 **When** the event is created
 **Then** that deadline is set to today, and the plan is still valid (FR5, AD-8)
+
+**Given** two organizers A and B
+**When** A requests or changes one of B's events or tasks by id or URL
+**Then** the response is 404, and nothing changes (FR2)
 
 **Given** the event form
 **When** I submit it without a date, or with a date in the past
@@ -246,11 +250,15 @@ So that every task has a named person and I can share the links in our chat.
 
 **Given** a task assigned to helper A
 **When** I reassign it to helper B
-**Then** it becomes Open for B with a new `assigned_at`, `accepted_at` is cleared, and the task disappears from A's helper page (FR11, AD-2)
+**Then** it becomes Open for B with a new `assigned_at`, `accepted_at` is cleared, and the service that lists a helper's tasks no longer returns it for A (FR11, AD-2). Story 1.4 checks the same on the helper page
 
 **Given** my pages
 **When** helpers are listed
 **Then** each one shows the name, or the email if there is no name
+
+**Given** two organizers A and B
+**When** A tries to add, assign to or copy the link of one of B's helpers by id
+**Then** the response is 404, and nothing changes (FR2)
 
 ### Story 1.4: Ola answers on his phone
 
@@ -285,6 +293,7 @@ So that Kari knows what I will do, without me creating an account.
 **Given** a POST for a task that is not Ola's, or that stopped being his after a reassignment
 **When** it reaches the server
 **Then** it is refused, and nothing changes (FR12, AD-6)
+**And** a task reassigned away from Ola no longer appears on his helper page (FR11)
 
 **Given** any task in my event
 **When** I, the organizer, mark it Done
@@ -492,7 +501,7 @@ So that I don't forget what I promised.
 **When** the run handles it
 **Then** it first inserts a row into `reminders_sent`, unique on `(task_id, accepted_at)`, and then calls `mail.send`. If the send fails, it deletes the row (AD-7)
 **And** a second run, or a run that is days late, never sends the same reminder twice, and it catches up on missed ones
-**And** a new yes after a change of answer gets its own reminder
+**And** a task with a new `accepted_at` gets its own reminder, because the log is unique per `(task_id, accepted_at)`
 
 **Given** `mail/texts.ts`
 **When** a reminder is built
