@@ -234,7 +234,7 @@ The helper can switch a task between Done and Can't be done. The organizer can r
 
 The system emails helpers about unfinished Accepted tasks. Unanswered tasks get no reminder. They are flagged for the organizer instead. Realizes UJ-2, UJ-4.
 
-#### FR-17: Reminder timing · Should
+#### FR-17: Reminder timing · Must
 For each Accepted task, the system sends a reminder at whichever comes first: 14 days after the helper's most recent yes, or 3 days before the deadline.
 - A task accepted 20 days before its deadline gets its reminder on day 14 after the yes.
 - A task accepted 10 days before its deadline gets its reminder 3 days before the deadline.
@@ -244,7 +244,7 @@ For each Accepted task, the system sends a reminder at whichever comes first: 14
 - If a reminder check runs late, it sends every due reminder and never sends the same reminder twice.
 - The system checks for due reminders at least once a day. In test mode, **Send due reminders now** runs the check immediately (FR-26).
 
-#### FR-18: Reminder content · Should
+#### FR-18: Reminder content · Must
 A reminder uses a fixed, respectful and direct text (NFR-7), such as "Reminder to fix the task given by [organizer name]". It names the one task it covers and contains the reminder link.
 - The reminder link shows only the helper's Accepted tasks, each with Done and Can't be done choices.
 - The sender is shown as "MasterPlan on behalf of [organizer name]", and replies go to the organizer's email address.
@@ -253,10 +253,9 @@ A reminder uses a fixed, respectful and direct text (NFR-7), such as "Reminder t
 
 Realizes UJ-3.
 
-#### FR-19: Overview across events · Should
+#### FR-19: Overview across events · Must
 The overview shows one summary per event: On track, or the number of Urgent tasks and of tasks in Needs a helper.
 - Given the seed data, the overview shows the Bachelorette party as On track and the Wedding as having Urgent tasks.
-- If this FR is cut, the organizer's first page is the list of event tabs.
 
 #### FR-20: Event view summaries · Must
 The event view shows the event name, date, guest count and general information, plus these summaries:
@@ -287,7 +286,7 @@ Test mode lets the examiner and the automated tests run MasterPlan locally witho
 - When test mode is on, no email leaves the machine. Every email goes to the test inbox.
 - A setting in `.env` switches test mode on. It is on in `.env.example`.
 
-#### FR-24: Test inbox · Should
+#### FR-24: Test inbox · Must
 In test mode, a logged-in organizer can open a test inbox that lists every email the app would have sent on her behalf, with recipient, subject, body, links and time.
 - The test inbox cannot be reached when test mode is off, or without logging in.
 - An organizer never sees another organizer's emails.
@@ -299,7 +298,7 @@ One seed command loads a test organizer (login in the README) and two events, a 
 - Straight after seeding, the Bachelorette party is On track and the Wedding has Urgent tasks.
 - The README lists the seeded helper links.
 
-#### FR-26: Test-mode controls · Should
+#### FR-26: Test-mode controls · Must (Send due reminders now) / Should (the rest)
 In test mode, the logged-in organizer also gets:
 - **View as helper:** opens a helper's page in a new tab.
 - **Seeded helper links:** listed, so they can be opened in a private window.
@@ -339,20 +338,18 @@ One command (`npm test`, documented in the README) runs the full automated test 
 
 **Deadline: 14 November 2026.**
 
-**Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15, FR-16, FR-20 to FR-23, FR-25, FR-27, FR-28. With only these, Kari can plan an event with the AI, assign tasks, paste links into a chat, and see answers, Done, Can't be done and Needs a helper on her event view. The examiner can run it without keys.
+**Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 
 **Should, built in this order if time allows:**
-1. Reminders (FR-17, FR-18) with the test inbox (FR-24).
-2. Send the helper link by email (FR-10, email part).
-3. Overview across events (FR-19).
-4. Test-mode controls (FR-26).
-5. Correct or remove a helper (FR-30).
-6. Undo and reopen (FR-31).
-7. Change the answer (FR-14).
-8. Edit event fields (FR-29).
-9. Delete an event (FR-32).
+1. Send the helper link by email (FR-10, email part).
+2. The other test-mode controls (FR-26).
+3. Correct or remove a helper (FR-30).
+4. Undo and reopen (FR-31).
+5. Change the answer (FR-14).
+6. Edit event fields (FR-29).
+7. Delete an event (FR-32).
 
-**Cut list.** If time runs out, cut from the bottom of the Should list: FR-32, then FR-29, FR-14, FR-31, FR-30, FR-26, FR-19, FR-10 email, and reminders with the test inbox last. Without reminders the core promise still holds, because Needs a helper and Urgent show Kari every stuck task.
+**Cut list.** If time runs out, cut from the bottom of the Should list: FR-32, then FR-29, FR-14, FR-31, FR-30, the other FR-26 controls, and FR-10 email last.
 
 **Stage 2, in priority order:** evaluations with an AI summary; a minimum anonymized experience bank; helper login; calendar export (.ics); guest list with idea suggestions and comments; AI-written reminders, clearly marked as written by AI.
 
@@ -367,7 +364,7 @@ One command (`npm test`, documented in the README) runs the full automated test 
 - **SM-2:** at least 80% of tasks get a yes or no within 3 days.
 - **SM-3:** at least 80% of Accepted tasks are Done by their deadline.
 - **SM-4:** the organizer only adjusts the AI plan draft. She does not rewrite it.
-- **SM-5:** helpers find the reminders helpful, not annoying (if reminders are built).
+- **SM-5:** helpers find the reminders helpful, not annoying.
 
 **Counter-metrics** (warning signs):
 - **CM-1:** the organizer deletes or rewrites more than half of the drafted tasks, so the AI is not saving her work.
