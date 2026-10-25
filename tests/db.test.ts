@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { openDb } from '../src/db/client.ts';
+import { openDb, sqliteFilePath } from '../src/db/client.ts';
 import { runMigrations } from '../src/db/migrate.ts';
 import { absoluteUrl, paths } from '../src/routes/paths.ts';
 import { TEST_DB_DIR } from './dbDir.ts';
@@ -18,6 +19,21 @@ describe('openDb', () => {
     } finally {
       db.$client.close();
     }
+  });
+});
+
+describe('sqliteFilePath', () => {
+  it('reads the relative file: form from .env.example and Docker', () => {
+    expect(sqliteFilePath('file:./data/local.db')).toBe('./data/local.db');
+  });
+
+  it('reads a file:// URL from pathToFileURL back to the same path', () => {
+    const file = join(TEST_DB_DIR, 'x.db');
+    expect(sqliteFilePath(pathToFileURL(file).href)).toBe(file);
+  });
+
+  it('gives undefined for a libsql:// URL', () => {
+    expect(sqliteFilePath('libsql://example.turso.io')).toBeUndefined();
   });
 });
 

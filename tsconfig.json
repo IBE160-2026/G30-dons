@@ -12,5 +12,5 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "tests", "vitest.config.ts", "drizzle.config.ts"]
+  "include": ["src", "seed", "tests", "vitest.config.ts", "drizzle.config.ts"]
 }

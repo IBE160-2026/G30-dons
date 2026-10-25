@@ -1,0 +1,20 @@
+# Settings and secrets come from the environment at docker run, never from the image (AD-17).
+.env
+.env.*
+!.env.example
+
+# Local data and build leftovers
+data/
+node_modules/
+coverage/
+*.log
+
+# Repository and tooling folders
+.git/
+.gitignore
+_bmad/
+.claude/
+.agents/
+.docs/
+.vscode/
+.idea/

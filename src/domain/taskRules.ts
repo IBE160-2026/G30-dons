@@ -122,3 +122,28 @@ function helperTransition(task: TaskState, command: TaskCommand, helperId: numbe
   const changes: TaskChanges = action === 'yes' ? { status: target, acceptedAt: now } : { status: target };
   return { kind: 'change', changes, message: { action, statusAfter: target, body } };
 }
+
+/**
+ * AD-11: the fields every stored task must agree with its status. Accepted needs `acceptedAt`, and
+ * Unassigned, Open and Declined have none; every status except Unassigned needs `helperId` and
+ * `assignedAt`; Unassigned has neither.
+ * Done tasks may keep their helper. Throws an Error naming the broken rule.
+ */
+export function assertFieldInvariant(task: TaskState & { id?: number }): void {
+  const which = task.id === undefined ? 'Task' : `Task ${task.id}`;
+  if ((task.status === 'unassigned' || task.status === 'open' || task.status === 'declined') && task.acceptedAt !== null) {
+    throw new Error(`${which}: a ${task.status} task has no accepted_at`);
+  }
+  if (task.status === 'unassigned') {
+    if (task.helperId !== null || task.assignedAt !== null) {
+      throw new Error(`${which}: an Unassigned task has no helper_id and no assigned_at`);
+    }
+    return;
+  }
+  if (task.helperId === null || task.assignedAt === null) {
+    throw new Error(`${which}: a ${task.status} task needs helper_id and assigned_at`);
+  }
+  if (task.status === 'accepted' && task.acceptedAt === null) {
+    throw new Error(`${which}: an Accepted task needs accepted_at`);
+  }
+}

@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
+    "start:docker": "node --import tsx seed/docker-start.ts",
+    "seed": "tsx seed/run.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate"

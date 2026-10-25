@@ -14,11 +14,15 @@ export interface DbOptions {
   authToken?: string | undefined;
 }
 
+/** The local file path of a `file:` database URL, or undefined for any other URL. */
+export function sqliteFilePath(url: string): string | undefined {
+  if (!url.startsWith('file:')) return undefined;
+  return url.startsWith('file://') ? fileURLToPath(url) : url.slice('file:'.length);
+}
+
 export async function openDb({ url, authToken }: DbOptions): Promise<Db> {
-  if (url.startsWith('file:')) {
-    const path = url.startsWith('file://') ? fileURLToPath(url) : url.slice('file:'.length);
-    mkdirSync(dirname(path), { recursive: true });
-  }
+  const path = sqliteFilePath(url);
+  if (path !== undefined) mkdirSync(dirname(path), { recursive: true });
   const client = createClient({ url, authToken });
   // AD-12: foreign keys on for every connection.
   await client.execute('PRAGMA foreign_keys = ON');

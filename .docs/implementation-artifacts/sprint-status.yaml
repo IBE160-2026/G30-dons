@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-24-2026 19:41
-last_updated: 10-25-2026 14:00
+last_updated: 10-25-2026 15:00
 project: MasterPlan
 project_key: NOKEY
 tracking_system: file-system
@@ -41,7 +41,7 @@ development_status:
   1-3-add-helpers-assign-tasks-and-copy-links: review
   1-4-ola-answers-on-his-phone: review
   1-5-overview-and-event-view-show-what-needs-attention: review
-  1-6-seed-data-docker-and-examiner-guide: backlog
+  1-6-seed-data-docker-and-examiner-guide: review
   1-7-deploy-for-the-friends-test: backlog
   epic-1-retrospective: optional
 
