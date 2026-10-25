@@ -74,7 +74,8 @@ export async function addTask(db: Db, clock: Clock, organizerId: number, eventId
       createdAt: clock.now(),
     })
     .returning({ id: tasks.id });
-  return row!.id;
+  if (!row) throw new Error('Insert returned no row');
+  return row.id;
 }
 
 export async function updateTask(

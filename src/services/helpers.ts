@@ -74,8 +74,9 @@ export async function addHelperToEvent(
       [helper] = await tx.update(helpers).set({ name }).where(eq(helpers.id, helper.id)).returning();
     }
 
-    await tx.insert(eventHelpers).values({ eventId, helperId: helper!.id, createdAt: now });
-    return helper!;
+    if (!helper) throw new Error('Insert returned no row');
+    await tx.insert(eventHelpers).values({ eventId, helperId: helper.id, createdAt: now });
+    return helper;
   });
 }
 

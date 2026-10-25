@@ -56,7 +56,8 @@ export async function createEvent(
         createdAt: now,
       })
       .returning({ id: events.id });
-    const eventId = row!.id;
+    if (!row) throw new Error('Insert returned no row');
+    const eventId = row.id;
     await createPlanTasks(tx, eventId, planned, now);
     return eventId;
   });
