@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatDateTimeNb } from '../src/domain/dates.ts';
-import { eventSummary, needsHelper, urgent, type StatusTask } from '../src/domain/status.ts';
+import { eventSummary, needsHelper, type StatusTask, urgent } from '../src/domain/status.ts';
 import type { TaskStatus } from '../src/domain/taskRules.ts';
 
 // AD-3, FR-21 (story 1.5): the derived-state rules as pure functions with a fixed today.
@@ -93,7 +93,12 @@ describe('eventSummary', () => {
   });
 
   it('days to the event and the next deadline ignore past deadlines and Done tasks', () => {
-    const tasks = [task('accepted', '2026-10-31'), task('done', '2026-11-02'), task('cant_do', '2026-11-10'), task('open', '2026-11-05')];
+    const tasks = [
+      task('accepted', '2026-10-31'),
+      task('done', '2026-11-02'),
+      task('cant_do', '2026-11-10'),
+      task('open', '2026-11-05'),
+    ];
     const s = eventSummary(tasks, { eventDate: '2026-12-01' }, TODAY);
     expect(s.daysToEvent).toBe(30);
     expect(s.nextDeadline).toBe('2026-11-05');
@@ -101,12 +106,18 @@ describe('eventSummary', () => {
 
   it('a deadline today is the next deadline; with none left it is null', () => {
     expect(eventSummary([task('accepted', TODAY)], EVENT, TODAY).nextDeadline).toBe(TODAY);
-    expect(eventSummary([task('done', '2026-12-01'), task('open', '2026-10-01')], EVENT, TODAY).nextDeadline).toBeNull();
+    expect(
+      eventSummary([task('done', '2026-12-01'), task('open', '2026-10-01')], EVENT, TODAY).nextDeadline,
+    ).toBeNull();
     expect(eventSummary([], EVENT, TODAY)).toMatchObject({ done: 0, total: 0, onTrack: true, nextDeadline: null });
   });
 
   it('a past event counts neither Urgent nor Needs a helper', () => {
-    const s = eventSummary([task('unassigned', '2026-10-20'), task('accepted', '2026-10-30')], { eventDate: '2026-10-31' }, TODAY);
+    const s = eventSummary(
+      [task('unassigned', '2026-10-20'), task('accepted', '2026-10-30')],
+      { eventDate: '2026-10-31' },
+      TODAY,
+    );
     expect(s).toMatchObject({ past: true, urgent: [], needsHelper: [], onTrack: false, daysToEvent: -1 });
   });
 

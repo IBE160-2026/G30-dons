@@ -9,11 +9,7 @@ import { paths } from '../paths.ts';
 
 const registerSchema = z.object({
   name: z.string().trim().min(1, 'Skriv inn navnet ditt.').max(100, 'Navnet kan ha maks 100 tegn.'),
-  email: z
-    .string()
-    .trim()
-    .max(254, 'E-postadressen er for lang.')
-    .pipe(z.email('Skriv inn en gyldig e-postadresse.')),
+  email: z.string().trim().max(254, 'E-postadressen er for lang.').pipe(z.email('Skriv inn en gyldig e-postadresse.')),
   password: z.string().min(8, 'Passordet må ha minst 8 tegn.').max(200, 'Passordet kan ha maks 200 tegn.'),
 });
 

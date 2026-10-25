@@ -1,4 +1,4 @@
-import { randomBytes, scrypt as scryptCb, timingSafeEqual, type ScryptOptions } from 'node:crypto';
+import { randomBytes, type ScryptOptions, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db } from '../db/client.ts';
@@ -75,11 +75,11 @@ export async function register(
 }
 
 /** Returns the organizer, or throws invalid_credentials for a wrong password and an unknown email alike. */
-export async function authenticate(
-  db: Db,
-  input: { email: string; password: string },
-): Promise<OrganizerSummary> {
-  const [row] = await db.select().from(organizers).where(eq(organizers.email, normalizeEmail(input.email)));
+export async function authenticate(db: Db, input: { email: string; password: string }): Promise<OrganizerSummary> {
+  const [row] = await db
+    .select()
+    .from(organizers)
+    .where(eq(organizers.email, normalizeEmail(input.email)));
   const ok = await verifyPassword(input.password, row?.passwordHash ?? (await dummyHash));
   if (!row || !ok) throw new DomainError('invalid_credentials');
   return { id: row.id, name: row.name, email: row.email };

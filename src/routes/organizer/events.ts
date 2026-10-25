@@ -1,15 +1,13 @@
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import type { Clock } from '../../clock.ts';
 import type { Config } from '../../config.ts';
 import type { Db } from '../../db/client.ts';
 import type { MessageAction, Task, TaskStatus } from '../../db/schema.ts';
 import { formatDateTimeNb } from '../../domain/dates.ts';
-import { DomainError, errorText, type ErrorCode } from '../../domain/errors.ts';
+import { DomainError, type ErrorCode, errorText } from '../../domain/errors.ts';
 import { MAX_TITLE_LENGTH } from '../../domain/plan.ts';
 import { createEvent, getEvent, listEvents } from '../../services/events.ts';
-import { listAndMarkSeen, type Reply } from '../../services/messages.ts';
-import { loadEventSummary } from '../../services/summaries.ts';
 import {
   addHelperToEvent,
   displayName,
@@ -17,6 +15,8 @@ import {
   listForEvent as listHelpersForEvent,
   MAX_HELPERS_PER_EVENT,
 } from '../../services/helpers.ts';
+import { listAndMarkSeen, type Reply } from '../../services/messages.ts';
+import { loadEventSummary } from '../../services/summaries.ts';
 import { addTask, apply, deleteTask, getTask, listForEvent, updateTask } from '../../services/tasks.ts';
 import type { Templates } from '../../templates/index.ts';
 import { organizerOf, requireLogin, setFlash } from '../middleware.ts';
@@ -44,7 +44,10 @@ const ACTION_LABELS = {
 } as const satisfies Record<MessageAction, string>;
 
 const optionalText = (max: number, message: string) =>
-  z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), z.string().trim().max(max, message).optional());
+  z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().trim().max(max, message).optional(),
+  );
 
 const eventSchema = z.object({
   templateKey: z.string().min(1, errorText('unknown_template')),
@@ -86,7 +89,10 @@ const helperSchema = z.object({
 });
 
 // Only canonical ids like "12": "1e0", "0x1" or "012" are not found rather than aliases of another URL.
-const idSchema = z.string().regex(/^[1-9]\d*$/).transform(Number);
+const idSchema = z
+  .string()
+  .regex(/^[1-9]\d*$/)
+  .transform(Number);
 
 type Errors = Record<string, string>;
 
@@ -306,10 +312,18 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
     const helper = await getHelper(db, organizerId, parsedHelper.data);
     const action = task.status === 'unassigned' ? 'assign' : 'reassign';
     try {
-      const result = await apply(db, { kind: 'organizer', organizerId }, task.id, { action, helperId: helper.id }, clock.now());
+      const result = await apply(
+        db,
+        { kind: 'organizer', organizerId },
+        task.id,
+        { action, helperId: helper.id },
+        clock.now(),
+      );
       setFlash(
         req,
-        result === 'noop' ? `Oppgaven er allerede tildelt ${displayName(helper)}.` : `Oppgaven er tildelt ${displayName(helper)}.`,
+        result === 'noop'
+          ? `Oppgaven er allerede tildelt ${displayName(helper)}.`
+          : `Oppgaven er tildelt ${displayName(helper)}.`,
       );
     } catch (err) {
       if (!(err instanceof DomainError) || err.code === 'not_found') throw err;

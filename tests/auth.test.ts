@@ -94,7 +94,10 @@ describe('registration and login (HTTP)', () => {
 
   it('refuses a taken email with 422 and a Norwegian message', async () => {
     await register(ctx.db, ctx.clock, kari);
-    const res = await request(ctx.app).post('/registrer').type('form').send({ ...kari, email: 'kari@example.no' });
+    const res = await request(ctx.app)
+      .post('/registrer')
+      .type('form')
+      .send({ ...kari, email: 'kari@example.no' });
     expect(res.status).toBe(422);
     expect(res.text).toContain('E-postadressen er allerede i bruk.');
     expect(await ctx.db.select().from(organizers)).toHaveLength(1);

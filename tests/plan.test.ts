@@ -9,11 +9,19 @@ import { TEST_DB_DIR } from './dbDir.ts';
 const TODAY = '2026-11-01';
 const EVENT = '2027-01-15';
 
-const entries = (n: number): PlanEntry[] => Array.from({ length: n }, (_, i) => ({ title: `Oppgave ${i + 1}`, daysBeforeEvent: i }));
+const entries = (n: number): PlanEntry[] =>
+  Array.from({ length: n }, (_, i) => ({ title: `Oppgave ${i + 1}`, daysBeforeEvent: i }));
 
 describe('buildPlan', () => {
   it('turns offsets into deadlines counted back from the event date', () => {
-    const result = buildPlan([{ title: ' Bestille lokale ', daysBeforeEvent: 30 }, { title: 'Pynte', daysBeforeEvent: 0 }], EVENT, TODAY);
+    const result = buildPlan(
+      [
+        { title: ' Bestille lokale ', daysBeforeEvent: 30 },
+        { title: 'Pynte', daysBeforeEvent: 0 },
+      ],
+      EVENT,
+      TODAY,
+    );
     expect(result).toEqual({
       ok: true,
       tasks: [
@@ -35,7 +43,10 @@ describe('buildPlan', () => {
 
   it('allows a deadline on the event date and refuses one a day after', () => {
     expect(buildPlan([{ title: 'På dagen', daysBeforeEvent: 0 }], EVENT, TODAY).ok).toBe(true);
-    expect(buildPlan([{ title: 'Etterpå', daysBeforeEvent: -1 }], EVENT, TODAY)).toEqual({ ok: false, reason: 'after_event' });
+    expect(buildPlan([{ title: 'Etterpå', daysBeforeEvent: -1 }], EVENT, TODAY)).toEqual({
+      ok: false,
+      reason: 'after_event',
+    });
   });
 
   it('refuses no tasks, accepts 40 and refuses 41', () => {
@@ -46,16 +57,25 @@ describe('buildPlan', () => {
 
   it('accepts a 120-character title and refuses 121 or blank', () => {
     expect(buildPlan([{ title: 'x'.repeat(120), daysBeforeEvent: 1 }], EVENT, TODAY).ok).toBe(true);
-    expect(buildPlan([{ title: 'x'.repeat(121), daysBeforeEvent: 1 }], EVENT, TODAY)).toEqual({ ok: false, reason: 'bad_title' });
+    expect(buildPlan([{ title: 'x'.repeat(121), daysBeforeEvent: 1 }], EVENT, TODAY)).toEqual({
+      ok: false,
+      reason: 'bad_title',
+    });
     expect(buildPlan([{ title: '   ', daysBeforeEvent: 1 }], EVENT, TODAY)).toEqual({ ok: false, reason: 'bad_title' });
   });
 
   it('refuses a non-integer offset', () => {
-    expect(buildPlan([{ title: 'Halv', daysBeforeEvent: 1.5 }], EVENT, TODAY)).toEqual({ ok: false, reason: 'bad_offset' });
+    expect(buildPlan([{ title: 'Halv', daysBeforeEvent: 1.5 }], EVENT, TODAY)).toEqual({
+      ok: false,
+      reason: 'bad_offset',
+    });
   });
 
   it('refuses an offset beyond ten years instead of throwing', () => {
-    expect(buildPlan([{ title: 'Langt', daysBeforeEvent: 100_000_000 }], EVENT, TODAY)).toEqual({ ok: false, reason: 'bad_offset' });
+    expect(buildPlan([{ title: 'Langt', daysBeforeEvent: 100_000_000 }], EVENT, TODAY)).toEqual({
+      ok: false,
+      reason: 'bad_offset',
+    });
     expect(buildPlan([{ title: 'Ti år', daysBeforeEvent: 3650 }], '2037-01-15', TODAY).ok).toBe(true);
   });
 });
@@ -77,11 +97,27 @@ describe('templates', () => {
 
   it.each([
     ['not JSON', '{'],
-    ['negative offset', JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: -1 }] })],
+    [
+      'negative offset',
+      JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: -1 }] }),
+    ],
     ['empty plan', JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [] })],
-    ['offset over ten years', JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: 3651 }] })],
-    ['title too long', JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [{ title: 'x'.repeat(121), daysBeforeEvent: 1 }] })],
-    ['wrong key', JSON.stringify({ key: 'bachelorette', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: 1 }] })],
+    [
+      'offset over ten years',
+      JSON.stringify({ key: 'wedding', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: 3651 }] }),
+    ],
+    [
+      'title too long',
+      JSON.stringify({
+        key: 'wedding',
+        name: 'Bryllup',
+        defaultPlan: [{ title: 'x'.repeat(121), daysBeforeEvent: 1 }],
+      }),
+    ],
+    [
+      'wrong key',
+      JSON.stringify({ key: 'bachelorette', name: 'Bryllup', defaultPlan: [{ title: 'x', daysBeforeEvent: 1 }] }),
+    ],
   ])('refuses a template file with %s', (_label, json) => {
     expect(() => parseTemplate('wedding.json', json, 'wedding')).toThrow(TemplateError);
   });

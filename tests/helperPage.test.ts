@@ -37,11 +37,15 @@ const addHelper = (agent: Agent, eventId: number, body: Record<string, string>) 
   agent.post(`/events/${eventId}/helpers`).type('form').send(body);
 
 const assign = (agent: Agent, eventId: number, taskId: number, helperId: number) =>
-  agent.post(`/events/${eventId}/tasks/${taskId}/assign`).type('form').send({ helperId: String(helperId) });
+  agent
+    .post(`/events/${eventId}/tasks/${taskId}/assign`)
+    .type('form')
+    .send({ helperId: String(helperId) });
 
 const eventTasks = (eventId: number) => ctx.db.select().from(tasks).where(eq(tasks.eventId, eventId)).orderBy(tasks.id);
 const taskById = async (id: number) => (await ctx.db.select().from(tasks).where(eq(tasks.id, id)))[0]!;
-const helperByEmail = async (email: string) => (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
+const helperByEmail = async (email: string) =>
+  (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
 const allMessages = () => ctx.db.select().from(messages).orderBy(messages.id);
 
 async function snapshot() {
@@ -150,7 +154,12 @@ describe('opening the helper page', () => {
   it('never writes on GET, whatever the query', async () => {
     const { ola, task } = await scenario();
     const before = await snapshot();
-    for (const path of [`/h/${ola.linkToken}`, `/h/${ola.linkToken}?lagret=1`, `/h/${ola.linkToken}?feil=1`, `/h/${ola.linkToken}/tasks/${task.id}`]) {
+    for (const path of [
+      `/h/${ola.linkToken}`,
+      `/h/${ola.linkToken}?lagret=1`,
+      `/h/${ola.linkToken}?feil=1`,
+      `/h/${ola.linkToken}/tasks/${task.id}`,
+    ]) {
       await request(ctx.app).get(path);
     }
     expect(await snapshot()).toEqual(before);
@@ -200,7 +209,7 @@ describe('invalid links', () => {
     const { ola } = await scenario();
     const t = ola.linkToken;
     const changed = (t[0] === 'A' ? 'B' : 'A') + t.slice(1);
-    return [ 'Q'.repeat(32), 'abc', changed, `${t}x`, `${t.slice(0, 31)}!` ];
+    return ['Q'.repeat(32), 'abc', changed, `${t}x`, `${t.slice(0, 31)}!`];
   }
 
   it('gives the generic invalid-link page with 404 for unknown and malformed tokens', async () => {
@@ -210,14 +219,19 @@ describe('invalid links', () => {
       expectHelperHeaders(res);
       expectGenericHead(res.text);
       expect(res.text).toContain('Lenken virker ikke');
-      for (const word of ['Kari', 'Ola', 'Kim', 'Bryllup', 'Utdrikningslag', 'Til oversikten']) expect(res.text).not.toContain(word);
+      for (const word of ['Kari', 'Ola', 'Kim', 'Bryllup', 'Utdrikningslag', 'Til oversikten'])
+        expect(res.text).not.toContain(word);
     }
   });
 
   it('gives the invalid-link page on a POST with a bad token, and changes nothing', async () => {
     const { task } = await scenario();
     const before = await snapshot();
-    const bodies: Record<string, string>[] = [{ action: 'yes' }, { action: 'nope' }, { action: 'yes', message: 'x'.repeat(501) }];
+    const bodies: Record<string, string>[] = [
+      { action: 'yes' },
+      { action: 'nope' },
+      { action: 'yes', message: 'x'.repeat(501) },
+    ];
     for (const body of bodies) {
       const res = await helperPost('Q'.repeat(32), task.id, body);
       expect(res.status).toBe(404);
@@ -251,7 +265,16 @@ describe('answering', () => {
     expectHelperHeaders(res);
     expect(await taskById(task.id)).toMatchObject({ status: 'accepted', acceptedAt: FIXED_NOW, helperId: ola.id });
     expect(await allMessages()).toEqual([
-      { id: 1, taskId: task.id, helperId: ola.id, action: 'yes', statusAfter: 'accepted', body: null, createdAt: FIXED_NOW, seenAt: null },
+      {
+        id: 1,
+        taskId: task.id,
+        helperId: ola.id,
+        action: 'yes',
+        statusAfter: 'accepted',
+        body: null,
+        createdAt: FIXED_NOW,
+        seenAt: null,
+      },
     ]);
     const page = await request(ctx.app).get(res.headers.location!);
     expect(page.text).toContain(`<p class="flash" role="status">${SAVED}</p>`);
@@ -320,7 +343,9 @@ describe('answering', () => {
     const res = await helperPost(ola.linkToken, task.id, { action, message: 'hei' });
     expect(res.headers.location).toBe(`/h/${ola.linkToken}?feil=1`);
     expect(await snapshot()).toEqual(before);
-    expect((await request(ctx.app).get(res.headers.location!)).text).toContain(`<p class="flash form-error" role="alert">${REFUSED}</p>`);
+    expect((await request(ctx.app).get(res.headers.location!)).text).toContain(
+      `<p class="flash form-error" role="alert">${REFUSED}</p>`,
+    );
   });
 
   it('refuses another helper’s task, a task reassigned away, a missing task and a bad action', async () => {
@@ -392,7 +417,8 @@ describe('answering', () => {
 });
 
 describe('organizer marks Done', () => {
-  const markDone = (agent: Agent, eventId: number, taskId: number) => agent.post(`/events/${eventId}/tasks/${taskId}/done`);
+  const markDone = (agent: Agent, eventId: number, taskId: number) =>
+    agent.post(`/events/${eventId}/tasks/${taskId}/done`);
 
   it('shows the button on tasks that are not Done, marks them Done and writes no message', async () => {
     const { kari, bryllup, ola, task, b2 } = await scenario();
@@ -409,7 +435,9 @@ describe('organizer marks Done', () => {
       expect((await taskById(id)).status).toBe('done');
     }
     expect(await allMessages()).toEqual(messagesBefore);
-    expect((await kari.get(`/events/${bryllup}`)).text).not.toContain(`action="/events/${bryllup}/tasks/${task.id}/done"`);
+    expect((await kari.get(`/events/${bryllup}`)).text).not.toContain(
+      `action="/events/${bryllup}/tasks/${task.id}/done"`,
+    );
 
     const before = await snapshot();
     const again = await markDone(kari, bryllup, task.id);
@@ -442,7 +470,11 @@ describe('editing an Accepted task (AD-13)', () => {
     expect((await taskById(task.id)).changedSinceAnswer).toBe(false);
 
     await edit(kari, bryllup, task.id, { title: 'Ny tittel', deadline: task.deadline });
-    expect(await taskById(task.id)).toMatchObject({ status: 'accepted', acceptedAt: FIXED_NOW, changedSinceAnswer: true });
+    expect(await taskById(task.id)).toMatchObject({
+      status: 'accepted',
+      acceptedAt: FIXED_NOW,
+      changedSinceAnswer: true,
+    });
     expect((await request(ctx.app).get(`/h/${ola.linkToken}`)).text).toContain('Endret etter at du svarte');
 
     await helperPost(ola.linkToken, task.id, { action: 'done' });

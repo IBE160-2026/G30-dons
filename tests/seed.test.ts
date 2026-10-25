@@ -6,14 +6,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { eq, isNotNull, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { EXPECTED_COUNTS, SEED_EVENT_NAMES, SEED_HELPERS, TEST_LOGIN, type SeedEventKey } from '../seed/fixture.ts';
 import { resetAndSeed, runSeedCommand, startupSeedDecision } from '../seed/command.ts';
-import { loadConfig } from '../src/config.ts';
-import { seed, type SeedResult } from '../seed/seed.ts';
+import { EXPECTED_COUNTS, SEED_EVENT_NAMES, SEED_HELPERS, type SeedEventKey, TEST_LOGIN } from '../seed/fixture.ts';
+import { type SeedResult, seed } from '../seed/seed.ts';
 import { fixedClock, systemClock } from '../src/clock.ts';
-import { openDb, type Db } from '../src/db/client.ts';
+import { loadConfig } from '../src/config.ts';
+import { type Db, openDb } from '../src/db/client.ts';
 import { runMigrations } from '../src/db/migrate.ts';
-import { eventHelpers, helpers, messages, tasks, TASK_STATUSES, type TaskStatus } from '../src/db/schema.ts';
+import { eventHelpers, helpers, messages, TASK_STATUSES, type TaskStatus, tasks } from '../src/db/schema.ts';
 import { addDays, daysBetween, osloDate } from '../src/domain/dates.ts';
 import { assertFieldInvariant } from '../src/domain/taskRules.ts';
 import { TOKEN_FORMAT } from '../src/services/helpers.ts';
@@ -86,7 +86,10 @@ describe('seed counts', () => {
 
   it('shows Bachelorette "I rute" and the Wedding with "haster" on the overview, and the counts in the event view', async () => {
     const kari = request.agent(ctx.app);
-    const login = await kari.post('/logg-inn').type('form').send({ email: TEST_LOGIN.email, password: TEST_LOGIN.password });
+    const login = await kari
+      .post('/logg-inn')
+      .type('form')
+      .send({ email: TEST_LOGIN.email, password: TEST_LOGIN.password });
     expect(login.status).toBe(302);
 
     const res = await kari.get('/');
@@ -107,7 +110,9 @@ describe('seed counts', () => {
       const view = await kari.get(`/events/${seeded.events[key]}`);
       expect(view.status).toBe(200);
       expect(view.text).toContain(`${c.done} av ${c.total} ferdig`);
-      expect(view.text).toContain(c.urgent + c.needsHelper === 0 ? 'Ingenting haster' : `${c.urgent} haster · ${c.needsHelper} trenger hjelper`);
+      expect(view.text).toContain(
+        c.urgent + c.needsHelper === 0 ? 'Ingenting haster' : `${c.urgent} haster · ${c.needsHelper} trenger hjelper`,
+      );
     }
   });
 
@@ -126,7 +131,9 @@ describe('seed counts', () => {
         const clock = fixedClock(iso);
         const result = await seed(db, clock);
         for (const key of EVENT_KEYS) {
-          expect(await actualCounts(db, result, key, clock.today()), `${key} seeded at ${iso}`).toEqual(EXPECTED_COUNTS[key]);
+          expect(await actualCounts(db, result, key, clock.today()), `${key} seeded at ${iso}`).toEqual(
+            EXPECTED_COUNTS[key],
+          );
         }
       } finally {
         db.$client.close();
@@ -145,10 +152,16 @@ describe('seeded rows', () => {
   it('hits the fixture targets: stale Open, changed task, New and seen replies, shared helpers, one nameless helper', async () => {
     const today = ctx.clock.today();
     const wedding = await listForEvent(ctx.db, seeded.organizerId, seeded.events.wedding);
-    const stale = wedding.filter((t) => t.status === 'open' && t.assignedAt && daysBetween(osloDate(t.assignedAt), today) >= 7);
+    const stale = wedding.filter(
+      (t) => t.status === 'open' && t.assignedAt && daysBetween(osloDate(t.assignedAt), today) >= 7,
+    );
     expect(stale.length).toBeGreaterThanOrEqual(1);
     expect(wedding.some((t) => t.changedSinceAnswer && t.status === 'accepted')).toBe(true);
-    for (const s of TASK_STATUSES) expect(wedding.some((t) => t.status === s), s).toBe(true);
+    for (const s of TASK_STATUSES)
+      expect(
+        wedding.some((t) => t.status === s),
+        s,
+      ).toBe(true);
 
     expect((await ctx.db.select().from(messages).where(isNull(messages.seenAt))).length).toBeGreaterThan(0);
     expect((await ctx.db.select().from(messages).where(isNotNull(messages.seenAt))).length).toBeGreaterThan(0);
@@ -179,9 +192,13 @@ describe('seeded rows', () => {
 describe('assertFieldInvariant', () => {
   const base = { helperId: 1, assignedAt: '2026-10-01T10:00:00.000Z', acceptedAt: null };
   it('accepts valid rows, including a Done task that keeps its helper', () => {
-    expect(() => assertFieldInvariant({ status: 'unassigned', helperId: null, assignedAt: null, acceptedAt: null })).not.toThrow();
+    expect(() =>
+      assertFieldInvariant({ status: 'unassigned', helperId: null, assignedAt: null, acceptedAt: null }),
+    ).not.toThrow();
     expect(() => assertFieldInvariant({ ...base, status: 'open' })).not.toThrow();
-    expect(() => assertFieldInvariant({ ...base, status: 'accepted', acceptedAt: '2026-10-02T10:00:00.000Z' })).not.toThrow();
+    expect(() =>
+      assertFieldInvariant({ ...base, status: 'accepted', acceptedAt: '2026-10-02T10:00:00.000Z' }),
+    ).not.toThrow();
     expect(() => assertFieldInvariant({ ...base, status: 'done' })).not.toThrow();
   });
   it('refuses impossible rows', () => {
@@ -192,7 +209,9 @@ describe('assertFieldInvariant', () => {
   });
   it('refuses accepted_at on Unassigned, Open and Declined tasks, and allows it on Done and Can’t be done', () => {
     const acceptedAt = '2026-10-02T10:00:00.000Z';
-    expect(() => assertFieldInvariant({ status: 'unassigned', helperId: null, assignedAt: null, acceptedAt })).toThrow(/accepted_at/);
+    expect(() => assertFieldInvariant({ status: 'unassigned', helperId: null, assignedAt: null, acceptedAt })).toThrow(
+      /accepted_at/,
+    );
     expect(() => assertFieldInvariant({ ...base, status: 'open', acceptedAt })).toThrow(/accepted_at/);
     expect(() => assertFieldInvariant({ ...base, status: 'declined', acceptedAt })).toThrow(/accepted_at/);
     expect(() => assertFieldInvariant({ ...base, status: 'done', acceptedAt })).not.toThrow();
@@ -222,7 +241,6 @@ const quiet = () => {
 };
 
 describe('npm run seed (guarded command)', () => {
-
   // Two real `npm run seed` processes, like the examiner runs it. In-process, Windows keeps the
   // SQLite file locked after close until the connection is collected, so the reset could not delete it.
   // The children seed with the real date, so the counts are read with it too. If the Oslo day
@@ -242,7 +260,13 @@ describe('npm run seed (guarded command)', () => {
     const runSeed = () =>
       spawnSync(process.execPath, ['--import', 'tsx', 'seed/run.ts'], {
         cwd: fileURLToPath(new URL('..', import.meta.url)),
-        env: { ...process.env, TEST_MODE: 'true', DATABASE_URL: pathToFileURL(path).href, PORT: '3000', APP_BASE_URL: '' },
+        env: {
+          ...process.env,
+          TEST_MODE: 'true',
+          DATABASE_URL: pathToFileURL(path).href,
+          PORT: '3000',
+          APP_BASE_URL: '',
+        },
         encoding: 'utf8',
       });
     const counts = async (file: string) => {
@@ -253,7 +277,14 @@ describe('npm run seed (guarded command)', () => {
         const overview = await overviewSummaries(db, kari!.id, systemClock.today());
         return {
           tokens,
-          rows: overview.map((r) => [r.event.name, r.summary.total, r.summary.done, r.summary.urgent.length, r.summary.needsHelper.length, r.newReplies]),
+          rows: overview.map((r) => [
+            r.event.name,
+            r.summary.total,
+            r.summary.done,
+            r.summary.urgent.length,
+            r.summary.needsHelper.length,
+            r.newReplies,
+          ]),
         };
       } finally {
         db.$client.close();
@@ -306,11 +337,18 @@ describe('npm run seed (guarded command)', () => {
     const out = quiet();
     const clock = fixedClock('2026-11-01T10:00:00.000Z');
     expect(
-      await runSeedCommand({ TEST_MODE: 'true', DATABASE_URL: 'libsql://example.turso.io', DATABASE_AUTH_TOKEN: 'x' }, clock, out.log, out.log),
+      await runSeedCommand(
+        { TEST_MODE: 'true', DATABASE_URL: 'libsql://example.turso.io', DATABASE_AUTH_TOKEN: 'x' },
+        clock,
+        out.log,
+        out.log,
+      ),
     ).toBe(1);
     expect(out.lines.join('\n')).toMatch(/lokal SQLite-fil/);
     expect(out.lines.join('\n')).toContain('ikke en libsql://-database.');
-    expect(await runSeedCommand({ TEST_MODE: 'true', DATABASE_URL: 'libsql://example.turso.io' }, clock, out.log, out.log)).toBe(1);
+    expect(
+      await runSeedCommand({ TEST_MODE: 'true', DATABASE_URL: 'libsql://example.turso.io' }, clock, out.log, out.log),
+    ).toBe(1);
     expect(out.lines.at(-1)).toMatch(/^Seed avbrutt\..*DATABASE_AUTH_TOKEN mangler/);
   });
 
@@ -320,7 +358,9 @@ describe('npm run seed (guarded command)', () => {
     const failing = async () => {
       throw new Error('seed step failed');
     };
-    await expect(resetAndSeed(config, fixedClock('2026-11-01T10:00:00.000Z'), failing)).rejects.toThrow('seed step failed');
+    await expect(resetAndSeed(config, fixedClock('2026-11-01T10:00:00.000Z'), failing)).rejects.toThrow(
+      'seed step failed',
+    );
     // On Windows libsql's transaction connections keep the file locked until they are collected,
     // so the delete can only be checked elsewhere (the container is Linux).
     if (process.platform === 'win32') return;
@@ -356,7 +396,11 @@ describe('startupSeedDecision (container start)', () => {
   });
 
   it('skips a libsql:// database in test mode, saying why', () => {
-    const config = loadConfig({ TEST_MODE: 'true', DATABASE_URL: 'libsql://example.turso.io', DATABASE_AUTH_TOKEN: 'x' });
+    const config = loadConfig({
+      TEST_MODE: 'true',
+      DATABASE_URL: 'libsql://example.turso.io',
+      DATABASE_AUTH_TOKEN: 'x',
+    });
     expect(startupSeedDecision(config, no)).toEqual({
       kind: 'skip',
       reason: 'Seed kjøres bare mot en lokal SQLite-fil (DATABASE_URL=file:...), ikke en libsql://-database.',
@@ -366,7 +410,14 @@ describe('startupSeedDecision (container start)', () => {
   it('does not create a database file when it refuses', async () => {
     const path = join(TEST_DB_DIR, `${randomUUID()}.db`);
     const out = quiet();
-    expect(await runSeedCommand({ TEST_MODE: 'false', DATABASE_URL: pathToFileURL(path).href }, fixedClock('2026-11-01T10:00:00.000Z'), out.log, out.log)).toBe(1);
+    expect(
+      await runSeedCommand(
+        { TEST_MODE: 'false', DATABASE_URL: pathToFileURL(path).href },
+        fixedClock('2026-11-01T10:00:00.000Z'),
+        out.log,
+        out.log,
+      ),
+    ).toBe(1);
     expect(out.lines.at(-1)).toMatch(/TEST_MODE=true/);
     expect(existsSync(path)).toBe(false);
   });

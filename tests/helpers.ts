@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Express } from 'express';
 import { createApp } from '../src/app.ts';
-import { fixedClock, type Clock } from '../src/clock.ts';
-import { loadConfig, type Config } from '../src/config.ts';
-import { openDb, type Db } from '../src/db/client.ts';
+import { type Clock, fixedClock } from '../src/clock.ts';
+import { type Config, loadConfig } from '../src/config.ts';
+import { type Db, openDb } from '../src/db/client.ts';
 import { runMigrations } from '../src/db/migrate.ts';
 import { TEST_DB_DIR } from './dbDir.ts';
 

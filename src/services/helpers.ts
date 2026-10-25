@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { and, asc, count, eq, ne } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db, Tx } from '../db/client.ts';
-import { eventHelpers, events, helpers, organizers, tasks, type Helper, type TaskStatus } from '../db/schema.ts';
+import { eventHelpers, events, type Helper, helpers, organizers, type TaskStatus, tasks } from '../db/schema.ts';
 import { DomainError } from '../domain/errors.ts';
 import { allowedHelperActions, type HelperAction } from '../domain/taskRules.ts';
 import { getEvent } from './events.ts';
@@ -162,7 +162,9 @@ export async function helperPage(db: Db, token: string): Promise<HelperPage | un
     .select({ task: tasks, event: events })
     .from(tasks)
     .innerJoin(events, eq(tasks.eventId, events.id))
-    .where(and(eq(tasks.helperId, helper.id), ne(tasks.status, 'unassigned'), eq(events.organizerId, helper.organizerId)))
+    .where(
+      and(eq(tasks.helperId, helper.id), ne(tasks.status, 'unassigned'), eq(events.organizerId, helper.organizerId)),
+    )
     .orderBy(asc(events.eventDate), asc(events.id), asc(tasks.deadline), asc(tasks.id));
 
   const groups = new Map<number, HelperPageEvent>();

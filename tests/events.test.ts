@@ -35,8 +35,7 @@ async function createEvent(agent: Agent, fields: Record<string, string>) {
   return { res, eventId: match ? Number(match[1]) : undefined };
 }
 
-const eventTasks = (eventId: number) =>
-  ctx.db.select().from(tasks).where(eq(tasks.eventId, eventId)).orderBy(tasks.id);
+const eventTasks = (eventId: number) => ctx.db.select().from(tasks).where(eq(tasks.eventId, eventId)).orderBy(tasks.id);
 
 describe('creating an event from a template', () => {
   it('creates the event and one Unassigned task per template entry, dated back from the event', async () => {
@@ -55,7 +54,12 @@ describe('creating an event from a template', () => {
     expect(eventId).toBeDefined();
 
     const [event] = await ctx.db.select().from(events).where(eq(events.id, eventId!));
-    expect(event).toMatchObject({ name: 'Bryllupet til Kari og Ola', templateKey: 'wedding', guestCount: 80, location: 'Molde' });
+    expect(event).toMatchObject({
+      name: 'Bryllupet til Kari og Ola',
+      templateKey: 'wedding',
+      guestCount: 80,
+      location: 'Molde',
+    });
 
     const rows = await eventTasks(eventId!);
     expect(rows).toHaveLength(23);
@@ -178,7 +182,10 @@ describe('editing the plan', () => {
 
   it('adds an Unassigned task', async () => {
     const { agent, eventId } = await withEvent();
-    const res = await agent.post(`/events/${eventId}/tasks`).type('form').send({ title: ' Kjøpe sugerør ', deadline: '2027-02-01' });
+    const res = await agent
+      .post(`/events/${eventId}/tasks`)
+      .type('form')
+      .send({ title: ' Kjøpe sugerør ', deadline: '2027-02-01' });
     expect(res.status).toBe(302);
     const added = (await eventTasks(eventId)).find((t) => t.title === 'Kjøpe sugerør');
     expect(added).toMatchObject({ status: 'unassigned', deadline: '2027-02-01' });
@@ -186,7 +193,11 @@ describe('editing the plan', () => {
 
   it.each([
     ['an empty title', { title: '', deadline: '2027-02-01' }, 'Skriv inn en oppgave.'],
-    ['a title over 120 characters', { title: 'x'.repeat(121), deadline: '2027-02-01' }, 'Oppgaven kan ha maks 120 tegn.'],
+    [
+      'a title over 120 characters',
+      { title: 'x'.repeat(121), deadline: '2027-02-01' },
+      'Oppgaven kan ha maks 120 tegn.',
+    ],
     ['an invalid deadline', { title: 'Noe', deadline: '2027-13-01' }, 'Skriv inn en gyldig frist.'],
     ['a past deadline', { title: 'Noe', deadline: '2026-10-31' }, 'Fristen kan ikke være tilbake i tid.'],
   ])('refuses to add a task with %s', async (_label, body, message) => {
@@ -195,17 +206,25 @@ describe('editing the plan', () => {
     const res = await agent.post(`/events/${eventId}/tasks`).type('form').send(body);
     expect(res.status).toBe(422);
     expect(res.text).toContain(message);
-    expect(res.text).toContain(`id="new-title" name="title" type="text" maxlength="120" placeholder="Hva skal gjøres?" value="${body.title}"`);
+    expect(res.text).toContain(
+      `id="new-title" name="title" type="text" maxlength="120" placeholder="Hva skal gjøres?" value="${body.title}"`,
+    );
     expect(await eventTasks(eventId)).toHaveLength(before);
   });
 
   it('allows a manual deadline after the event date, when adding and editing', async () => {
     const { agent, eventId } = await withEvent();
-    const add = await agent.post(`/events/${eventId}/tasks`).type('form').send({ title: 'Levere tilbake leid utstyr', deadline: '2027-03-05' });
+    const add = await agent
+      .post(`/events/${eventId}/tasks`)
+      .type('form')
+      .send({ title: 'Levere tilbake leid utstyr', deadline: '2027-03-05' });
     expect(add.status).toBe(302);
     const added = (await eventTasks(eventId)).find((t) => t.title === 'Levere tilbake leid utstyr')!;
     expect(added.deadline).toBe('2027-03-05');
-    const edit = await agent.post(`/events/${eventId}/tasks/${added.id}`).type('form').send({ title: added.title, deadline: '2027-03-10' });
+    const edit = await agent
+      .post(`/events/${eventId}/tasks/${added.id}`)
+      .type('form')
+      .send({ title: added.title, deadline: '2027-03-10' });
     expect(edit.status).toBe(302);
     const [stored] = await ctx.db.select().from(tasks).where(eq(tasks.id, added.id));
     expect(stored?.deadline).toBe('2027-03-10');
@@ -213,7 +232,10 @@ describe('editing the plan', () => {
 
   it('accepts a 120-character title', async () => {
     const { agent, eventId } = await withEvent();
-    const res = await agent.post(`/events/${eventId}/tasks`).type('form').send({ title: 'x'.repeat(120), deadline: '2027-02-01' });
+    const res = await agent
+      .post(`/events/${eventId}/tasks`)
+      .type('form')
+      .send({ title: 'x'.repeat(120), deadline: '2027-02-01' });
     expect(res.status).toBe(302);
   });
 
@@ -226,7 +248,11 @@ describe('editing the plan', () => {
       .send({ title: 'Avklare dato med forloveden', deadline: '2027-02-28' });
     expect(res.status).toBe(302);
     const [updated] = await ctx.db.select().from(tasks).where(eq(tasks.id, first!.id));
-    expect(updated).toMatchObject({ title: 'Avklare dato med forloveden', deadline: '2027-02-28', status: 'unassigned' });
+    expect(updated).toMatchObject({
+      title: 'Avklare dato med forloveden',
+      deadline: '2027-02-28',
+      status: 'unassigned',
+    });
 
     const page = await agent.get(`/events/${eventId}`);
     const positions = ['Lage gjesteliste', 'Avklare dato med forloveden'].map((t) => page.text.indexOf(t));
@@ -240,24 +266,40 @@ describe('editing the plan', () => {
     const clamped = (await eventTasks(eventId!)).find((t) => t.deadline === '2026-11-01')!;
     // Put the deadline in the past directly, as if the task were old.
     await ctx.db.update(tasks).set({ deadline: '2026-10-20' }).where(eq(tasks.id, clamped.id));
-    const res = await agent.post(`/events/${eventId}/tasks/${clamped.id}`).type('form').send({ title: 'Nytt navn', deadline: '2026-10-20' });
+    const res = await agent
+      .post(`/events/${eventId}/tasks/${clamped.id}`)
+      .type('form')
+      .send({ title: 'Nytt navn', deadline: '2026-10-20' });
     expect(res.status).toBe(302);
-    const moved = await agent.post(`/events/${eventId}/tasks/${clamped.id}`).type('form').send({ title: 'Nytt navn', deadline: '2026-10-25' });
+    const moved = await agent
+      .post(`/events/${eventId}/tasks/${clamped.id}`)
+      .type('form')
+      .send({ title: 'Nytt navn', deadline: '2026-10-25' });
     expect(moved.status).toBe(422);
   });
 
   it.each([
     ['an empty title', (d: string) => ({ title: '', deadline: d }), 'Skriv inn en oppgave.'],
-    ['a title over 120 characters', (d: string) => ({ title: 'y'.repeat(121), deadline: d }), 'Oppgaven kan ha maks 120 tegn.'],
+    [
+      'a title over 120 characters',
+      (d: string) => ({ title: 'y'.repeat(121), deadline: d }),
+      'Oppgaven kan ha maks 120 tegn.',
+    ],
     ['an invalid deadline', () => ({ title: 'Nytt navn', deadline: '2027-13-01' }), 'Skriv inn en gyldig frist.'],
-    ['a deadline moved into the past', () => ({ title: 'Nytt navn', deadline: '2026-10-31' }), 'Fristen kan ikke være tilbake i tid.'],
+    [
+      'a deadline moved into the past',
+      () => ({ title: 'Nytt navn', deadline: '2026-10-31' }),
+      'Fristen kan ikke være tilbake i tid.',
+    ],
   ])('refuses an edit with %s: 422 on that row with the input kept, task unchanged', async (_label, body, message) => {
     const { agent, eventId } = await withEvent();
     const [first, second] = await eventTasks(eventId);
     const sent = body(first!.deadline);
     const res = await agent.post(`/events/${eventId}/tasks/${first!.id}`).type('form').send(sent);
     expect(res.status).toBe(422);
-    expect(res.text).toContain(`id="title-${first!.id}" name="title" type="text" maxlength="120" value="${sent.title}"`);
+    expect(res.text).toContain(
+      `id="title-${first!.id}" name="title" type="text" maxlength="120" value="${sent.title}"`,
+    );
     expect(res.text).toContain(`id="deadline-${first!.id}" name="deadline" type="date" value="${sent.deadline}"`);
     // The error sits in the edited row, before the next task's row.
     const errorAt = res.text.indexOf(message);
@@ -277,7 +319,9 @@ describe('editing the plan', () => {
 
   it('refuses a task row for an event that does not exist (foreign keys on)', async () => {
     await expect(
-      ctx.db.insert(tasks).values({ eventId: 9999, title: 'x', deadline: '2027-01-01', status: 'unassigned', createdAt: 'now' }),
+      ctx.db
+        .insert(tasks)
+        .values({ eventId: 9999, title: 'x', deadline: '2027-01-01', status: 'unassigned', createdAt: 'now' }),
     ).rejects.toThrow();
   });
 });
@@ -314,11 +358,17 @@ describe('data isolation between organizers (FR-2)', () => {
     expect(res.status).toBe(404);
     expect(await ctx.db.select().from(tasks).where(eq(tasks.id, taskOfA!.id))).toHaveLength(1);
     // Invalid input does not turn a wrong task id into a form error.
-    for (const body of [{ title: '', deadline: '' }, { title: 'Ok', deadline: '2027-01-01' }]) {
+    for (const body of [
+      { title: '', deadline: '' },
+      { title: 'Ok', deadline: '2027-01-01' },
+    ]) {
       const edit = await agent.post(`/events/${b.eventId}/tasks/${taskOfA!.id}`).type('form').send(body);
       expect(edit.status).toBe(404);
     }
-    const missing = await agent.post(`/events/${b.eventId}/tasks/999999`).type('form').send({ title: '', deadline: '' });
+    const missing = await agent
+      .post(`/events/${b.eventId}/tasks/999999`)
+      .type('form')
+      .send({ title: '', deadline: '' });
     expect(missing.status).toBe(404);
   });
 
@@ -333,8 +383,8 @@ describe('startup', () => {
     const dir = mkdtempSync(join(TEST_DB_DIR, 'templates-'));
     copyFileSync(new URL('../src/templates/bachelorette.json', import.meta.url), join(dir, 'bachelorette.json'));
     writeFileSync(join(dir, 'wedding.json'), '{"key":"wedding"}');
-    expect(() => createApp({ config: ctx.config, db: ctx.db, clock: ctx.clock, templatesDir: pathToFileURL(`${dir}/`) })).toThrow(
-      /wedding\.json/,
-    );
+    expect(() =>
+      createApp({ config: ctx.config, db: ctx.db, clock: ctx.clock, templatesDir: pathToFileURL(`${dir}/`) }),
+    ).toThrow(/wedding\.json/);
   });
 });

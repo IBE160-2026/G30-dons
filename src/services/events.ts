@@ -1,7 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db } from '../db/client.ts';
-import { events, type Event } from '../db/schema.ts';
+import { type Event, events } from '../db/schema.ts';
 import { isDate } from '../domain/dates.ts';
 import { DomainError } from '../domain/errors.ts';
 import { isTemplateKey, type Templates } from '../templates/index.ts';

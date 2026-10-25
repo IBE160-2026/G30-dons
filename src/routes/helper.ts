@@ -1,4 +1,4 @@
-import { Router, type RequestHandler, type Response } from 'express';
+import { type RequestHandler, type Response, Router } from 'express';
 import { z } from 'zod';
 import type { Clock } from '../clock.ts';
 import type { Db } from '../db/client.ts';
@@ -37,10 +37,17 @@ const NOTICES = {
 } as const;
 
 const commandSchema = z.object({
-  taskId: z.string().regex(/^[1-9]\d*$/).transform(Number),
+  taskId: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .transform(Number),
   action: z.enum(HELPER_ACTIONS),
   // Browsers send textarea line breaks as CRLF, which maxlength counts as one character.
-  message: z.string().transform((v) => v.replace(/\r\n/g, '\n').trim()).pipe(z.string().max(MAX_MESSAGE_LENGTH)).optional(),
+  message: z
+    .string()
+    .transform((v) => v.replace(/\r\n/g, '\n').trim())
+    .pipe(z.string().max(MAX_MESSAGE_LENGTH))
+    .optional(),
 });
 
 /** "A", "A og B", "A, B og C". */

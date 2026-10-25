@@ -15,7 +15,9 @@ export interface TaskState {
   changedSinceAnswer?: boolean;
 }
 
-export type Actor = { kind: 'organizer'; organizerId: number } | { kind: 'helper'; helperId: number; organizerId: number };
+export type Actor =
+  | { kind: 'organizer'; organizerId: number }
+  | { kind: 'helper'; helperId: number; organizerId: number };
 
 export const HELPER_ACTIONS = ['yes', 'no', 'done', 'cantDo'] as const;
 export type HelperAction = (typeof HELPER_ACTIONS)[number];
@@ -93,7 +95,10 @@ export function transition(
   switch (command.action) {
     case 'assign':
       if (task.status !== 'unassigned') return refused('action_not_allowed');
-      return { kind: 'change', changes: { status: 'open', helperId: target, assignedAt: now, changedSinceAnswer: false } };
+      return {
+        kind: 'change',
+        changes: { status: 'open', helperId: target, assignedAt: now, changedSinceAnswer: false },
+      };
     case 'reassign':
       if (task.status === 'unassigned') return refused('action_not_allowed');
       // The new helper has not answered anything, so the changed-task flag goes too.
@@ -131,7 +136,10 @@ function helperTransition(task: TaskState, command: TaskCommand, helperId: numbe
  */
 export function assertFieldInvariant(task: TaskState & { id?: number }): void {
   const which = task.id === undefined ? 'Task' : `Task ${task.id}`;
-  if ((task.status === 'unassigned' || task.status === 'open' || task.status === 'declined') && task.acceptedAt !== null) {
+  if (
+    (task.status === 'unassigned' || task.status === 'open' || task.status === 'declined') &&
+    task.acceptedAt !== null
+  ) {
     throw new Error(`${which}: a ${task.status} task has no accepted_at`);
   }
   if (task.status === 'unassigned') {

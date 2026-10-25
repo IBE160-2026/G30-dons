@@ -62,7 +62,11 @@ export interface EventSummary<T extends StatusTask> {
   nextDeadline: string | null;
 }
 
-export function eventSummary<T extends StatusTask>(tasks: readonly T[], event: StatusEvent, today: string): EventSummary<T> {
+export function eventSummary<T extends StatusTask>(
+  tasks: readonly T[],
+  event: StatusEvent,
+  today: string,
+): EventSummary<T> {
   const past = event.eventDate < today;
   const urgentTasks = past ? [] : tasks.filter((t) => urgent(t, today));
   const needsHelperTasks = past ? [] : tasks.filter((t) => needsHelper(t, today));

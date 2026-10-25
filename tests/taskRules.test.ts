@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allowedHelperActions, transition, type Actor, type TaskState } from '../src/domain/taskRules.ts';
+import { type Actor, allowedHelperActions, type TaskState, transition } from '../src/domain/taskRules.ts';
 
 // AD-2: the organizer's assign, reassign and markDone moves, and the helper's answers.
 const NOW = '2026-11-01T10:00:00.000Z';
@@ -42,7 +42,9 @@ describe('assign', () => {
 
   it('refuses a helper actor', () => {
     const helper: Actor = { kind: 'helper', helperId: 10, organizerId: 1 };
-    expect(transition(unassigned, { action: 'assign', helperId: 10 }, helper, [10], NOW)).toMatchObject({ kind: 'refused' });
+    expect(transition(unassigned, { action: 'assign', helperId: 10 }, helper, [10], NOW)).toMatchObject({
+      kind: 'refused',
+    });
   });
 });
 
@@ -62,8 +64,12 @@ describe('reassign', () => {
   });
 
   it('is a no-op when the same helper is chosen, even for a task that is not Open', () => {
-    expect(transition(openForA, { action: 'reassign', helperId: 10 }, organizer, [10, 11], NOW)).toEqual({ kind: 'noop' });
-    expect(transition(acceptedByA, { action: 'reassign', helperId: 10 }, organizer, [10, 11], NOW)).toEqual({ kind: 'noop' });
+    expect(transition(openForA, { action: 'reassign', helperId: 10 }, organizer, [10, 11], NOW)).toEqual({
+      kind: 'noop',
+    });
+    expect(transition(acceptedByA, { action: 'reassign', helperId: 10 }, organizer, [10, 11], NOW)).toEqual({
+      kind: 'noop',
+    });
   });
 
   it('clears the changed-task flag, since the new helper has not answered', () => {
@@ -91,7 +97,11 @@ describe('reassign', () => {
 
 const ola: Actor = { kind: 'helper', helperId: 10, organizerId: 1 };
 const kim: Actor = { kind: 'helper', helperId: 11, organizerId: 1 };
-const withStatus = (status: TaskState['status']): TaskState => ({ ...acceptedByA, status, acceptedAt: status === 'accepted' ? acceptedByA.acceptedAt : null });
+const withStatus = (status: TaskState['status']): TaskState => ({
+  ...acceptedByA,
+  status,
+  acceptedAt: status === 'accepted' ? acceptedByA.acceptedAt : null,
+});
 
 describe('helper answers', () => {
   it('Open + yes: Accepted with accepted_at = now, and a message', () => {
@@ -148,25 +158,36 @@ describe('helper answers', () => {
   });
 
   it('refuses a helper who is not the task’s current helper, and an Unassigned task', () => {
-    expect(transition(openForA, { action: 'yes' }, kim, [10, 11], NOW)).toEqual({ kind: 'refused', code: 'helper_command_refused' });
-    expect(transition(unassigned, { action: 'yes' }, ola, [10], NOW)).toEqual({ kind: 'refused', code: 'helper_command_refused' });
+    expect(transition(openForA, { action: 'yes' }, kim, [10, 11], NOW)).toEqual({
+      kind: 'refused',
+      code: 'helper_command_refused',
+    });
+    expect(transition(unassigned, { action: 'yes' }, ola, [10], NOW)).toEqual({
+      kind: 'refused',
+      code: 'helper_command_refused',
+    });
   });
 
   it('refuses organizer actions from a helper and helper actions from the organizer', () => {
     expect(transition(openForA, { action: 'markDone' }, ola, [], NOW)).toMatchObject({ kind: 'refused' });
-    expect(transition(openForA, { action: 'reassign', helperId: 10 }, ola, [10], NOW)).toMatchObject({ kind: 'refused' });
+    expect(transition(openForA, { action: 'reassign', helperId: 10 }, ola, [10], NOW)).toMatchObject({
+      kind: 'refused',
+    });
     expect(transition(openForA, { action: 'yes' }, organizer, [10], NOW)).toMatchObject({ kind: 'refused' });
   });
 });
 
 describe('markDone (organizer)', () => {
-  it.each(['unassigned', 'open', 'accepted', 'declined', 'cant_do'] as const)('moves %s to Done with no message', (status) => {
-    const task = status === 'unassigned' ? unassigned : withStatus(status);
-    expect(transition(task, { action: 'markDone' }, organizer, [], NOW)).toEqual({
-      kind: 'change',
-      changes: { status: 'done', changedSinceAnswer: false },
-    });
-  });
+  it.each(['unassigned', 'open', 'accepted', 'declined', 'cant_do'] as const)(
+    'moves %s to Done with no message',
+    (status) => {
+      const task = status === 'unassigned' ? unassigned : withStatus(status);
+      expect(transition(task, { action: 'markDone' }, organizer, [], NOW)).toEqual({
+        kind: 'change',
+        changes: { status: 'done', changedSinceAnswer: false },
+      });
+    },
+  );
 
   it('clears the changed-task flag on a flagged Accepted task', () => {
     const flagged: TaskState = { ...acceptedByA, changedSinceAnswer: true };

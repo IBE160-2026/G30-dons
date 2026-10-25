@@ -8,13 +8,7 @@ import { addHelperToEvent } from '../src/services/helpers.ts';
 import { listAndMarkSeen } from '../src/services/messages.ts';
 import { apply, applyAsHelper, listForEvent, updateTask } from '../src/services/tasks.ts';
 import { loadTemplates } from '../src/templates/index.ts';
-import {
-  SEED_EVENT_NAMES,
-  SEED_HELPERS,
-  TEST_LOGIN,
-  type SeedEventKey,
-  type SeedHelperKey,
-} from './fixture.ts';
+import { SEED_EVENT_NAMES, SEED_HELPERS, type SeedEventKey, type SeedHelperKey, TEST_LOGIN } from './fixture.ts';
 
 // FR-25, AD-11: builds the test data only through the services, never by inserting rows. The seed
 // day is clock.today(); every step happens a whole number of days before it, at a fixed UTC hour
@@ -90,7 +84,13 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
     message?: string,
   ) =>
     step(daysAgo, hourUtc, async (now) => {
-      const result = await applyAsHelper(db, token(helper), taskId(event, title), message ? { action, message } : { action }, now);
+      const result = await applyAsHelper(
+        db,
+        token(helper),
+        taskId(event, title),
+        message ? { action, message } : { action },
+        now,
+      );
       if (result === 'invalidLink' || result === 'noop') throw new Error(`Seed: ${action} on "${title}" did nothing`);
     });
 
@@ -138,7 +138,15 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
       return;
     }
     answer('wedding', title, helper, 'yes', 57, 17);
-    answer('wedding', title, helper, 'done', 56 - 3 * i, 16, i % 4 === 0 ? DONE_NOTES[i % DONE_NOTES.length] : undefined);
+    answer(
+      'wedding',
+      title,
+      helper,
+      'done',
+      56 - 3 * i,
+      16,
+      i % 4 === 0 ? DONE_NOTES[i % DONE_NOTES.length] : undefined,
+    );
   });
 
   // Accepted, then Kari moves the deadline: Urgent and "Endret etter at du svarte" (AD-13).
@@ -161,7 +169,15 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
   // Accepted, then Can't be done yesterday: Needs a helper, New reply.
   assign('wedding', 'Lage program for dagen', 'siri', 12);
   answer('wedding', 'Lage program for dagen', 'siri', 'yes', 11, 14);
-  answer('wedding', 'Lage program for dagen', 'siri', 'cantDo', 1, 13, 'Skriveren min er ødelagt. Kan noen andre ta den?');
+  answer(
+    'wedding',
+    'Lage program for dagen',
+    'siri',
+    'cantDo',
+    1,
+    13,
+    'Skriveren min er ødelagt. Kan noen andre ta den?',
+  );
   // Declined yesterday: Needs a helper, New reply.
   assign('wedding', 'Kjøpe pynt', 'kim', 6);
   answer('wedding', 'Kjøpe pynt', 'kim', 'no', 1, 15, 'Beklager, jeg er bortreist den uka.');
@@ -188,7 +204,14 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
   });
   step(BACHELORETTE_CREATED_DAYS_AGO, 18, async () => {
     for (const h of SEED_HELPERS.filter((x) => x.key !== 'per')) {
-      await addHelperToEvent(db, clock, organizerId, eventIds.bachelorette, { email: h.email, name: h.name ?? undefined }, () => h.token);
+      await addHelperToEvent(
+        db,
+        clock,
+        organizerId,
+        eventIds.bachelorette,
+        { email: h.email, name: h.name ?? undefined },
+        () => h.token,
+      );
     }
   });
 

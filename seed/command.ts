@@ -1,11 +1,11 @@
 import { existsSync, rmSync } from 'node:fs';
 import type { Clock } from '../src/clock.ts';
-import { ConfigError, loadConfig, type Config } from '../src/config.ts';
-import { openDb, sqliteFilePath, type Db } from '../src/db/client.ts';
+import { type Config, ConfigError, loadConfig } from '../src/config.ts';
+import { type Db, openDb, sqliteFilePath } from '../src/db/client.ts';
 import { runMigrations } from '../src/db/migrate.ts';
 import { absoluteUrl, paths } from '../src/routes/paths.ts';
 import { SEED_HELPERS, TEST_LOGIN } from './fixture.ts';
-import { seed, type SeedResult } from './seed.ts';
+import { type SeedResult, seed } from './seed.ts';
 
 // AD-11: the guarded seed command. It runs only in test mode on a local file: database, and
 // resets that file before seeding. Used by `npm run seed` and the Docker start.
@@ -98,7 +98,8 @@ export async function runSeedCommand(
   } catch (err) {
     if (err instanceof ConfigError) {
       // With test mode off, the production checks fail first; the real reason is test mode.
-      const reason = env.TEST_MODE?.trim() === 'true' ? err.message : 'Seed kjøres bare i testmodus. Sett TEST_MODE=true.';
+      const reason =
+        env.TEST_MODE?.trim() === 'true' ? err.message : 'Seed kjøres bare i testmodus. Sett TEST_MODE=true.';
       logError(`Seed avbrutt. ${reason}`);
       return 1;
     }

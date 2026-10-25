@@ -1,6 +1,6 @@
 import { and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { Db } from '../db/client.ts';
-import { events, helpers, messages, tasks, type MessageAction, type TaskStatus } from '../db/schema.ts';
+import { events, helpers, type MessageAction, messages, type TaskStatus, tasks } from '../db/schema.ts';
 import { DomainError } from '../domain/errors.ts';
 import { displayName } from './helpers.ts';
 

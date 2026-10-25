@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { events, helpers, messages, tasks, type TaskStatus } from '../src/db/schema.ts';
+import { events, helpers, messages, type TaskStatus, tasks } from '../src/db/schema.ts';
 import { TEST_DB_DIR } from './dbDir.ts';
 import { FIXED_NOW, setupTestApp, type TestContext } from './helpers.ts';
 
@@ -28,7 +28,10 @@ async function loggedIn(email = 'kari@example.no', name = 'Kari') {
 type Agent = Awaited<ReturnType<typeof loggedIn>>;
 
 async function createEvent(agent: Agent, templateKey: string, eventDate: string, name?: string) {
-  const res = await agent.post('/events').type('form').send({ templateKey, eventDate, ...(name ? { name } : {}) });
+  const res = await agent
+    .post('/events')
+    .type('form')
+    .send({ templateKey, eventDate, ...(name ? { name } : {}) });
   const match = /^\/events\/(\d+)$/.exec(res.headers.location ?? '');
   if (!match) throw new Error('event not created');
   return Number(match[1]);
@@ -37,7 +40,8 @@ async function createEvent(agent: Agent, templateKey: string, eventDate: string,
 const addHelper = (agent: Agent, eventId: number, body: Record<string, string>) =>
   agent.post(`/events/${eventId}/helpers`).type('form').send(body);
 
-const helperByEmail = async (email: string) => (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
+const helperByEmail = async (email: string) =>
+  (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
 
 const helperPost = (token: string, taskId: number, body: Record<string, string>) =>
   request(ctx.app).post(`/h/${token}/tasks/${taskId}`).type('form').send(body);
@@ -225,7 +229,8 @@ describe('event view panels', () => {
     expect(todo).toContain('Haster (1)');
     expect(todo).toContain('Akseptert snart');
     expect(todo).toContain('Trenger hjelper (4)');
-    for (const title of ['Ikke tildelt oppgave', 'Åpen nær frist', 'Avslått oppgave', 'Umulig oppgave']) expect(todo).toContain(title);
+    for (const title of ['Ikke tildelt oppgave', 'Åpen nær frist', 'Avslått oppgave', 'Umulig oppgave'])
+      expect(todo).toContain(title);
     for (const title of ['Åpen langt unna', 'Akseptert senere', 'Ferdig oppgave']) expect(todo).not.toContain(title);
     expect(todo).toContain('Ola');
     expect(html).toContain('Om 120 dager');
@@ -385,7 +390,7 @@ describe('Messages panel and seen replies (AD-15)', () => {
         action: 'yes' as const,
         statusAfter: 'accepted' as const,
         body: `Svar ${i + 1}`,
-        createdAt: `2026-10-${String(i % 28 + 1).padStart(2, '0')}T10:${String(i).padStart(2, '0')}:00.000Z`,
+        createdAt: `2026-10-${String((i % 28) + 1).padStart(2, '0')}T10:${String(i).padStart(2, '0')}:00.000Z`,
         seenAt: null,
       })),
     );

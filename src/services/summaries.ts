@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import type { Db } from '../db/client.ts';
-import { events, tasks, type Event, type Task } from '../db/schema.ts';
-import { eventSummary as summarize, type EventSummary } from '../domain/status.ts';
+import { type Event, events, type Task, tasks } from '../db/schema.ts';
+import { type EventSummary, eventSummary as summarize } from '../domain/status.ts';
 import { getEvent, listEvents } from './events.ts';
 import { countNew, countNewByEvent } from './messages.ts';
 
@@ -48,7 +48,12 @@ export interface EventSummaryResult {
 }
 
 /** The summary of one of the organizer's events; another organizer's event is not_found. */
-export async function loadEventSummary(db: Db, organizerId: number, eventId: number, today: string): Promise<EventSummaryResult> {
+export async function loadEventSummary(
+  db: Db,
+  organizerId: number,
+  eventId: number,
+  today: string,
+): Promise<EventSummaryResult> {
   const event = await getEvent(db, organizerId, eventId);
   const [eventTasks, newReplies] = await Promise.all([
     db.select().from(tasks).where(eq(tasks.eventId, event.id)).orderBy(asc(tasks.deadline), asc(tasks.id)),

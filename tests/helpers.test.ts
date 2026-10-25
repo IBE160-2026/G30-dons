@@ -44,7 +44,8 @@ const allHelpers = () => ctx.db.select().from(helpers).orderBy(helpers.id);
 const linksOf = (eventId: number) => ctx.db.select().from(eventHelpers).where(eq(eventHelpers.eventId, eventId));
 const eventTasks = (eventId: number) => ctx.db.select().from(tasks).where(eq(tasks.eventId, eventId)).orderBy(tasks.id);
 const taskById = async (id: number) => (await ctx.db.select().from(tasks).where(eq(tasks.id, id)))[0]!;
-const helperByEmail = async (email: string) => (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
+const helperByEmail = async (email: string) =>
+  (await ctx.db.select().from(helpers).where(eq(helpers.email, email)))[0]!;
 
 async function followFlash(agent: Agent, res: request.Response) {
   expect(res.status).toBe(302);
@@ -127,7 +128,11 @@ describe('adding helpers', () => {
   it.each([
     ['an invalid email', { email: 'abc', name: 'Ola' }, 'Skriv inn en gyldig e-postadresse.'],
     ['an empty email', { email: '', name: 'Ola' }, 'Skriv inn en gyldig e-postadresse.'],
-    ['an email over 254 characters', { email: `${'a'.repeat(250)}@example.no`, name: 'Ola' }, 'E-postadressen kan ha maks 254 tegn.'],
+    [
+      'an email over 254 characters',
+      { email: `${'a'.repeat(250)}@example.no`, name: 'Ola' },
+      'E-postadressen kan ha maks 254 tegn.',
+    ],
     ['a name over 100 characters', { email: 'ola@example.no', name: 'n'.repeat(101) }, 'Navnet kan ha maks 100 tegn.'],
   ])('refuses %s with 422 and keeps the input', async (_label, body, message) => {
     const agent = await loggedIn();
@@ -158,7 +163,9 @@ describe('adding helpers', () => {
 
     const other = await createEvent(agent, 'wedding', '2027-06-12');
     const organizerId = (await allHelpers())[0]!.organizerId;
-    const seeded = await addHelperToEvent(ctx.db, ctx.clock, organizerId, other, { email: 'fast@example.no' }, () => 'A'.repeat(32));
+    const seeded = await addHelperToEvent(ctx.db, ctx.clock, organizerId, other, { email: 'fast@example.no' }, () =>
+      'A'.repeat(32),
+    );
     expect(seeded.linkToken).toBe('A'.repeat(32));
   });
 });
@@ -179,7 +186,9 @@ describe('showing helpers', () => {
     expect(page).toContain(
       `<input id="link-${ola.id}" type="text" class="link-field" value="https://masterplan.example.no/h/${ola.linkToken}" readonly>`,
     );
-    expect(page).toContain(`<button type="button" class="small" data-copy="link-${ola.id}" aria-live="polite">Kopier lenke</button>`);
+    expect(page).toContain(
+      `<button type="button" class="small" data-copy="link-${ola.id}" aria-live="polite">Kopier lenke</button>`,
+    );
   });
 
   it('loads copy.js, serves it, and has no inline script body', async () => {
@@ -208,7 +217,9 @@ describe('showing helpers', () => {
     const [task] = await eventTasks(eventId);
     const page = (await agent.get(`/events/${eventId}`)).text;
     expect(page).toMatch(
-      new RegExp(`<select id="assign-${task!.id}" name="helperId" required>\\s*<option value="" selected disabled>Velg hjelper</option>`),
+      new RegExp(
+        `<select id="assign-${task!.id}" name="helperId" required>\\s*<option value="" selected disabled>Velg hjelper</option>`,
+      ),
     );
     expect(page).not.toMatch(/<option value="\d+" selected>/);
   });
@@ -245,14 +256,22 @@ describe('assigning tasks', () => {
   }
 
   const assign = (agent: Agent, eventId: number, taskId: number, helperId: number | string) =>
-    agent.post(`/events/${eventId}/tasks/${taskId}/assign`).type('form').send({ helperId: String(helperId) });
+    agent
+      .post(`/events/${eventId}/tasks/${taskId}/assign`)
+      .type('form')
+      .send({ helperId: String(helperId) });
 
   it('assigns an Unassigned task: Open, helper set, assigned_at = now', async () => {
     const { agent, eventId, a, task } = await withHelpers();
     const res = await assign(agent, eventId, task.id, a.id);
     const page = await followFlash(agent, res);
     expect(page).toContain('Oppgaven er tildelt Anne.');
-    expect(await taskById(task.id)).toMatchObject({ status: 'open', helperId: a.id, assignedAt: FIXED_NOW, acceptedAt: null });
+    expect(await taskById(task.id)).toMatchObject({
+      status: 'open',
+      helperId: a.id,
+      assignedAt: FIXED_NOW,
+      acceptedAt: null,
+    });
     expect(page).toContain('<span class="status status-open">Venter på svar</span> · Anne');
     expect(page).toContain(`<option value="${a.id}" selected>Anne</option>`);
     expect((await listForHelper(ctx.db, a.id)).map((t) => t.id)).toEqual([task.id]);
@@ -268,7 +287,12 @@ describe('assigning tasks', () => {
       .where(eq(tasks.id, task.id));
     const res = await assign(agent, eventId, task.id, b.id);
     expect(await followFlash(agent, res)).toContain('Oppgaven er tildelt Bjørn.');
-    expect(await taskById(task.id)).toMatchObject({ status: 'open', helperId: b.id, assignedAt: FIXED_NOW, acceptedAt: null });
+    expect(await taskById(task.id)).toMatchObject({
+      status: 'open',
+      helperId: b.id,
+      assignedAt: FIXED_NOW,
+      acceptedAt: null,
+    });
     expect(await listForHelper(ctx.db, a.id)).toEqual([]);
     expect((await listForHelper(ctx.db, b.id)).map((t) => t.id)).toEqual([task.id]);
   });
@@ -340,16 +364,29 @@ describe('data isolation between organizers (FR-2)', () => {
     const pal = (await allHelpers()).find((h) => h.name === 'Pål')!;
     const [perTask] = await eventTasks(perEvent);
 
-    const before = { helpers: await allHelpers(), links: await ctx.db.select().from(eventHelpers), kariTask: await taskById(kariTask!.id) };
+    const before = {
+      helpers: await allHelpers(),
+      links: await ctx.db.select().from(eventHelpers),
+      kariTask: await taskById(kariTask!.id),
+    };
     const attempts = [
       // Kari's event
       per.post(`/events/${kariEvent}/helpers`).type('form').send({ email: 'x@example.no' }),
       per.post(`/events/${kariEvent}/helpers`).type('form').send({ email: 'abc' }),
       // Kari's task, with Per's own helper or Kari's helper
-      per.post(`/events/${kariEvent}/tasks/${kariTask!.id}/assign`).type('form').send({ helperId: String(pal.id) }),
-      per.post(`/events/${perEvent}/tasks/${kariTask!.id}/assign`).type('form').send({ helperId: String(pal.id) }),
+      per
+        .post(`/events/${kariEvent}/tasks/${kariTask!.id}/assign`)
+        .type('form')
+        .send({ helperId: String(pal.id) }),
+      per
+        .post(`/events/${perEvent}/tasks/${kariTask!.id}/assign`)
+        .type('form')
+        .send({ helperId: String(pal.id) }),
       // Kari's helper on Per's own task
-      per.post(`/events/${perEvent}/tasks/${perTask!.id}/assign`).type('form').send({ helperId: String(ola.id) }),
+      per
+        .post(`/events/${perEvent}/tasks/${perTask!.id}/assign`)
+        .type('form')
+        .send({ helperId: String(ola.id) }),
     ];
     for (const res of await Promise.all(attempts)) {
       expect(res.status).toBe(404);

@@ -1,11 +1,11 @@
 import { and, asc, eq, ne } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db, Tx } from '../db/client.ts';
-import { events, messages, tasks, type Task } from '../db/schema.ts';
+import { events, messages, type Task, tasks } from '../db/schema.ts';
 import { isDate } from '../domain/dates.ts';
 import { DomainError } from '../domain/errors.ts';
 import type { PlannedTask } from '../domain/plan.ts';
-import { transition, type Actor, type HelperAction, type TaskCommand } from '../domain/taskRules.ts';
+import { type Actor, type HelperAction, type TaskCommand, transition } from '../domain/taskRules.ts';
 import { eventHelperIds, findByToken } from './helpers.ts';
 
 // AD-2: the only writer of task and message rows. Every function is scoped by the organizer (AD-5), except
@@ -20,7 +20,13 @@ export interface TaskInput {
 export async function createPlanTasks(tx: Tx, eventId: number, planned: readonly PlannedTask[], now: string) {
   if (planned.length === 0) return;
   await tx.insert(tasks).values(
-    planned.map((t) => ({ eventId, title: t.title, deadline: t.deadline, status: 'unassigned' as const, createdAt: now })),
+    planned.map((t) => ({
+      eventId,
+      title: t.title,
+      deadline: t.deadline,
+      status: 'unassigned' as const,
+      createdAt: now,
+    })),
   );
 }
 
@@ -60,7 +66,13 @@ export async function addTask(db: Db, clock: Clock, organizerId: number, eventId
   checkDeadline(input.deadline, clock.today());
   const [row] = await db
     .insert(tasks)
-    .values({ eventId, title: input.title.trim(), deadline: input.deadline, status: 'unassigned', createdAt: clock.now() })
+    .values({
+      eventId,
+      title: input.title.trim(),
+      deadline: input.deadline,
+      status: 'unassigned',
+      createdAt: clock.now(),
+    })
     .returning({ id: tasks.id });
   return row!.id;
 }
@@ -80,7 +92,11 @@ export async function updateTask(
   const changed = title !== task.title || input.deadline !== task.deadline;
   await db
     .update(tasks)
-    .set({ title, deadline: input.deadline, ...(task.status === 'accepted' && changed ? { changedSinceAnswer: true } : {}) })
+    .set({
+      title,
+      deadline: input.deadline,
+      ...(task.status === 'accepted' && changed ? { changedSinceAnswer: true } : {}),
+    })
     .where(eq(tasks.id, task.id));
 }
 
@@ -96,7 +112,13 @@ export type ApplyResult = 'changed' | 'messageOnly' | 'noop';
  * asks taskRules.transition and writes the changes, all in one transaction. A refused move
  * throws its DomainError; a task outside the organizer's events is not_found.
  */
-export async function apply(db: Db, actor: Actor, taskId: number, command: TaskCommand, now: string): Promise<ApplyResult> {
+export async function apply(
+  db: Db,
+  actor: Actor,
+  taskId: number,
+  command: TaskCommand,
+  now: string,
+): Promise<ApplyResult> {
   return db.transaction(async (tx) => {
     const [row] = await tx
       .select({ task: tasks })
@@ -115,7 +137,10 @@ export async function apply(db: Db, actor: Actor, taskId: number, command: TaskC
     // A helper command that does something clears the changed-task flag (AD-13).
     const flag = actor.kind === 'helper' ? { changedSinceAnswer: false } : {};
     if (Object.keys(changes).length > 0 || actor.kind === 'helper') {
-      await tx.update(tasks).set({ ...changes, ...flag }).where(eq(tasks.id, task.id));
+      await tx
+        .update(tasks)
+        .set({ ...changes, ...flag })
+        .where(eq(tasks.id, task.id));
     }
     // Exactly one messages row per helper command that does something; organizer commands write none.
     if (actor.kind === 'helper' && message) {
