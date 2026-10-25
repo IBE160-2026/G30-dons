@@ -8,6 +8,7 @@ import type { Config } from './config.ts';
 import type { Db } from './db/client.ts';
 import { formatDateNb } from './domain/dates.ts';
 import { DomainError } from './domain/errors.ts';
+import { helperHeaders, helperRoutes } from './routes/helper.ts';
 import { flashMiddleware } from './routes/middleware.ts';
 import { authRoutes } from './routes/organizer/auth.ts';
 import { eventRoutes } from './routes/organizer/events.ts';
@@ -50,7 +51,11 @@ export function createApp({ config, db, clock, templatesDir }: AppDeps): Express
   });
   app.use(helmet());
   app.use(express.static(publicDir));
+  // Before the body parser, so a 413/400 on a helper POST still carries the AD-6 headers.
+  app.use('/h', helperHeaders);
   app.use(express.urlencoded({ extended: false, limit: '50kb' }));
+  // Helper pages go by token only (AD-5), so they are mounted before the session is read.
+  app.use(helperRoutes(db, clock));
   app.use(
     cookieSession({
       name: 'mp_session',

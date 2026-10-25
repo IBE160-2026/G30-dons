@@ -14,6 +14,8 @@ export const ERROR_TEXTS = {
   helper_already_on_event: 'Hjelperen er allerede lagt til.',
   helper_not_in_event: 'Hjelperen er ikke lagt til i dette arrangementet.',
   action_not_allowed: 'Oppgaven kan ikke endres på den måten nå.',
+  helper_command_refused: 'Oppgaven er endret siden du åpnet siden. Se oppdatert status under.',
+  message_too_long: 'Meldingen kan ha maks 500 tegn.',
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_TEXTS;

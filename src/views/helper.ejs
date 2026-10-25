@@ -1,0 +1,43 @@
+<%- include('partials/helper-top') %>
+<header class="helper-header">
+  <p class="helper-brand">MasterPlan</p>
+  <h1><%= header %></h1>
+</header>
+<% if (notice) { %>
+  <% if (notice.error) { %>
+    <p class="flash form-error" role="alert"><%= notice.text %></p>
+  <% } else { %>
+    <p class="flash" role="status"><%= notice.text %></p>
+  <% } %>
+<% } %>
+<% if (page.events.length === 0) { %>
+  <p class="muted">Du har ingen oppgaver ennå.</p>
+<% } %>
+<% for (const event of page.events) { %>
+  <section class="helper-event">
+    <h2><%= event.name %> <span class="muted helper-event-date"><%= formatDate(event.eventDate) %></span></h2>
+    <ul class="helper-tasks">
+      <% for (const task of event.tasks) { %>
+        <li class="helper-card">
+          <p class="helper-task-text"><%= page.organizerName %> vil at du skal <strong><%= task.title %></strong> innen <%= formatDate(task.deadline) %></p>
+          <% if (task.changedSinceAnswer) { %>
+            <p class="helper-changed">Endret etter at du svarte</p>
+          <% } %>
+          <p class="helper-status status-<%= task.status %>"><%= statusTexts[task.status] %></p>
+          <% if (task.actions.length > 0) { %>
+            <form method="post" action="<%= paths.helperTask(page.token, task.id) %>" class="helper-form">
+              <label for="message-<%= task.id %>">Melding (valgfritt)</label>
+              <textarea id="message-<%= task.id %>" name="message" rows="2" maxlength="<%= maxMessageLength %>"></textarea>
+              <div class="helper-actions">
+                <% for (const action of task.actions) { %>
+                  <button type="submit" name="action" value="<%= action %>" class="helper-button helper-button-<%= action %>"><%= actionLabels[action] %></button>
+                <% } %>
+              </div>
+            </form>
+          <% } %>
+        </li>
+      <% } %>
+    </ul>
+  </section>
+<% } %>
+<%- include('partials/bottom') %>

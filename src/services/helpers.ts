@@ -1,9 +1,10 @@
 import { randomBytes } from 'node:crypto';
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, ne } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db, Tx } from '../db/client.ts';
-import { eventHelpers, helpers, type Helper } from '../db/schema.ts';
+import { eventHelpers, events, helpers, organizers, tasks, type Helper, type TaskStatus } from '../db/schema.ts';
 import { DomainError } from '../domain/errors.ts';
+import { allowedHelperActions, type HelperAction } from '../domain/taskRules.ts';
 import { getEvent } from './events.ts';
 
 // FR-8, AD-5: the only writer of helpers and event_helpers. A helper is unique per
@@ -107,4 +108,91 @@ export async function eventHelperIds(db: Db | Tx, eventId: number): Promise<numb
     .from(eventHelpers)
     .where(eq(eventHelpers.eventId, eventId));
   return rows.map((r) => r.helperId);
+}
+
+/** The only token shape randomToken makes: 24 bytes, base64url (AD-6). */
+export const TOKEN_FORMAT = /^[A-Za-z0-9_-]{32}$/;
+
+/** The helper a link token belongs to, or undefined for a malformed or unknown token. */
+export async function findByToken(db: Db | Tx, token: string): Promise<Helper | undefined> {
+  if (!TOKEN_FORMAT.test(token)) return undefined;
+  const [row] = await db.select().from(helpers).where(eq(helpers.linkToken, token));
+  return row;
+}
+
+export interface HelperPageTask {
+  id: number;
+  title: string;
+  deadline: string;
+  status: TaskStatus;
+  changedSinceAnswer: boolean;
+  actions: readonly HelperAction[];
+}
+
+export interface HelperPageEvent {
+  id: number;
+  name: string;
+  eventDate: string;
+  tasks: HelperPageTask[];
+}
+
+export interface HelperPage {
+  token: string;
+  organizerName: string;
+  /** Names of the events in the header, in date order. */
+  eventNames: string[];
+  /** The helper's tasks (never Unassigned), grouped by event in date order, each sorted by deadline. */
+  events: HelperPageEvent[];
+}
+
+/**
+ * FR-12: everything the helper page shows, scoped only by the token (AD-5). Undefined for an
+ * invalid link. Reads only.
+ */
+export async function helperPage(db: Db, token: string): Promise<HelperPage | undefined> {
+  const helper = await findByToken(db, token);
+  if (!helper) return undefined;
+
+  const [organizer] = await db
+    .select({ name: organizers.name })
+    .from(organizers)
+    .where(eq(organizers.id, helper.organizerId));
+
+  const rows = await db
+    .select({ task: tasks, event: events })
+    .from(tasks)
+    .innerJoin(events, eq(tasks.eventId, events.id))
+    .where(and(eq(tasks.helperId, helper.id), ne(tasks.status, 'unassigned'), eq(events.organizerId, helper.organizerId)))
+    .orderBy(asc(events.eventDate), asc(events.id), asc(tasks.deadline), asc(tasks.id));
+
+  const groups = new Map<number, HelperPageEvent>();
+  for (const { task, event } of rows) {
+    let group = groups.get(event.id);
+    if (!group) {
+      group = { id: event.id, name: event.name, eventDate: event.eventDate, tasks: [] };
+      groups.set(event.id, group);
+    }
+    group.tasks.push({
+      id: task.id,
+      title: task.title,
+      deadline: task.deadline,
+      status: task.status,
+      changedSinceAnswer: task.changedSinceAnswer,
+      actions: allowedHelperActions(task),
+    });
+  }
+
+  // The header names every event he is linked to, plus any event holding one of his tasks.
+  const linked = await db
+    .select({ id: events.id, name: events.name, eventDate: events.eventDate })
+    .from(eventHelpers)
+    .innerJoin(events, eq(eventHelpers.eventId, events.id))
+    .where(and(eq(eventHelpers.helperId, helper.id), eq(events.organizerId, helper.organizerId)));
+  const named = new Map<number, { name: string; eventDate: string }>();
+  for (const e of [...linked, ...groups.values()]) named.set(e.id, { name: e.name, eventDate: e.eventDate });
+  const eventNames = [...named.entries()]
+    .sort(([idA, a], [idB, b]) => a.eventDate.localeCompare(b.eventDate) || idA - idB)
+    .map(([, e]) => e.name);
+
+  return { token: helper.linkToken, organizerName: organizer?.name ?? '', eventNames, events: [...groups.values()] };
 }

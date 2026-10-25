@@ -14,7 +14,12 @@ export const paths = {
   deleteTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/delete`,
   assignTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/assign`,
   helpers: (eventId: number | string) => `/events/${eventId}/helpers`,
+  markDone: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/done`,
   helperPage: (token: string) => `/h/${token}`,
+  /** The helper page with one of its fixed notices (the query only picks a text). */
+  helperNotice: (token: string, notice: 'lagret' | 'feil' | 'lang') =>
+    `/h/${token}?${notice === 'lagret' ? 'lagret=1' : notice === 'feil' ? 'feil=1' : 'feil=lang'}`,
+  helperTask: (token: string, taskId: number | string) => `/h/${token}/tasks/${taskId}`,
 } as const;
 
 export function absoluteUrl(appBaseUrl: string, path: string): string {

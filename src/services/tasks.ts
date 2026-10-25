@@ -1,14 +1,14 @@
 import { and, asc, eq, ne } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db, Tx } from '../db/client.ts';
-import { events, tasks, type Task } from '../db/schema.ts';
+import { events, messages, tasks, type Task } from '../db/schema.ts';
 import { isDate } from '../domain/dates.ts';
 import { DomainError } from '../domain/errors.ts';
 import type { PlannedTask } from '../domain/plan.ts';
-import { transition, type Actor, type TaskCommand } from '../domain/taskRules.ts';
-import { eventHelperIds } from './helpers.ts';
+import { transition, type Actor, type HelperAction, type TaskCommand } from '../domain/taskRules.ts';
+import { eventHelperIds, findByToken } from './helpers.ts';
 
-// AD-2: the only writer of task rows. Every function is scoped by the organizer (AD-5), except
+// AD-2: the only writer of task and message rows. Every function is scoped by the organizer (AD-5), except
 // listForHelper, which is scoped by the helper (helper requests go by token, never the session).
 
 export interface TaskInput {
@@ -75,7 +75,13 @@ export async function updateTask(
 ): Promise<void> {
   const task = await getTask(db, organizerId, eventId, taskId);
   checkDeadline(input.deadline, clock.today(), task.deadline);
-  await db.update(tasks).set({ title: input.title.trim(), deadline: input.deadline }).where(eq(tasks.id, task.id));
+  const title = input.title.trim();
+  // AD-13: the helper said yes to something else, so flag it; the status stays Accepted.
+  const changed = title !== task.title || input.deadline !== task.deadline;
+  await db
+    .update(tasks)
+    .set({ title, deadline: input.deadline, ...(task.status === 'accepted' && changed ? { changedSinceAnswer: true } : {}) })
+    .where(eq(tasks.id, task.id));
 }
 
 export async function deleteTask(db: Db, organizerId: number, eventId: number, taskId: number): Promise<void> {
@@ -83,7 +89,7 @@ export async function deleteTask(db: Db, organizerId: number, eventId: number, t
   await db.delete(tasks).where(eq(tasks.id, task.id));
 }
 
-export type ApplyResult = 'changed' | 'noop';
+export type ApplyResult = 'changed' | 'messageOnly' | 'noop';
 
 /**
  * AD-2: the one entry point for status changes. Loads the task scoped by the actor's organizer,
@@ -103,9 +109,47 @@ export async function apply(db: Db, actor: Actor, taskId: number, command: TaskC
     const decision = transition(task, command, actor, await eventHelperIds(tx, task.eventId), now);
     if (decision.kind === 'refused') throw new DomainError(decision.code);
     if (decision.kind === 'noop') return 'noop';
-    await tx.update(tasks).set(decision.changes).where(eq(tasks.id, task.id));
-    return 'changed';
+
+    const message = decision.message;
+    const changes = decision.kind === 'change' ? decision.changes : {};
+    // A helper command that does something clears the changed-task flag (AD-13).
+    const flag = actor.kind === 'helper' ? { changedSinceAnswer: false } : {};
+    if (Object.keys(changes).length > 0 || actor.kind === 'helper') {
+      await tx.update(tasks).set({ ...changes, ...flag }).where(eq(tasks.id, task.id));
+    }
+    // Exactly one messages row per helper command that does something; organizer commands write none.
+    if (actor.kind === 'helper' && message) {
+      await tx.insert(messages).values({
+        taskId: task.id,
+        helperId: actor.helperId,
+        action: message.action,
+        statusAfter: message.statusAfter,
+        body: message.body,
+        createdAt: now,
+        seenAt: null,
+      });
+    }
+    return decision.kind === 'change' ? 'changed' : 'messageOnly';
   });
+}
+
+/**
+ * A helper's command from the helper page, scoped only by the link token (AD-5, AD-6). Returns
+ * 'invalidLink' for a malformed or unknown token. A task that is not the helper's, a move the
+ * rules refuse, or a task id that does not exist throws a DomainError.
+ */
+export async function applyAsHelper(
+  db: Db,
+  token: string,
+  taskId: number,
+  command: { action: HelperAction; message?: string | undefined },
+  now: string,
+): Promise<ApplyResult | 'invalidLink'> {
+  const helper = await findByToken(db, token);
+  if (!helper) return 'invalidLink';
+  const actor: Actor = { kind: 'helper', helperId: helper.id, organizerId: helper.organizerId };
+  const { action, message } = command;
+  return apply(db, actor, taskId, message === undefined ? { action } : { action, message }, now);
 }
 
 /** A helper's tasks, except Unassigned ones, sorted by deadline (FR-11). */

@@ -78,7 +78,30 @@ export const tasks = sqliteTable('tasks', {
   helperId: integer('helper_id').references(() => helpers.id),
   assignedAt: text('assigned_at'),
   acceptedAt: text('accepted_at'),
+  // AD-13: set when the organizer edits the title or deadline of an Accepted task; any helper command clears it.
+  changedSinceAnswer: integer('changed_since_answer', { mode: 'boolean' }).notNull().default(false),
   createdAt: text('created_at').notNull(),
 });
 
 export type Task = typeof tasks.$inferSelect;
+
+export const MESSAGE_ACTIONS = ['yes', 'no', 'done', 'cantDo'] as const;
+export type MessageAction = (typeof MESSAGE_ACTIONS)[number];
+
+// AD-2: every helper command writes exactly one row. AD-15: a row with seen_at = null is a New reply.
+export const messages = sqliteTable('messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  taskId: integer('task_id')
+    .notNull()
+    .references(() => tasks.id, { onDelete: 'cascade' }),
+  helperId: integer('helper_id')
+    .notNull()
+    .references(() => helpers.id),
+  action: text('action', { enum: MESSAGE_ACTIONS }).notNull(),
+  statusAfter: text('status_after', { enum: TASK_STATUSES }).notNull(),
+  body: text('body'),
+  createdAt: text('created_at').notNull(),
+  seenAt: text('seen_at'),
+});
+
+export type Message = typeof messages.$inferSelect;

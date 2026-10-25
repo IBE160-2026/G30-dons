@@ -162,3 +162,23 @@ select {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
+
+/* helper page: mobile first, works from 360 px wide (no fixed widths above 360 px) */
+.helper-body { background: var(--surface); }
+.helper-page { max-width: 640px; margin: 0 auto; padding: 1rem; overflow-wrap: anywhere; }
+.helper-header h1 { font-size: 1.3rem; margin: 0 0 1rem; }
+.helper-brand { margin: 0 0 0.5rem; font-weight: 700; color: var(--muted); }
+.helper-event { margin-top: 1.5rem; }
+.helper-event h2 { font-size: 1.1rem; }
+.helper-event-date { font-weight: 400; font-size: 0.95rem; }
+.helper-tasks { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.helper-card { padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.helper-task-text { margin: 0 0 0.5rem; }
+.helper-status { margin: 0; font-weight: 600; }
+.helper-changed { margin: 0 0 0.5rem; padding: 0.25rem 0.5rem; background: #fff4d6; border-radius: 4px; font-weight: 600; }
+.helper-form label { font-weight: 400; color: var(--muted); }
+.helper-form textarea { max-width: 100%; resize: vertical; }
+.helper-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.helper-button { flex: 1 1 8rem; margin: 0; min-height: 48px; }
+.helper-button-no, .helper-button-cantDo { color: var(--text); background: var(--surface); border: 1px solid var(--border); }
+/* end helper page */

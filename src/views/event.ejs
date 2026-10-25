@@ -74,6 +74,11 @@
           <form method="post" action="<%= paths.deleteTask(event.id, task.id) %>" class="inline">
             <button type="submit" class="small secondary">Slett</button>
           </form>
+          <% if (task.status !== 'done') { %>
+            <form method="post" action="<%= paths.markDone(event.id, task.id) %>" class="inline">
+              <button type="submit" class="small">Marker som ferdig</button>
+            </form>
+          <% } %>
           <p class="task-meta muted">
             Frist <%= formatDate(task.deadline) %> · <span class="status status-<%= task.status %>"><%= statusLabels[task.status] %></span><% if (task.helperId !== null && helperNames[task.helperId]) { %> · <%= helperNames[task.helperId] %><% } %>
           </p>

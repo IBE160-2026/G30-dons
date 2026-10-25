@@ -267,5 +267,15 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
     res.redirect(paths.event(eventId));
   });
 
+  // FR-16: the organizer marks a task Done herself, from any status. No message is written.
+  router.post(paths.markDone(':eventId', ':taskId'), async (req, res) => {
+    const eventId = idParam(req, 'eventId');
+    const organizerId = organizerOf(res).id;
+    const task = await getTask(db, organizerId, eventId, idParam(req, 'taskId'));
+    const result = await apply(db, { kind: 'organizer', organizerId }, task.id, { action: 'markDone' }, clock.now());
+    setFlash(req, result === 'noop' ? 'Oppgaven er allerede ferdig.' : 'Oppgaven er markert som ferdig.');
+    res.redirect(paths.event(eventId));
+  });
+
   return router;
 }
