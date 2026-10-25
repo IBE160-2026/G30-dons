@@ -44,6 +44,20 @@ export function formatDateNb(date: string): string {
   return nbFormatter.format(toDayNumber(date) * DAY_MS);
 }
 
+const nbDateTimeFormatter = new Intl.DateTimeFormat('nb-NO', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Oslo',
+});
+
+/** A UTC ISO timestamp as Oslo date and time in Norwegian, for example "1. november 2026 kl. 11:00". */
+export function formatDateTimeNb(timestamp: string): string {
+  return nbDateTimeFormatter.format(Date.parse(timestamp));
+}
+
 export function addDays(date: string, n: number): string {
   return new Date((toDayNumber(date) + n) * DAY_MS).toISOString().slice(0, 10);
 }

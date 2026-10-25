@@ -53,6 +53,85 @@
   </section>
   </div>
 
+  <div class="main-col">
+  <section class="card panels" aria-label="Status">
+    <details class="panel panel-done">
+      <summary>
+        <span class="panel-title">Ferdig</span>
+        <span class="panel-line"><%= panels.done %> av <%= panels.total %> ferdig</span>
+        <progress value="<%= panels.done %>" max="<%= panels.total || 1 %>" aria-label="<%= panels.done %> av <%= panels.total %> oppgaver ferdig"><%= panels.done %> av <%= panels.total %></progress>
+      </summary>
+      <p class="muted">Oppgaver merket som ferdige av hjelpere eller deg.</p>
+    </details>
+
+    <details class="panel panel-todo"<%= panels.todoOpen ? ' open' : '' %>>
+      <summary>
+        <span class="panel-title">Å gjøre</span>
+        <span class="panel-line"><%= panels.todoText %></span>
+      </summary>
+      <% if (!panels.todoOpen) { %>
+        <p class="muted">Ingen oppgaver trenger oppmerksomhet nå.</p>
+      <% } %>
+      <% if (panels.urgent.length > 0) { %>
+        <h3>Haster (<%= panels.urgent.length %>)</h3>
+        <ul class="attention-list">
+          <% for (const t of panels.urgent) { %>
+            <li><strong><%= t.title %></strong> <span class="muted">· Frist <%= formatDate(t.deadline) %><% if (t.helperName) { %> · <%= t.helperName %><% } %></span></li>
+          <% } %>
+        </ul>
+      <% } %>
+      <% if (panels.needsHelper.length > 0) { %>
+        <h3>Trenger hjelper (<%= panels.needsHelper.length %>)</h3>
+        <ul class="attention-list">
+          <% for (const t of panels.needsHelper) { %>
+            <li><strong><%= t.title %></strong> <span class="muted">· Frist <%= formatDate(t.deadline) %> · <%= t.statusLabel %><% if (t.helperName) { %> · <%= t.helperName %><% } %></span></li>
+          <% } %>
+        </ul>
+      <% } %>
+    </details>
+
+    <details class="panel panel-timeline">
+      <summary>
+        <span class="panel-title">Tidslinje</span>
+        <span class="panel-line"><%= panels.timelineText %> · <% if (panels.nextDeadline) { %>Neste frist: <%= formatDate(panels.nextDeadline) %><% } else { %>Ingen flere frister<% } %></span>
+      </summary>
+      <p class="muted">Arrangementet er <%= formatDate(event.eventDate) %>.</p>
+    </details>
+
+    <% if (panels.replies) { %>
+      <details class="panel panel-messages" open>
+        <summary>
+          <span class="panel-title">Meldinger</span>
+          <span class="panel-line"><%= panels.newRepliesText %></span>
+        </summary>
+        <% if (panels.replies.length === 0) { %>
+          <p class="muted">Ingen svar ennå.</p>
+        <% } %>
+        <ul class="reply-list">
+          <% for (const r of panels.replies) { %>
+            <li class="reply">
+              <p class="reply-head">
+                <% if (r.isNew) { %><span class="badge">Ny</span><% } %>
+                <strong><%= r.helperName %></strong> · <%= r.taskTitle %> · <span class="reply-action"><%= r.actionLabel %></span>
+              </p>
+              <% if (r.body) { %><p class="reply-body pre"><%= r.body %></p><% } %>
+              <p class="reply-time muted"><%= r.time %></p>
+            </li>
+          <% } %>
+        </ul>
+        <p><a href="<%= paths.event(event.id) %>">Skjul svar</a></p>
+      </details>
+    <% } else { %>
+      <div class="panel panel-messages">
+        <a class="panel-link" href="<%= paths.eventMessages(event.id) %>">
+          <span class="panel-title">Meldinger</span>
+          <span class="panel-line"><%= panels.newRepliesText %></span>
+          <span class="panel-action"><%= panels.newReplies > 0 ? `Vis svar (${panels.newReplies} nye)` : 'Vis svar' %></span>
+        </a>
+      </div>
+    <% } %>
+  </section>
+
   <section class="card tasks">
     <h2>Oppgaver (<%= tasks.length %>)</h2>
     <% if (tasks.length === 0) { %>
@@ -111,6 +190,7 @@
     <% if (add.errors.title) { %><p class="field-error"><%= add.errors.title %></p><% } %>
     <% if (add.errors.deadline) { %><p class="field-error"><%= add.errors.deadline %></p><% } %>
   </section>
+  </div>
 </div>
 <script src="/copy.js" defer></script>
 <%- include('partials/bottom') %>

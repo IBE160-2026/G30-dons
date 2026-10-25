@@ -3,10 +3,13 @@ import { z } from 'zod';
 import type { Clock } from '../../clock.ts';
 import type { Config } from '../../config.ts';
 import type { Db } from '../../db/client.ts';
-import type { TaskStatus } from '../../db/schema.ts';
+import type { MessageAction, Task, TaskStatus } from '../../db/schema.ts';
+import { formatDateTimeNb } from '../../domain/dates.ts';
 import { DomainError, errorText, type ErrorCode } from '../../domain/errors.ts';
 import { MAX_TITLE_LENGTH } from '../../domain/plan.ts';
 import { createEvent, getEvent, listEvents } from '../../services/events.ts';
+import { listAndMarkSeen, type Reply } from '../../services/messages.ts';
+import { loadEventSummary } from '../../services/summaries.ts';
 import {
   addHelperToEvent,
   displayName,
@@ -18,9 +21,11 @@ import { addTask, apply, deleteTask, getTask, listForEvent, updateTask } from '.
 import type { Templates } from '../../templates/index.ts';
 import { organizerOf, requireLogin, setFlash } from '../middleware.ts';
 import { absoluteUrl, paths } from '../paths.ts';
+import { daysToEventText, newRepliesText, todoText } from './summaryText.ts';
 
 // FR-3, FR-4, FR-7: create events from templates and edit their tasks.
 // FR-8 to FR-11: add helpers, assign tasks and show each helper's link.
+// FR-20: the four panels (Done, To do, Timeline, Messages); AD-15: ?panel=messages marks the listed replies seen.
 
 const STATUS_LABELS = {
   unassigned: 'Ikke tildelt',
@@ -30,6 +35,13 @@ const STATUS_LABELS = {
   done: 'Ferdig',
   cant_do: 'Kan ikke gjøres',
 } as const satisfies Record<TaskStatus, string>;
+
+const ACTION_LABELS = {
+  yes: 'Sa ja',
+  no: 'Sa nei',
+  done: 'Ferdig',
+  cantDo: 'Kan ikke gjøres',
+} as const satisfies Record<MessageAction, string>;
 
 const optionalText = (max: number, message: string) =>
   z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), z.string().trim().max(max, message).optional());
@@ -113,6 +125,8 @@ interface TaskFormState {
   add?: { values: Record<string, string>; errors: Errors };
   edit?: { taskId: number; values: Record<string, string>; errors: Errors };
   helperForm?: { values: Record<string, string>; errors: Errors };
+  /** The replies listed by GET /events/:id?panel=messages (already marked seen). */
+  replies?: Reply[];
 }
 
 export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: Config): Router {
@@ -124,10 +138,12 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
   async function renderEvent(res: Response, eventId: number, state: TaskFormState = {}, status = 200) {
     const organizer = organizerOf(res);
     const event = await getEvent(db, organizer.id, eventId);
-    const [allEvents, eventTasks, eventHelpers] = await Promise.all([
+    const today = clock.today();
+    const [allEvents, eventTasks, eventHelpers, { summary, newReplies }] = await Promise.all([
       listEvents(db, organizer.id),
       listForEvent(db, organizer.id, eventId),
       listHelpersForEvent(db, organizer.id, eventId),
+      loadEventSummary(db, organizer.id, eventId, today),
     ]);
     const helpers = eventHelpers.map((h) => ({
       id: h.id,
@@ -135,6 +151,36 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
       link: absoluteUrl(config.appBaseUrl, paths.helperPage(h.linkToken)),
     }));
     const helperNames: Record<number, string> = Object.fromEntries(helpers.map((h) => [h.id, h.name]));
+    const listed = (t: Task) => ({
+      id: t.id,
+      title: t.title,
+      deadline: t.deadline,
+      statusLabel: STATUS_LABELS[t.status],
+      helperName: t.helperId !== null ? (helperNames[t.helperId] ?? null) : null,
+    });
+    const { replies, ...formState } = state;
+    const panels = {
+      done: summary.done,
+      total: summary.total,
+      todoText: todoText(summary),
+      todoOpen: summary.urgent.length + summary.needsHelper.length > 0,
+      urgent: summary.urgent.map(listed),
+      needsHelper: summary.needsHelper.map(listed),
+      timelineText: daysToEventText(summary.daysToEvent),
+      nextDeadline: summary.nextDeadline,
+      newReplies,
+      // On the panel page the header counts the replies that were new when listed (they are now marked seen).
+      newRepliesText: newRepliesText(replies ? replies.filter((r) => r.isNew).length : newReplies),
+      replies:
+        replies?.map((r) => ({
+          helperName: r.helperName,
+          taskTitle: r.taskTitle,
+          actionLabel: ACTION_LABELS[r.action],
+          body: r.body,
+          time: formatDateTimeNb(r.createdAt),
+          isNew: r.isNew,
+        })) ?? null,
+    };
     res.status(status).render('event', {
       event,
       allEvents,
@@ -143,8 +189,9 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
       helperNames,
       maxHelpers: MAX_HELPERS_PER_EVENT,
       statusLabels: STATUS_LABELS,
-      today: clock.today(),
-      ...state,
+      today,
+      panels,
+      ...formState,
     });
   }
 
@@ -177,7 +224,11 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
   });
 
   router.get(paths.event(':eventId'), async (req, res) => {
-    await renderEvent(res, idParam(req, 'eventId'));
+    const eventId = idParam(req, 'eventId');
+    if (req.query.panel !== 'messages') return renderEvent(res, eventId);
+    // AD-15: the one organizer GET that writes. Another organizer's event is not_found and marks nothing.
+    const replies = await listAndMarkSeen(db, organizerOf(res).id, eventId, clock.now());
+    await renderEvent(res, eventId, { replies });
   });
 
   router.post(paths.tasks(':eventId'), async (req, res) => {

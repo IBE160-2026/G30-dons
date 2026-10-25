@@ -9,6 +9,8 @@ export const paths = {
   newEvent: () => '/events/new',
   events: () => '/events',
   event: (eventId: number | string) => `/events/${eventId}`,
+  /** AD-15: the event view with the Messages panel open; loading it marks the listed replies seen. */
+  eventMessages: (eventId: number | string) => `/events/${eventId}?panel=messages`,
   tasks: (eventId: number | string) => `/events/${eventId}/tasks`,
   task: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}`,
   deleteTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/delete`,
