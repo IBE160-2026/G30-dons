@@ -21,7 +21,7 @@ Sensorveiledningen er kvalitetsgrunnlaget for alt arbeid i prosjektet:
 1. Skriv testene ut fra akseptansekriteriene i storyen før implementasjonen starter.
 2. Lag hver story på en egen branch, og slå den inn med en pull request. Beskrivelsen av pull requesten skal forklare hvordan endringen er testet, og hvilke feil som ble funnet i KI-generert kode.
 3. Noter hvert KI-forslag som ble rettet, avvist eller presisert i `docs/ki-logg.md`, med lenke til commiten der det skjedde.
-4. Kjør linteren før hver commit, og rett alle feil den finner.
+4. Kjør `npm run lint` (Biome) før hver commit, og rett alle feil den finner. `npm run lint:fix` retter formatering og importrekkefølge automatisk.
 
 ### Definition of Done
 

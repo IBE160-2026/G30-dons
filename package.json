@@ -14,6 +14,8 @@
     "seed": "tsx seed/run.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@types/cookie-session": "2.0.49",
     "@types/ejs": "3.1.5",
     "@types/express": "5.0.6",
