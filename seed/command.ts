@@ -31,7 +31,9 @@ export type StartupSeedDecision = { kind: 'seed' } | { kind: 'keep' } | { kind: 
 export function startupSeedDecision(config: Config, fileExists: (path: string) => boolean): StartupSeedDecision {
   const refusal = seedRefusal(config);
   if (refusal) return { kind: 'skip', reason: refusal };
-  return fileExists(sqliteFilePath(config.databaseUrl)!) ? { kind: 'keep' } : { kind: 'seed' };
+  const path = sqliteFilePath(config.databaseUrl);
+  if (path === undefined) throw new Error('startupSeedDecision needs a file: DATABASE_URL');
+  return fileExists(path) ? { kind: 'keep' } : { kind: 'seed' };
 }
 
 /** Deletes a SQLite file and its journal files, if they exist. */
@@ -50,7 +52,8 @@ export async function resetAndSeed(
   clock: Clock,
   seedFn: (db: Db, clock: Clock) => Promise<SeedResult> = seed,
 ): Promise<SeedResult> {
-  const path = sqliteFilePath(config.databaseUrl)!;
+  const path = sqliteFilePath(config.databaseUrl);
+  if (path === undefined) throw new Error('resetAndSeed needs a file: DATABASE_URL');
   if (existsSync(path)) removeDbFiles(path);
   const db = await openDb({ url: config.databaseUrl });
   let seeded = false;

@@ -7,7 +7,7 @@ import { createEvent } from '../src/services/events.ts';
 import { addHelperToEvent } from '../src/services/helpers.ts';
 import { listAndMarkSeen } from '../src/services/messages.ts';
 import { apply, applyAsHelper, listForEvent, updateTask } from '../src/services/tasks.ts';
-import { loadTemplates } from '../src/templates/index.ts';
+import { loadTemplates, type TemplateKey } from '../src/templates/index.ts';
 import { SEED_EVENT_NAMES, SEED_HELPERS, type SeedEventKey, type SeedHelperKey, TEST_LOGIN } from './fixture.ts';
 
 // FR-25, AD-11: builds the test data only through the services, never by inserting rows. The seed
@@ -65,7 +65,16 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
     if (id === undefined) throw new Error(`Seed: no task "${title}" in ${event}`);
     return id;
   };
-  const token = (key: SeedHelperKey) => SEED_HELPERS.find((h) => h.key === key)!.token;
+  const token = (key: SeedHelperKey) => {
+    const helper = SEED_HELPERS.find((h) => h.key === key);
+    if (!helper) throw new Error(`Seed: no helper "${key}"`);
+    return helper.token;
+  };
+  const template = (key: TemplateKey) => {
+    const t = templates.get(key);
+    if (!t) throw new Error(`Seed: no template "${key}"`);
+    return t;
+  };
 
   const steps: Step[] = [];
   const step = (daysAgo: number, hourUtc: number, run: Step['run']) => steps.push({ daysAgo, hourUtc, run });
@@ -126,12 +135,12 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
     }
   });
 
-  const weddingTitles = templates.get('wedding')!.defaultPlan.map((t) => t.title);
+  const weddingTitles = template('wedding').defaultPlan.map((t) => t.title);
   const rotation: SeedHelperKey[] = ['ola', 'kim', 'siri', 'per'];
 
   // The early Wedding tasks: assigned 58 days ago and Done since. Kari marks the first two Done herself.
   weddingTitles.slice(0, WEDDING_DONE_COUNT).forEach((title, i) => {
-    const helper = rotation[i % rotation.length]!;
+    const helper = rotation[i % rotation.length];
     assign('wedding', title, helper, 58);
     if (i < 2) {
       step(55, 12, (now) => apply(db, organizer(), taskId('wedding', title), { action: 'markDone' }, now));
@@ -215,10 +224,10 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
     }
   });
 
-  const bacheloretteTitles = templates.get('bachelorette')!.defaultPlan.map((t) => t.title);
+  const bacheloretteTitles = template('bachelorette').defaultPlan.map((t) => t.title);
   const trio: SeedHelperKey[] = ['ola', 'kim', 'siri'];
   bacheloretteTitles.forEach((title, i) => {
-    const helper = trio[i % trio.length]!;
+    const helper = trio[i % trio.length];
     assign('bachelorette', title, helper, 19);
     answer('bachelorette', title, helper, 'yes', 18, 10 + (i % 8), i % 5 === 0 ? 'Den tar jeg!' : undefined);
     if (i < BACHELORETTE_DONE_COUNT) answer('bachelorette', title, helper, 'done', 15 - 2 * i, 17);
