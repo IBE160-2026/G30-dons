@@ -1,16 +1,35 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import type { Clock } from '../../clock.ts';
+import type { Config } from '../../config.ts';
 import type { Db } from '../../db/client.ts';
+import type { TaskStatus } from '../../db/schema.ts';
 import { DomainError, errorText, type ErrorCode } from '../../domain/errors.ts';
 import { MAX_TITLE_LENGTH } from '../../domain/plan.ts';
 import { createEvent, getEvent, listEvents } from '../../services/events.ts';
-import { addTask, deleteTask, getTask, listForEvent, updateTask } from '../../services/tasks.ts';
+import {
+  addHelperToEvent,
+  displayName,
+  getHelper,
+  listForEvent as listHelpersForEvent,
+  MAX_HELPERS_PER_EVENT,
+} from '../../services/helpers.ts';
+import { addTask, apply, deleteTask, getTask, listForEvent, updateTask } from '../../services/tasks.ts';
 import type { Templates } from '../../templates/index.ts';
 import { organizerOf, requireLogin, setFlash } from '../middleware.ts';
-import { paths } from '../paths.ts';
+import { absoluteUrl, paths } from '../paths.ts';
 
 // FR-3, FR-4, FR-7: create events from templates and edit their tasks.
+// FR-8 to FR-11: add helpers, assign tasks and show each helper's link.
+
+const STATUS_LABELS = {
+  unassigned: 'Ikke tildelt',
+  open: 'Venter på svar',
+  accepted: 'Akseptert',
+  declined: 'Avslått',
+  done: 'Ferdig',
+  cant_do: 'Kan ikke gjøres',
+} as const satisfies Record<TaskStatus, string>;
 
 const optionalText = (max: number, message: string) =>
   z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), z.string().trim().max(max, message).optional());
@@ -42,6 +61,16 @@ const taskSchema = z.object({
     .min(1, 'Skriv inn en oppgave.')
     .max(MAX_TITLE_LENGTH, `Oppgaven kan ha maks ${MAX_TITLE_LENGTH} tegn.`),
   deadline: z.string().trim().min(1, 'Velg en frist.'),
+});
+
+const helperSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(254, 'E-postadressen kan ha maks 254 tegn.')
+    .pipe(z.email(errorText('email_invalid'))),
+  name: optionalText(100, 'Navnet kan ha maks 100 tegn.'),
 });
 
 // Only canonical ids like "12": "1e0", "0x1" or "012" are not found rather than aliases of another URL.
@@ -83,9 +112,10 @@ function idParam(req: Request, name: string): number {
 interface TaskFormState {
   add?: { values: Record<string, string>; errors: Errors };
   edit?: { taskId: number; values: Record<string, string>; errors: Errors };
+  helperForm?: { values: Record<string, string>; errors: Errors };
 }
 
-export function eventRoutes(db: Db, clock: Clock, templates: Templates): Router {
+export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: Config): Router {
   const router = Router();
   router.use(paths.events(), requireLogin(db));
 
@@ -94,11 +124,28 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates): Router 
   async function renderEvent(res: Response, eventId: number, state: TaskFormState = {}, status = 200) {
     const organizer = organizerOf(res);
     const event = await getEvent(db, organizer.id, eventId);
-    const [allEvents, eventTasks] = await Promise.all([
+    const [allEvents, eventTasks, eventHelpers] = await Promise.all([
       listEvents(db, organizer.id),
       listForEvent(db, organizer.id, eventId),
+      listHelpersForEvent(db, organizer.id, eventId),
     ]);
-    res.status(status).render('event', { event, allEvents, tasks: eventTasks, today: clock.today(), ...state });
+    const helpers = eventHelpers.map((h) => ({
+      id: h.id,
+      name: displayName(h),
+      link: absoluteUrl(config.appBaseUrl, paths.helperPage(h.linkToken)),
+    }));
+    const helperNames: Record<number, string> = Object.fromEntries(helpers.map((h) => [h.id, h.name]));
+    res.status(status).render('event', {
+      event,
+      allEvents,
+      tasks: eventTasks,
+      helpers,
+      helperNames,
+      maxHelpers: MAX_HELPERS_PER_EVENT,
+      statusLabels: STATUS_LABELS,
+      today: clock.today(),
+      ...state,
+    });
   }
 
   router.get(paths.newEvent(), (_req, res) => {
@@ -178,6 +225,45 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates): Router 
     const eventId = idParam(req, 'eventId');
     await deleteTask(db, organizerOf(res).id, eventId, idParam(req, 'taskId'));
     setFlash(req, 'Oppgaven er slettet.');
+    res.redirect(paths.event(eventId));
+  });
+
+  router.post(paths.helpers(':eventId'), async (req, res) => {
+    const eventId = idParam(req, 'eventId');
+    const values = { email: text(req.body?.email), name: text(req.body?.name) };
+    const parsed = helperSchema.safeParse(values);
+    if (!parsed.success) {
+      return renderEvent(res, eventId, { helperForm: { values, errors: fieldErrors(parsed.error) } }, 422);
+    }
+    try {
+      const helper = await addHelperToEvent(db, clock, organizerOf(res).id, eventId, parsed.data);
+      setFlash(req, `${displayName(helper)} er lagt til som hjelper.`);
+    } catch (err) {
+      if (!(err instanceof DomainError) || err.code === 'not_found') throw err;
+      setFlash(req, err.message);
+    }
+    res.redirect(paths.event(eventId));
+  });
+
+  router.post(paths.assignTask(':eventId', ':taskId'), async (req, res) => {
+    const eventId = idParam(req, 'eventId');
+    const organizerId = organizerOf(res).id;
+    const task = await getTask(db, organizerId, eventId, idParam(req, 'taskId'));
+    const parsedHelper = idSchema.safeParse(req.body?.helperId);
+    if (!parsedHelper.success) throw new DomainError('not_found');
+    // Another organizer's helper is a 404; her own helper outside this event is refused by the rules.
+    const helper = await getHelper(db, organizerId, parsedHelper.data);
+    const action = task.status === 'unassigned' ? 'assign' : 'reassign';
+    try {
+      const result = await apply(db, { kind: 'organizer', organizerId }, task.id, { action, helperId: helper.id }, clock.now());
+      setFlash(
+        req,
+        result === 'noop' ? `Oppgaven er allerede tildelt ${displayName(helper)}.` : `Oppgaven er tildelt ${displayName(helper)}.`,
+      );
+    } catch (err) {
+      if (!(err instanceof DomainError) || err.code === 'not_found') throw err;
+      setFlash(req, err.message);
+    }
     res.redirect(paths.event(eventId));
   });
 

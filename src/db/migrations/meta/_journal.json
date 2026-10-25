@@ -15,6 +15,13 @@
       "when": 1792870407647,
       "tag": "0001_events_and_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792908711344,
+      "tag": "0002_helpers",
+      "breakpoints": true
     }
   ]
 }

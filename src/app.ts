@@ -69,7 +69,7 @@ export function createApp({ config, db, clock, templatesDir }: AppDeps): Express
 
   app.use(authRoutes(db, clock));
   app.use(overviewRoutes(db));
-  app.use(eventRoutes(db, clock, templates));
+  app.use(eventRoutes(db, clock, templates, config));
 
   app.use((_req, res) => {
     res.status(404).render('404');

@@ -12,6 +12,9 @@ export const paths = {
   tasks: (eventId: number | string) => `/events/${eventId}/tasks`,
   task: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}`,
   deleteTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/delete`,
+  assignTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/assign`,
+  helpers: (eventId: number | string) => `/events/${eventId}/helpers`,
+  helperPage: (token: string) => `/h/${token}`,
 } as const;
 
 export function absoluteUrl(appBaseUrl: string, path: string): string {

@@ -4,8 +4,10 @@
   const blank = (v) => (v === null || v === undefined || v === '' ? '–' : v);
   const add = typeof locals.add !== 'undefined' ? locals.add : { values: {}, errors: {} };
   const edit = typeof locals.edit !== 'undefined' ? locals.edit : undefined;
+  const helperForm = typeof locals.helperForm !== 'undefined' ? locals.helperForm : { values: {}, errors: {} };
 %>
 <div class="event-layout">
+  <div class="side">
   <section class="card info-box">
     <h1><%= event.name %></h1>
     <dl>
@@ -17,6 +19,39 @@
       <dt>Annen informasjon</dt><dd class="pre"><%= blank(event.otherInfo) %></dd>
     </dl>
   </section>
+
+  <section class="card helpers">
+    <h2>Hjelpere (<%= helpers.length %> av <%= maxHelpers %>)</h2>
+    <% if (helpers.length === 0) { %>
+      <p class="muted">Ingen hjelpere ennå.</p>
+    <% } %>
+    <ul class="helper-list">
+      <% for (const helper of helpers) { %>
+        <li class="helper">
+          <span class="helper-name"><%= helper.name %></span>
+          <div class="copy-row">
+            <label class="visually-hidden" for="link-<%= helper.id %>">Lenke til <%= helper.name %></label>
+            <input id="link-<%= helper.id %>" type="text" class="link-field" value="<%= helper.link %>" readonly>
+            <button type="button" class="small" data-copy="link-<%= helper.id %>" aria-live="polite">Kopier lenke</button>
+          </div>
+        </li>
+      <% } %>
+    </ul>
+
+    <% if (helpers.length < maxHelpers || Object.keys(helperForm.errors).length > 0) { %>
+      <h3>Legg til hjelper</h3>
+      <form method="post" action="<%= paths.helpers(event.id) %>" class="helper-form" novalidate>
+        <label for="helper-email">E-post</label>
+        <input id="helper-email" name="email" type="email" maxlength="254" value="<%= helperForm.values.email || '' %>" required>
+        <% if (helperForm.errors.email) { %><p class="field-error"><%= helperForm.errors.email %></p><% } %>
+        <label for="helper-name">Navn (valgfritt)</label>
+        <input id="helper-name" name="name" type="text" maxlength="100" value="<%= helperForm.values.name || '' %>">
+        <% if (helperForm.errors.name) { %><p class="field-error"><%= helperForm.errors.name %></p><% } %>
+        <button type="submit" class="small">Legg til hjelper</button>
+      </form>
+    <% } %>
+  </section>
+  </div>
 
   <section class="card tasks">
     <h2>Oppgaver (<%= tasks.length %>)</h2>
@@ -39,7 +74,21 @@
           <form method="post" action="<%= paths.deleteTask(event.id, task.id) %>" class="inline">
             <button type="submit" class="small secondary">Slett</button>
           </form>
-          <p class="task-meta muted">Frist <%= formatDate(task.deadline) %></p>
+          <p class="task-meta muted">
+            Frist <%= formatDate(task.deadline) %> · <span class="status status-<%= task.status %>"><%= statusLabels[task.status] %></span><% if (task.helperId !== null && helperNames[task.helperId]) { %> · <%= helperNames[task.helperId] %><% } %>
+          </p>
+          <% if (helpers.length > 0) { %>
+            <form method="post" action="<%= paths.assignTask(event.id, task.id) %>" class="assign-form">
+              <label class="visually-hidden" for="assign-<%= task.id %>">Hjelper</label>
+              <select id="assign-<%= task.id %>" name="helperId" required>
+                <% if (task.helperId === null) { %><option value="" selected disabled>Velg hjelper</option><% } %>
+                <% for (const helper of helpers) { %>
+                  <option value="<%= helper.id %>"<%= task.helperId === helper.id ? ' selected' : '' %>><%= helper.name %></option>
+                <% } %>
+              </select>
+              <button type="submit" class="small">Tildel</button>
+            </form>
+          <% } %>
           <% if (errs.title) { %><p class="field-error"><%= errs.title %></p><% } %>
           <% if (errs.deadline) { %><p class="field-error"><%= errs.deadline %></p><% } %>
         </li>
@@ -58,4 +107,5 @@
     <% if (add.errors.deadline) { %><p class="field-error"><%= add.errors.deadline %></p><% } %>
   </section>
 </div>
+<script src="/copy.js" defer></script>
 <%- include('partials/bottom') %>

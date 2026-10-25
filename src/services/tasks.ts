@@ -1,12 +1,15 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, ne } from 'drizzle-orm';
 import type { Clock } from '../clock.ts';
 import type { Db, Tx } from '../db/client.ts';
 import { events, tasks, type Task } from '../db/schema.ts';
 import { isDate } from '../domain/dates.ts';
 import { DomainError } from '../domain/errors.ts';
 import type { PlannedTask } from '../domain/plan.ts';
+import { transition, type Actor, type TaskCommand } from '../domain/taskRules.ts';
+import { eventHelperIds } from './helpers.ts';
 
-// AD-2: the only writer of task rows. Every function is scoped by the organizer (AD-5).
+// AD-2: the only writer of task rows. Every function is scoped by the organizer (AD-5), except
+// listForHelper, which is scoped by the helper (helper requests go by token, never the session).
 
 export interface TaskInput {
   title: string;
@@ -78,4 +81,38 @@ export async function updateTask(
 export async function deleteTask(db: Db, organizerId: number, eventId: number, taskId: number): Promise<void> {
   const task = await getTask(db, organizerId, eventId, taskId);
   await db.delete(tasks).where(eq(tasks.id, task.id));
+}
+
+export type ApplyResult = 'changed' | 'noop';
+
+/**
+ * AD-2: the one entry point for status changes. Loads the task scoped by the actor's organizer,
+ * asks taskRules.transition and writes the changes, all in one transaction. A refused move
+ * throws its DomainError; a task outside the organizer's events is not_found.
+ */
+export async function apply(db: Db, actor: Actor, taskId: number, command: TaskCommand, now: string): Promise<ApplyResult> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select({ task: tasks })
+      .from(tasks)
+      .innerJoin(events, eq(tasks.eventId, events.id))
+      .where(and(eq(tasks.id, taskId), eq(events.organizerId, actor.organizerId)));
+    if (!row) throw new DomainError('not_found');
+    const task = row.task;
+
+    const decision = transition(task, command, actor, await eventHelperIds(tx, task.eventId), now);
+    if (decision.kind === 'refused') throw new DomainError(decision.code);
+    if (decision.kind === 'noop') return 'noop';
+    await tx.update(tasks).set(decision.changes).where(eq(tasks.id, task.id));
+    return 'changed';
+  });
+}
+
+/** A helper's tasks, except Unassigned ones, sorted by deadline (FR-11). */
+export async function listForHelper(db: Db, helperId: number): Promise<Task[]> {
+  return db
+    .select()
+    .from(tasks)
+    .where(and(eq(tasks.helperId, helperId), ne(tasks.status, 'unassigned')))
+    .orderBy(asc(tasks.deadline), asc(tasks.id));
 }
