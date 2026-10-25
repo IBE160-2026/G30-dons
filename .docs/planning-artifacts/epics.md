@@ -54,6 +54,7 @@ FR29 (Should): The organizer can edit event fields. The date can't be moved into
 FR30 (Should): The organizer can correct a helper's email, which creates a new link and kills the old one, or remove a helper, which makes that helper's tasks Unassigned.
 FR31 (Should): The helper can switch between Done and Can't be done. The organizer can reopen any task, which becomes Open again with a new reminder clock.
 FR32 (Should): The organizer can delete an event together with its tasks and messages.
+FR33 (Must): The delivery is the source code plus a `Dockerfile`. The container runs in test mode with the `.env.example` defaults, a local database file, the seed data and the test inbox. No secrets in the image; keys come from the environment later. The README explains the Docker steps.
 
 ### NonFunctional Requirements
 
@@ -64,12 +65,12 @@ NFR4: Near-zero cost. Free hosting, database and email. AI capped at $5. Test mo
 NFR5: Simplicity: one app, one database, the simplest scheduler.
 NFR6: The AI times out after 30 seconds and the fallback is used. [ASSUMPTION]
 NFR7: Reminders are respectful and direct, never manipulative, and use no humor. The organizer can override any plan.
-NFR8: The app can be deployed to free hosting for the friends test, with real email when test mode is off.
+NFR8 (optional): The app can be deployed to free hosting for the friends test, with real email when test mode is off. Hosting is not a course requirement, so deployment is cut first if it causes problems.
 NFR9: All UI text and emails are in Norwegian.
 
 ### Additional Requirements
 
-From the architecture spine (AD-1 to AD-16):
+From the architecture spine (AD-1 to AD-17):
 
 - **No starter template.** The project is hand-scaffolded: Node ≥ 22.12, TypeScript run with tsx, Express 5, EJS 7, Drizzle 0.45 with @libsql/client, zod, cookie-session, helmet, Vitest and supertest. Versions are pinned as in the spine's Stack table, with the tsconfig rules from the Conventions. This is the first story.
 - **Layers** run `routes → services → db`. The pure `domain/` takes `now` and `today` as input. Every link is built by `routes/paths.ts`. Form posts use Post/Redirect/Get with a flash notice. Error codes live in one registry in `domain/errors.ts` (AD-1).
@@ -91,7 +92,8 @@ From the architecture spine (AD-1 to AD-16):
 - **Migrations** are generated with drizzle-kit and committed, and `db/migrate.ts` applies them on server start, seed and tests. `drizzle-kit push` is never used (AD-14).
 - **New replies** become seen through `GET ?panel=messages` (AD-15).
 - **Browser.** No inline JavaScript (`public/copy.js`), cookies are `httpOnly` and `sameSite=lax`, and helmet is on (AD-16).
-- **Deployment** uses Render free, Turso free and cron-job.org. Gmail API OAuth needs a one-time setup script. Settings to configure: `APP_BASE_URL`, `DATABASE_AUTH_TOKEN`, `CRON_SECRET` and the Gmail credentials.
+- **Docker delivery.** A `Dockerfile` from `node:24-slim` and a `.dockerignore` without `.env` or `data/`. Settings come only from `docker run --env-file`. On first start in test mode the container seeds its database file, then starts the server (AD-17).
+- **Deployment (optional, first to cut)** uses Render free, Turso free and cron-job.org. Gmail API OAuth needs a one-time setup script. Settings to configure: `APP_BASE_URL`, `DATABASE_AUTH_TOKEN`, `CRON_SECRET` and the Gmail credentials.
 
 ### UX Design Requirements
 
@@ -133,12 +135,13 @@ FR29: Epic 4 - edit event fields
 FR30: Epic 4 - correct or remove helper
 FR31: Epic 4 - undo and reopen
 FR32: Epic 4 - delete event
+FR33: Epic 1 (Story 1.6: Dockerfile, seed on first start, README Docker steps) + Epic 3 (Story 3.1: test inbox checked in the container)
 
 ## Epic List
 
 ### Epic 1: Kari plans with templates and Ola answers by link (first deployable version)
-Kari logs in, creates events from templates, using each template's plan as the plan, edits the tasks, adds helpers, assigns tasks and copies each helper's link into a chat. Ola answers on his phone. Kari's overview shows which event needs attention, and her event view shows what is done, Urgent and in Needs a helper. The epic ends deployed on Render's free tier with Turso, with `MAIL_TRANSPORT=disabled`, so the friends test can start. The examiner can already run it locally with the seed and `npm test`.
-**FRs covered:** FR1, FR2, FR3, FR4, FR6 (template plan), FR7, FR8, FR9, FR10 (copy), FR11, FR12, FR13, FR15, FR16, FR19, FR20, FR21, FR22, FR23 (test-mode setting), FR25, FR27, FR28. NFR1, NFR2, NFR3, NFR5, NFR8, NFR9.
+Kari logs in, creates events from templates, using each template's plan as the plan, edits the tasks, adds helpers, assigns tasks and copies each helper's link into a chat. Ola answers on his phone. Kari's overview shows which event needs attention, and her event view shows what is done, Urgent and in Needs a helper. The examiner can run it with Docker in test mode, with the seed data, from Story 1.6 on, and with `npm test`. The epic ends deployed on Render's free tier with Turso, with `MAIL_TRANSPORT=disabled`, so the friends test can start. Deployment is optional and cut first if it causes problems.
+**FRs covered:** FR1, FR2, FR3, FR4, FR6 (template plan), FR7, FR8, FR9, FR10 (copy), FR11, FR12, FR13, FR15, FR16, FR19, FR20, FR21, FR22, FR23 (test-mode setting), FR25, FR27, FR28, FR33. NFR1, NFR2, NFR3, NFR5, NFR8, NFR9.
 
 ### Epic 2: The AI drafts the plan
 Kari describes her event, and the AI drafts the task list, falling back to the template's plan when it fails. It is built with the mock first, and the real Anthropic API is connected last, with the $5 cap.
@@ -146,7 +149,7 @@ Kari describes her event, and the AI drafts the task list, falling back to the t
 
 ### Epic 3: Reminders keep helpers on track (Must)
 Helpers get one fixed-text reminder email per yes at the right time. In test mode every email goes to the test inbox, and the examiner can trigger reminders with **Send due reminders now**. When deployed, email goes through the Gmail API. `MAIL_TRANSPORT=disabled` is only an emergency fallback.
-**FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link). NFR7, NFR8.
+**FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container). NFR7, NFR8.
 
 ### Epic 4: More control for Kari (Should, cut from the end)
 These are conveniences built in cut-list order: sending links by email, the other test-mode controls, correcting or removing helpers, undo and changed answers, and editing or deleting events.
@@ -342,7 +345,7 @@ So that nothing gets stuck without me noticing.
 **When** I reload any of my pages
 **Then** the new state is shown, without real-time push (FR22)
 
-### Story 1.6: Seed data and examiner guide
+### Story 1.6: Seed data, Docker and examiner guide
 
 As the examiner,
 I want to start the app with ready-made data and a clear guide,
@@ -368,16 +371,25 @@ So that I can see the whole loop in a few minutes without keys or accounts.
 **When** `npm test` runs
 **Then** one test checks the overview and event-view counts against it, and another checks every seeded task with `assertFieldInvariant` (AD-11)
 
+**Given** a clean clone and Docker
+**When** I run `docker build -t masterplan .` and then `docker run --rm --env-file .env.example -p 3000:3000 masterplan`
+**Then** the app starts in test mode with its database file at `/app/data/local.db` inside the container, the seed data is loaded on first start, and the test login at `http://localhost:3000` shows the seeded overview (FR33, FR25, AD-17)
+**And** restarting the same container keeps its data, and a new container starts fresh with the seed
+**And** the image contains no `.env` and no secrets. Every setting comes from the environment, so API keys can later be passed with `--env-file .env` or `-e` without changing the image (AD-17)
+
 **Given** the repository
 **When** the examiner reads it
-**Then** it contains (FR28):
-- **README:** a Quick Start (Node ≥ 22.12, `npm install`, copy `.env.example`, `npm run seed`, `npm run dev`), the test login, the seeded helper links, "Ting å prøve" (things to try) and "Kjente begrensninger" (known limitations)
+**Then** it contains (FR28, FR33):
+- **README:** Docker steps first (build, run with `--env-file .env.example`, open `http://localhost:3000`, log in with the test account, stop and reset), then a Quick Start (Node ≥ 22.12, `npm install`, copy `.env.example`, `npm run seed`, `npm run dev`), the test login, the seeded helper links, "Ting å prøve" (things to try) and "Kjente begrensninger" (known limitations)
 - **`docs/fixtures.md`:** the expected counts
 - **`docs/traceability.md`:** every FR built so far, mapped to its tests, with "manual" rows for the 360 px phone layout and the clipboard
 - **`docs/cost-and-mock-plan.md`:** copied from the architecture folder
-- **`.env.example`:** every setting, with safe defaults (`TEST_MODE=true`, `DATABASE_URL=file:./data/local.db`, `MAIL_TRANSPORT=disabled`)
+- **`.env.example`:** every setting, with safe defaults (`TEST_MODE=true`, `DATABASE_URL=file:./data/local.db`, `MAIL_TRANSPORT=disabled`) that also work for `docker run --env-file`
+- **`Dockerfile`** and **`.dockerignore`** as in AD-17
 
 ### Story 1.7: Deploy for the friends test
+
+*Cut note: hosting is not a course requirement; the delivery is the code and the Dockerfile (FR33, Story 1.6). If this story causes problems, it is the first thing cut, before any FR. The friends test then runs on a laptop on the same network, or is dropped and reported as such.*
 
 As the developer,
 I want the app running on free hosting,
@@ -527,6 +539,10 @@ So that I don't forget what I promised.
 **Given** `TEST_MODE=true` and a logged-in organizer
 **When** I click **Send påminnelser nå** (Send due reminders now)
 **Then** the same `reminders.run` runs immediately, and the resulting emails appear in my test inbox. The button doesn't exist when test mode is off (FR26, AD-7)
+
+**Given** the Docker container from Story 1.6, started with `--env-file .env.example`
+**When** I log in with the test account and click **Send påminnelser nå**
+**Then** the reminders appear in the test inbox inside the container, with no keys or network, and the README's Docker steps and "Ting å prøve" mention the test inbox (FR33, FR24, AD-17)
 
 ### Story 3.2: Real email through the Gmail API
 

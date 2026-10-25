@@ -4,11 +4,11 @@ type: architecture-spine
 purpose: build-substrate
 altitude: initiative
 paradigm: 'layered monolith with a functional core'
-scope: 'The whole MasterPlan v1 web app: organizer pages, helper pages, AI plan draft, reminders, test mode, deployment'
+scope: 'The whole MasterPlan v1 web app: organizer pages, helper pages, AI plan draft, reminders, test mode, Docker delivery, deployment'
 status: final
 created: '2026-10-24'
-updated: '2026-10-24'
-binds: [FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-9]
+updated: '2026-10-25'
+binds: [FR-1, FR-2, FR-3, FR-4, FR-5, FR-6, FR-7, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, FR-33, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-9]
 sources: ['.docs/planning-artifacts/prds/prd-MasterPlan-2026-10-19/prd.md', '.docs/planning-artifacts/prds/prd-MasterPlan-2026-10-19/addendum.md', '.docs/planning-artifacts/prds/prd-MasterPlan-2026-10-19/review-adversarial.md', '.docs/planning-artifacts/prds/prd-MasterPlan-2026-10-19/review-rubric.md']
 companions: ['architecture-explained.md', 'cost-and-mock-plan.md']
 ---
@@ -256,6 +256,19 @@ Done tasks keep their status and helper when the helper is removed. The helper p
   - **Cookies.** The session cookie is `httpOnly` and `sameSite: 'lax'`, and `secure` when `TEST_MODE` is off.
   - **Headers.** helmet runs with its default headers.
 
+### AD-17 — Delivery is a Docker image that runs in test mode
+
+- **Binds:** FR-24, FR-25, FR-28, FR-33
+- **Prevents:** an examiner build that needs keys, accounts or manual setup; secrets baked into an image; a container that starts with an empty database.
+- **Rule:**
+  - **Image.** A `Dockerfile` at the repository root builds from the official `node:24-slim` image, pinned to an exact tag in the story. It runs `npm ci` (tsx is a runtime dependency, so there is no build step), runs as the non-root `node` user and exposes port 3000.
+  - **No secrets in the image.** `.dockerignore` leaves out `.env`, `.env.*` (except `.env.example`), `data/`, `node_modules/`, `.git/` and the BMAD folders. Every setting comes from the environment at `docker run`. The default is `docker run --env-file .env.example -p 3000:3000 masterplan`. API keys are supplied later the same way (`--env-file .env` or `-e`), so the image never changes when the key handover is decided. `server.ts` already falls back to the environment when no `.env` file exists.
+  - **Start-up.** The container's start command runs the seed before the server when test mode is on and the database file does not exist yet, so the first start has the seed data and a restart keeps the data. The AD-11 guard still applies. Migrations run on server start as usual (AD-14).
+  - **Database.** The SQLite file is `/app/data/local.db` (from `.env.example`) inside the container. A named volume on `/app/data` is optional. Removing the container resets the data.
+  - **Test inbox.** It comes from `TEST_MODE=true` (AD-9). No extra container setting is needed.
+  - **Links.** `APP_BASE_URL` defaults to `http://localhost:3000` in test mode, which matches the published port. The server listens on all interfaces (Express default) and must not be bound to `localhost`.
+  - **Checks.** `npm test` stays Docker-free. The story that adds the image checks `docker build` and `docker run`, then `/health`, the test login and the seeded overview, and writes the steps in the README.
+
 ## Consistency Conventions
 
 | Concern | Convention |
@@ -285,7 +298,8 @@ Done tasks keep their status and helper when the helper is removed. The helper p
 | nodemailer (MailComposer for MIME), google-auth-library (Gmail API OAuth) | 10.2.1, 11.3.1 |
 | Vitest (with peer vite), supertest | 5.0.5 (vite 8.3.5), 7.3.1 |
 | @types/node, @types/express, @types/cookie-session, @types/nodemailer, @types/supertest | 24.x, 5.0.6, 2.0.49, 8.0.2, 7.2.1 |
-| Hosting | Render free web service, Turso free database, cron-job.org (checked 2026-10-24) |
+| Delivery | Docker image from `node:24-slim`, exact tag pinned in the story (AD-17) |
+| Hosting (optional, first to cut) | Render free web service, Turso free database, cron-job.org (checked 2026-10-24) |
 
 ## Structural Seed
 
@@ -308,6 +322,8 @@ masterplan/
   seed/              # seed.ts, fixture.ts
   tests/             # Vitest + supertest
   docs/              # traceability.md, fixtures.md, cost-and-mock-plan.md
+  Dockerfile         # AD-17
+  .dockerignore      # .env, data/, node_modules/, .git/
   .env.example
   .gitignore         # .env, data/, node_modules/
   .node-version
@@ -334,7 +350,10 @@ flowchart LR
     appL --> mock["mock AI"]
     appL --> outbox["outbox_emails table"]
   end
-  subgraph Deployed["Friends test"]
+  subgraph Docker["Examiner: docker run --env-file .env.example"]
+    appD["Node app in container, TEST_MODE=true, seeded on first start"] --> fileDbD[("SQLite file in /app/data")]
+  end
+  subgraph Deployed["Friends test (optional, first to cut)"]
     phone["Helper phones"] --> render["Render free web service"]
     cron["cron-job.org: wake GET, then POST twice"] --> render
     render --> turso[("Turso free DB")]
@@ -355,7 +374,8 @@ flowchart LR
 | FR-17, FR-18 reminders | services/reminders, domain/reminderDue.ts, mail/ | AD-7, AD-9 |
 | FR-19 to FR-22 overview and event view | domain/status.ts, services/messages, routes/organizer | AD-3, AD-4, AD-15 |
 | FR-23 to FR-28 test mode, seed, tests, docs | config.ts, mail/outbox.ts, routes/testMode.ts, seed/, tests/, docs/ | AD-9, AD-10, AD-11, AD-14 |
-| NFR-4, NFR-8 cost and deployment | Render, Turso, cron-job.org, Anthropic | AD-7, AD-8, AD-10 |
+| FR-33 Docker delivery | Dockerfile, .dockerignore, container start command, README | AD-10, AD-11, AD-17 |
+| NFR-4, NFR-8 cost and deployment (deployment optional, first to cut) | Render, Turso, cron-job.org, Anthropic | AD-7, AD-8, AD-10 |
 
 ## Deferred
 

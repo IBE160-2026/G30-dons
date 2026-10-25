@@ -4,7 +4,7 @@
 
 ## Goal
 
-Deliver the core loop without AI or email: an organizer logs in, creates events from the Wedding and Bachelorette party templates (using each template's default plan), edits tasks, adds up to five helpers per event, assigns tasks and copies each helper's link into a chat. Helpers answer on their phones with no login. The overview and event view show what is done, Urgent and in Needs a helper. The epic ends deployed on free hosting with email disabled, so the friends test can start, and an examiner can run it locally with seed data and `npm test` from the first story on. Solo course project, due 14 November 2026.
+Deliver the core loop without AI or email: an organizer logs in, creates events from the Wedding and Bachelorette party templates (using each template's default plan), edits tasks, adds up to five helpers per event, assigns tasks and copies each helper's link into a chat. Helpers answer on their phones with no login. The overview and event view show what is done, Urgent and in Needs a helper. The examiner runs it with Docker in test mode (source code plus a `Dockerfile` is the course delivery), with seed data and `npm test`. The epic ends deployed on free hosting with email disabled, so the friends test can start; hosting is not a course requirement, so deployment is cut first if it causes problems. Solo course project, due 14 November 2026.
 
 ## Stories
 
@@ -13,8 +13,8 @@ Deliver the core loop without AI or email: an organizer logs in, creates events 
 - Story 1.3: Add helpers, assign tasks and copy links
 - Story 1.4: Ola answers on his phone
 - Story 1.5: Overview and event view show what needs attention
-- Story 1.6: Seed data and examiner guide
-- Story 1.7: Deploy for the friends test
+- Story 1.6: Seed data, Docker and examiner guide
+- Story 1.7: Deploy for the friends test (optional, first to cut)
 
 ## Requirements & Constraints
 
@@ -30,6 +30,7 @@ Deliver the core loop without AI or email: an organizer logs in, creates events 
 - Test mode (on in `.env.example`) means no email leaves the machine. `npm test` runs offline, with no keys, its own database and a fixed date, and ends with a pass/fail summary.
 - README: Quick Start, test login, seeded helper links, things to try, known limitations. Docs: fixture table, FR→test traceability table, cost-and-mock plan. Secrets never committed; `.env` git-ignored.
 - Near-zero cost: free hosting and database.
+- Delivery (FR-33): source code plus a `Dockerfile`. The container runs in test mode with the `.env.example` defaults, a local database file, the seed data and (from Story 3.1) the test inbox. No secrets in the image; API keys come from the environment later, since the teacher has not yet said how keys are provided. The README explains the Docker steps.
 
 ## Technical Decisions
 
@@ -46,7 +47,8 @@ Deliver the core loop without AI or email: an organizer logs in, creates events 
 - **Auth:** `node:crypto` scrypt with per-user salt; one `requireLogin` middleware.
 - **Conventions:** camelCase TS files; snake_case plural tables; integer PKs; status values `unassigned|open|accepted|declined|done|cant_do`; Glossary names in code (`needsHelper`, `urgent`, `onTrack`); one service call per request, multi-row changes in one transaction; `console` logging only.
 - **Stack (pinned):** Node ≥22.12 (`.node-version` 24), TypeScript 7.0.2 run with tsx 4.23.15, Express 5.3.0, EJS 7.0.2, Drizzle ORM 0.45.4 / drizzle-kit 0.31.11, @libsql/client 0.18.0, zod 4.6.7, cookie-session 2.1.1, helmet 8.3.0, Vitest 5.0.5 (vite 8.3.5), supertest 7.3.1. tsconfig: `module`/`moduleResolution` `nodenext`, `types: ["node"]`, `skipLibCheck`, `strict`. No tools needing the TS compiler API (ts-node, typescript-eslint).
-- **Deployment:** Render free web service, Turso free database; no data on Render's disk; cold start about 1 minute. `MAIL_TRANSPORT=disabled` for this epic.
+- **Docker (AD-17):** `Dockerfile` from `node:24-slim` (exact tag pinned), `npm ci`, non-root `node` user, port 3000; `.dockerignore` leaves out `.env`, `.env.*` (not `.env.example`), `data/`, `node_modules/`, `.git/`, BMAD folders. Run with `docker run --env-file .env.example -p 3000:3000 masterplan`. On start, when test mode is on and the database file is missing, seed first, then start the server; restart keeps data. DB file `/app/data/local.db`. Server listens on all interfaces. `npm test` stays Docker-free.
+- **Deployment (optional, first to cut):** Render free web service, Turso free database; no data on Render's disk; cold start about 1 minute. `MAIL_TRANSPORT=disabled` for this epic.
 
 ## UX & Interaction Patterns
 
@@ -60,6 +62,6 @@ Deliver the core loop without AI or email: an organizer logs in, creates events 
 - 1.1 lays the scaffold everything else builds on: config, clock, dates, errors registry, paths, migrations, test harness, auth.
 - Each story adds its own tables and migration; later stories must not change earlier migrations.
 - 1.2–1.4 extend `domain/taskRules` and `services/tasks`; 1.5 reads them through `domain/status.ts`.
-- 1.6 seeds through the services from 1.1–1.5 and needs every task status, so it comes after 1.4 and 1.5.
-- 1.7 deploys what 1.1–1.6 built.
+- 1.6 seeds through the services from 1.1–1.5 and needs every task status, so it comes after 1.4 and 1.5. It also adds the Dockerfile and the README Docker steps; Story 3.1 checks the test inbox inside the container.
+- 1.7 deploys what 1.1–1.6 built. It is optional and the first thing cut if it causes problems.
 - Epic 2 replaces the template plan with `ai/draftPlan` (template plan becomes the fallback); Epic 3 adds the mail module, reminders and the test inbox. Keep the plan-creation path and the config's `MAIL_TRANSPORT` handling ready for them.

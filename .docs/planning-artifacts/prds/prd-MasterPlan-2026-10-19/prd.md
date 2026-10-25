@@ -2,14 +2,14 @@
 title: "PRD: MasterPlan"
 status: final
 created: 2026-10-19
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # PRD: MasterPlan
 
 ## 0. Document Purpose
 
-This PRD defines version 1 of MasterPlan for the IBE160 course project (solo, due 14 November 2026). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-32), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Design and technology detail is in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
+This PRD defines version 1 of MasterPlan for the IBE160 course project (solo, due 14 November 2026). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-33), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Design and technology detail is in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
 
 ## 1. Vision
 
@@ -70,7 +70,7 @@ Ola is the best man and helps with both events. Kari sends him his link on Messe
 
 *Examiner, own computer, no project keys, paid accounts or internet-dependent services.*
 
-1. John follows the README Quick Start. The app starts on the first try.
+1. John follows the README's Docker steps: he builds the image and starts it with the defaults from `.env.example`. The app starts on the first try in test mode, with a local database file and the seed data already loaded (FR-33). The Node Quick Start is the alternative without Docker.
 2. He logs in as the test organizer. The first page shows two seeded events with shared helpers: *Bachelorette party: on track · Wedding: urgent, needs attention.* Seeded dates are relative to the seed day, so these statuses always hold.
 3. In each event tab he sees tasks in every status and helpers who work on both events.
 4. He clicks **View as helper** to open the helper page in a new tab. He also opens a seeded helper link in a private window, answers a task, and sees the overview update.
@@ -322,6 +322,12 @@ One command (`npm test`, documented in the README) runs the full automated test 
 - A traceability table in the docs maps every FR to its automated tests.
 - The docs include a short cost-and-mock plan for the language model and email, written in the architecture step.
 
+#### FR-33: Docker delivery · Must
+The delivery is the source code plus a `Dockerfile`. The examiner can build and run the app with Docker, in test mode, using the defaults from `.env.example`.
+- The container starts in test mode with a local SQLite database file inside the container, loads the seed data on first start, and offers the in-app test inbox (FR-24, FR-25).
+- No secrets are built into the image. All settings come from the environment at `docker run`, for example `--env-file .env.example`, so API keys can later be supplied the same way (for example `--env-file .env`) without changing the image. How keys are handed over is not decided yet (§10).
+- The README explains the Docker steps: build, run, open the app, log in with the test account, and stop or reset the container.
+
 ## 7. Non-Functional Requirements
 
 - **NFR-1 Mobile helper page:** the helper page and the reminder link work on phone screens from 360 px wide, with no sideways scrolling and easy-to-tap buttons.
@@ -331,14 +337,14 @@ One command (`npm test`, documented in the README) runs the full automated test 
 - **NFR-5 Simplicity:** one web app with one database. Reminders use the simplest scheduler that meets FR-17.
 - **NFR-6 AI response time:** if the plan draft takes too long, the template fallback is used (FR-6). [ASSUMPTION: the limit is 30 seconds.]
 - **NFR-7 Respect:** reminders are respectful and direct, the way a good manager speaks to a team member. They never manipulate or guilt-trip, and use no humor, which could read as passive-aggressive. The organizer can edit or override every plan draft (FR-7).
-- **NFR-8 Deployable for the friends test:** the app can be deployed to a free hosting service, so helpers can open links on their phones. With test mode off, it sends real email through a free email service. The architecture step chooses the services.
+- **NFR-8 Deployable for the friends test (optional):** the app can be deployed to a free hosting service, so helpers can open links on their phones. With test mode off, it sends real email through a free email service. The architecture step chooses the services. Hosting is not a course requirement (the delivery is the code and a Dockerfile, FR-33), so deployment is the first thing cut if it causes problems (§8).
 - **NFR-9 Language:** the user interface and all emails are in Norwegian. English UI text in this PRD shows the meaning, not the final wording.
 
 ## 8. Scope
 
 **Deadline: 14 November 2026.**
 
-**Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
+**Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28, FR-33. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys from the Docker container, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 
 **Should, built in this order if time allows:**
 1. Send the helper link by email (FR-10, email part).
@@ -351,6 +357,8 @@ One command (`npm test`, documented in the README) runs the full automated test 
 
 **Cut list.** If time runs out, cut from the bottom of the Should list: FR-32, then FR-29, FR-14, FR-31, FR-30, the other FR-26 controls, and FR-10 email last.
 
+**Hosting (NFR-8).** Hosting is not required for the delivery. Deployment for the friends test stays planned, but if it causes problems it is cut first, before any FR. Without it, the friends test can run on a laptop on the same network, or is dropped and reported as such.
+
 **Stage 2, in priority order:** evaluations with an AI summary; a minimum anonymized experience bank; helper login; calendar export (.ics); guest list with idea suggestions and comments; AI-written reminders, clearly marked as written by AI.
 
 **Out of scope:** native mobile app, professional planners, everyday task management, budget, cost-splitting and RSVP, voting and visual boards, SMS reminders, two-way chat integration, any paid service other than the capped AI API (NFR-4).
@@ -359,7 +367,7 @@ One command (`npm test`, documented in the README) runs the full automated test 
 
 **Functional.** Every Must FR, and every Should FR that is built, has at least one automated test in the traceability table, and `npm test` passes. This covers the brief's eight functional criteria.
 
-**Product.** Before the deadline, 2–3 friends act as helpers in a realistic test event on the deployed app (NFR-8). Test tasks get short deadlines, so the 3-day rules apply during the test.
+**Product.** Before the deadline, 2–3 friends act as helpers in a realistic test event on the deployed app (NFR-8, optional; see §8 if hosting is cut). Test tasks get short deadlines, so the 3-day rules apply during the test.
 - **SM-1:** no task is silently forgotten. Every task ends Done, Declined or Can't be done, and the organizer sees each of these.
 - **SM-2:** at least 80% of tasks get a yes or no within 3 days.
 - **SM-3:** at least 80% of Accepted tasks are Done by their deadline.
@@ -378,3 +386,4 @@ One command (`npm test`, documented in the README) runs the full automated test 
 1. **Services (resolved in the architecture step):** see `.docs/planning-artifacts/architecture/architecture-MasterPlan-2026-10-24/`.
 2. **Story count:** the teacher warned that the number of stories could grow. The epics-and-stories step handles this.
 3. **AI time limit:** NFR-6 assumes 30 seconds. The architecture step confirms it once the language model is chosen.
+4. **How API keys reach the examiner:** the teacher will say later how API keys are provided. Until then, settings stay in environment variables (`.env` or `docker run --env-file`), so any method works without code changes (FR-33).
