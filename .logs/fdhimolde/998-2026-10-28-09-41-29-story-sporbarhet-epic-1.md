@@ -18,6 +18,7 @@ Lage en tabell i `docs/traceability.md` som kobler hver story i epic 1 (1.1–1.
 - Story 1.6 har ingen filer i `src/`; `seed/`, `Dockerfile` og `public/` er tatt med og merket.
 - Brukeren valgte commitmeldingen «docs: legg til story-sporbarhet for epic 1» i stedet for «opprett», siden fila fantes. Commit `9834ea1`, ikke pushet.
 - `npm run lint`: 7 advarsler og 1 info, ingen feil.
+- KI-loggen er oppdatert med en rad om at fila fantes fra før og om commitmeldingen, med lenke til `9834ea1`. Commit `24fa755`, ikke pushet.
 
 ### Åpne punkter
 - Docker-imaget (story 1.6, FR33) har ingen automatisk test; bare `startupSeedDecision` testes. Bygging og kjøring sjekkes manuelt.
