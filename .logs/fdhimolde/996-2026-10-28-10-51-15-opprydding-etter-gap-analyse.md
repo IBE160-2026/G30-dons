@@ -16,9 +16,12 @@ Følge opp gap-analysen ([docs/gap-analyse-2026-10-28.md](../../docs/gap-analyse
 - `3cb0895` docs: beslutningen er ført i ki-loggen. Punktene om foreign keys på Turso og HTTPS med `TEST_MODE=false` er flyttet fra `deferred-work.md` til story 1.7 i `epics.md`. Røyktest-punktet fra 1.1 ble stående i `deferred-work.md`.
 - `c2d60b5` docs: README har fått tabell over miljøvariabler, lint-kommandoene, mappeoversikt, forklaring på `docs/` og `.docs/`, og lenker til planlegging, ki-logg og `CLAUDE.md`. Alle lenkene er sjekket.
 - `cc369f1` docs: `'use strict'`-feilen er ført i ki-loggen med lenke til `261b8d6`.
+- `c2672e6` docs: brukeren testet «Kopier lenke» manuelt i nettleseren med testbrukeren `test@gmail.com` etter `261b8d6`, og lenken ble kopiert riktig. Ført i `docs/traceability.md` og `deferred-work.md`. Appen ble startet med `npm run dev` mot den lokale databasen, uten seed, fordi den inneholder brukerens egne kontoer.
+- Feil underveis: en kommando som brukeren avbrøt, rakk å lage en commit før den stoppet. Jeg sa først at ingenting var committet. Commiten ble funnet, fikk brukerens commitmelding (amend før push), og ble beholdt etter brukerens beskjed.
 - Før hver commit: 254/254 tester grønne, typecheck grønn, lint uten funn.
 - Branchen er pushet, og pull requesten er https://github.com/IBE160-2026/G30-dons/pull/1. Den er ikke merget; brukeren vil se den først.
 
 ### Åpne punkter
 - README mangler fortsatt skjermbilder.
 - Funnene fra «Review Triage Log» i spec-filene er ikke ført inn i ki-loggen.
+- «Kopiert!»-teksten og reserveløsningen (markering av feltet) i `copy.js` er ikke testet manuelt; bare selve kopieringen.
