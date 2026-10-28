@@ -37,6 +37,17 @@
           }
         }
       }
+    },
+    {
+      // The browser loads public/*.js as classic scripts, not modules, so 'use strict' is not redundant there.
+      "includes": ["public/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noRedundantUseStrict": "off"
+          }
+        }
+      }
     }
   ]
 }

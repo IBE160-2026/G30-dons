@@ -116,7 +116,7 @@ describe('adding helpers', () => {
     expect(await followFlash(agent, fifth)).toContain('h5@example.no er lagt til som hjelper.');
     expect(await linksOf(eventId)).toHaveLength(5);
     const full = await agent.get(`/events/${eventId}`);
-    expect(full.text).not.toContain('action="/events/' + eventId + '/helpers"');
+    expect(full.text).not.toContain(`action="/events/${eventId}/helpers"`);
     expect(full.text).toContain('Hjelpere (5 av 5)');
 
     const sixth = await addHelper(agent, eventId, { email: 'h6@example.no', name: 'Seks' });
