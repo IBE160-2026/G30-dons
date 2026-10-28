@@ -417,6 +417,13 @@ So that my friends can open helper links on their phones and start testing.
 **When** I read it
 **Then** it lists every setting, warns about the Render cold start (about 1 minute), and gives the redeploy steps, without containing any secrets
 
+**Postponed (2026-10-28):** This story is moved to after Epics 2 and 3, so the Must requirements (AI draft and reminders) come first. Hosting is optional under the cut note above. The decision is logged in `docs/ki-logg.md`.
+
+**Carried over from Story 1.1** (moved here from `.docs/implementation-artifacts/deferred-work.md`, so they are handled when this story is built):
+
+- **Foreign keys on Turso.** Local libsql connections report `PRAGMA foreign_keys = 1` by default (checked 2026-10-24), but each Turso request is its own remote stream and could not be checked offline. Run `PRAGMA foreign_keys` against Turso in the smoke test; if it is 0, enable it per request or batch. Unverified; would be medium if true.
+- **HTTPS with `TEST_MODE=false`.** `docs/deploy.md` must say that `TEST_MODE=false` needs HTTPS (or a proxy sending `X-Forwarded-Proto: https`), otherwise login and register return 500. cookie-session refuses to set a secure cookie on a plain-HTTP request. Render sends the header and `trust proxy` is set, so only a local production-mode run hits it.
+
 ## Epic 2: The AI drafts the plan
 
 Kari describes her event, and the AI drafts the task list, falling back to the template's plan when it fails. The mock is built first, and the real API is connected last, with the $5 cap.
