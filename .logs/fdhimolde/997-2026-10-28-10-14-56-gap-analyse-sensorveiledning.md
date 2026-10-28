@@ -17,6 +17,7 @@ Gå gjennom repoet mot `docs/sensorveiledning.md` uten å endre noe, og lage én
 - Hovedfunn: ingen pull requests (stories committet rett på `main`); AI-utkast og påminnelser, som brief-en kaller Must, er ikke bygget; sprint-status og ki-logg er ikke oppdatert; README mangler skjermbilde, mappeoversikt og forklaring av miljøvariablene; ingen UX-dokumentasjon.
 - Sterke sider: mappestrukturen følger arkitekturen (`domain/` er ren), ingen død kode, gode tester, ingen hemmeligheter i historikken.
 - Selve gjennomgangen endret ingen filer; `git status` var ren før lagring.
+- Gap-analysen og sesjonsloggen er pushet til `origin/main`.
 
 ### Åpne punkter
 - Bruk egen branch og pull request fra story 2.1, og forklar i ki-loggen at regelen kom etter epic 1.
