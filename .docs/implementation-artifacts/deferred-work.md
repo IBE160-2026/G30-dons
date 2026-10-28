@@ -17,3 +17,4 @@ The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS w
 - source_spec: `.docs/implementation-artifacts/spec-1-3-add-helpers-assign-tasks-and-copy-links.md`
   summary: Run the manual browser check of **Kopier lenke** (clipboard write, "Kopiert!" label, select-field fallback) before Story 1.3 is accepted, or add a DOM test environment.
   evidence: The automated tests only check that `copy.js` is served and contains the expected strings; the repo has no jsdom/happy-dom or browser runner.
+  status: Clipboard write checked manually in a browser on 2026-10-28, after the `copy.js` change in `261b8d6`: the link is copied correctly (recorded in `docs/traceability.md`). The "Kopiert!" label and the select-field fallback were not part of that check.
