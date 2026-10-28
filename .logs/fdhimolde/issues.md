@@ -10,3 +10,4 @@
 - [ ] 2026-10-28 [opprydding-etter-gap-analyse](996-2026-10-28-10-51-15-opprydding-etter-gap-analyse.md) — README mangler skjermbilder (oversikt og hjelperside på mobil)
 - [x] 2026-10-28 [opprydding-etter-gap-analyse](996-2026-10-28-10-51-15-opprydding-etter-gap-analyse.md) — Før funnene fra «Review Triage Log» i spec-filene inn i ki-loggen (løst 2026-10-28)
 - [ ] 2026-10-28 [opprydding-etter-gap-analyse](996-2026-10-28-10-51-15-opprydding-etter-gap-analyse.md) — Test «Kopiert!»-teksten og reserveløsningen i `copy.js` manuelt; bare selve kopieringen er testet
+- [ ] 2026-10-28 [spec-story-2-1](994-2026-10-28-15-18-23-spec-story-2-1.md) — Godkjenn eller endre D1–D5 i spec 2.1 (branch `story/2-1-ai-plan-draft`), og sett status til `ready-for-dev`
