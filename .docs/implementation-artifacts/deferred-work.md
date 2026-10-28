@@ -1,16 +1,10 @@
 # Deferred Work
 
-- source_spec: `.docs/implementation-artifacts/spec-1-1-project-setup-and-organizer-login.md`
-  summary: Verify that foreign keys are enforced on the deployed Turso database (Story 1.7).
-  evidence: Local libsql connections report `PRAGMA foreign_keys = 1` by default (checked 2026-10-24), but each Turso request is its own remote stream and could not be checked offline. Settle it with `PRAGMA foreign_keys` against Turso in the 1.7 smoke test; if it is 0, enable it per request or batch. Unverified; would be medium if true.
+The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS with `TEST_MODE=false`) moved to Story 1.7 in `.docs/planning-artifacts/epics.md` on 2026-10-28.
 
 - source_spec: `.docs/implementation-artifacts/spec-1-1-project-setup-and-organizer-login.md`
   summary: Add a process-level smoke test that starts `src/server.ts` and checks that migrations ran and `/health` answers.
   evidence: Removing `runMigrations` from `server.ts` breaks no test today, because the test helper migrates on its own. Verified manually with `npm start` in Story 1.1.
-
-- source_spec: `.docs/implementation-artifacts/spec-1-1-project-setup-and-organizer-login.md`
-  summary: Document in the Story 1.7 deploy guide that `TEST_MODE=false` needs HTTPS (or a proxy sending `X-Forwarded-Proto: https`), otherwise login and register return 500.
-  evidence: cookie-session refuses to set a secure cookie on a plain-HTTP request. Render sends the header and `trust proxy` is set, so only a local production-mode run hits it.
 
 - source_spec: `.docs/implementation-artifacts/spec-1-2-create-events-from-templates-and-edit-the-plan.md`
   summary: Add a failure-path test proving that `createEvent` leaves no event row when inserting its tasks fails.
@@ -23,3 +17,4 @@
 - source_spec: `.docs/implementation-artifacts/spec-1-3-add-helpers-assign-tasks-and-copy-links.md`
   summary: Run the manual browser check of **Kopier lenke** (clipboard write, "Kopiert!" label, select-field fallback) before Story 1.3 is accepted, or add a DOM test environment.
   evidence: The automated tests only check that `copy.js` is served and contains the expected strings; the repo has no jsdom/happy-dom or browser runner.
+  status: Clipboard write checked manually in a browser on 2026-10-28, after the `copy.js` change in `261b8d6`: the link is copied correctly (recorded in `docs/traceability.md`). The "Kopiert!" label and the select-field fallback were not part of that check.
