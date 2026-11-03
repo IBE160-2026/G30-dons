@@ -143,6 +143,27 @@ describe('creating an event from a template', () => {
     }
   });
 
+  it('tells the organizer above the submit button what is sent to the AI service (NFR-3)', async () => {
+    const agent = await loggedIn();
+    const page = await agent.get('/events/new');
+    expect(page.status).toBe(200);
+    const notice = page.text.indexOf('sendes beskrivelsen');
+    expect(notice).toBeGreaterThan(-1);
+    expect(page.text).toContain('til en AI-tjeneste');
+    expect(page.text).toContain('Navn og e-post til hjelperne sendes aldri.');
+    expect(notice).toBeLessThan(page.text.indexOf('<button type="submit">Opprett arrangement</button>'));
+  });
+
+  it('shows the test-plan notice after creating an event without an AI key (FR-23)', async () => {
+    const agent = await loggedIn();
+    const { res } = await createEvent(agent, { templateKey: 'wedding', eventDate: '2027-06-12' });
+    const page = await agent.get(res.headers.location!);
+    expect(page.text).toContain('Arrangementet er opprettet.');
+    expect(page.text).toContain('Planen er en testplan fra malen, fordi ingen AI-nøkkel er satt opp.');
+    // A flash is shown once.
+    expect((await agent.get(res.headers.location!)).text).not.toContain('Planen er en testplan');
+  });
+
   it('requires login', async () => {
     const res = await request(ctx.app).get('/events/new');
     expect(res.status).toBe(302);
