@@ -2,7 +2,7 @@
 title: 'Story 2.1: AI plan draft with mock and fallback'
 type: 'feature'
 created: '2026-10-28'
-status: 'draft'
+status: 'ready-for-dev'
 baseline_commit: 'c601029dc95fd8d23b505d0bf7e4339aedb58b6b'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -20,7 +20,9 @@ context:
 
 **Approach:** Add the `ai/` module from the Structural Seed with one entry point, `draftPlan`, that takes a provider seam. With no provider (no key), it returns the mock plan with `source: 'mock'`. With a provider, it validates the output with zod and `domain/plan.ts`, and falls back to the template plan with `source: 'fallback'` on any error, timeout, invalid plan or forced failure. `createEvent` calls `draftPlan` before its transaction and shows the notice. The real Anthropic provider is Story 2.2; the Simulate AI failure toggle is Story 4.2.
 
-**Decisions (proposed 2026-10-28, to be confirmed by the user):**
+**Note: the AI first becomes visible with Story 2.2.** Story 2.1 adds no key and no real provider (D3), so the running app always shows the mock plan and its test-plan notice. The `ai` source and the fallback path are reached only by tests with a fake provider. An organizer, or the examiner, sees a real AI draft only after Story 2.2 connects the Anthropic API.
+
+**Decisions (proposed 2026-10-28, approved by the user 2026-10-28):**
 - **D1 Mock plan = the template's default plan, labelled as a test plan.** `ai/mock.ts` returns each template's `defaultPlan`, so no plan data is duplicated, the seed's `EXPECTED_COUNTS` stay valid, and existing tests keep their task lists. The organizer sees the difference through the notice, not the tasks. (Alternative: separate mock plans per template, which would change the seed, `docs/fixtures.md` and many tests.)
 - **D2 The description is built from the event form fields** that describe the event: Hva, Hvor, Antall gjester, Hva må gjøres and Annen informasjon, plus the template name. The event name is left out, because it may contain the couple's names. Helper names and emails are never part of it (NFR-3).
 - **D3 No `ANTHROPIC_API_KEY` in config yet.** Story 2.2 adds the key and `ai/anthropic.ts`. In 2.1 the app always runs without a provider, so it always uses the mock; the provider seam is exercised only by tests.
@@ -61,6 +63,51 @@ context:
 | Order of work | provider called during `createEvent` | no event row exists yet when the provider runs | N/A |
 | Unassigned | any source | every created task is Unassigned with no helper | N/A |
 | Privacy | event with helpers on other events | provider request has exactly `templateKey`, `eventDate`, `description`; no event name, no helper data | N/A |
+
+## UX
+
+Text sketches at mobile width (360 px). Both notices reuse existing components: the form notice is a `muted` paragraph like the field hints, and the plan notice is a line in the existing flash (`role="status"`), so screen readers announce it like other flashes. No new colours or components.
+
+**Form, `/events/new`:** the disclosure sits between the last field and the submit button, so it is read just before the organizer commits.
+
+```
+┌──────────────────────────────────┐
+│ Nytt arrangement                 │
+│ Mal       ( ) Bryllup            │
+│           ( ) Utdrikningslag     │
+│ Når       [ dd.mm.åååå ]         │
+│ …                                │
+│ Annen informasjon                │
+│ [                              ] │
+│                                  │
+│ Når du oppretter arrangementet,  │
+│ sendes beskrivelsen (hva, hvor,  │
+│ antall gjester, hva må gjøres og │
+│ annen informasjon) til en        │
+│ AI-tjeneste som lager et utkast  │
+│ til plan. Navn og e-post til     │
+│ hjelperne sendes aldri.          │
+│                                  │
+│ [ Opprett arrangement ]          │
+│ Avbryt                           │
+└──────────────────────────────────┘
+```
+
+**Event page after creating, mock (every run in 2.1):** the confirmation and the plan notice in one flash, shown once.
+
+```
+┌──────────────────────────────────┐
+│ Arrangementet er opprettet.      │
+│ Planen er en testplan fra malen, │
+│ fordi ingen AI-nøkkel er satt    │
+│ opp.                             │
+├──────────────────────────────────┤
+│ Bryllup · 12. juni 2027          │
+│ …tasks, all «Ikke tildelt»       │
+└──────────────────────────────────┘
+```
+
+**Fallback:** same place, second line «AI-utkastet kunne ikke brukes, så planen er malens standardplan.» **AI success:** only «Arrangementet er opprettet.»; the plan needs no explanation.
 
 </frozen-after-approval>
 

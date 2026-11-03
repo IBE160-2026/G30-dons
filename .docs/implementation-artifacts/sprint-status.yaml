@@ -48,7 +48,7 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: backlog
-  2-1-ai-plan-draft-with-mock-and-fallback: backlog
+  2-1-ai-plan-draft-with-mock-and-fallback: ready-for-dev
   2-2-connect-the-anthropic-api-with-a-spending-cap: backlog
   epic-2-retrospective: optional
 
