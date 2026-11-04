@@ -29,10 +29,14 @@ async function organizerWithEvent() {
     email: 'kari@example.no',
     password: 'hemmelig123',
   });
-  const eventId = await createEvent(ctx.db, ctx.clock, loadTemplates(), organizer.id, {
-    templateKey: 'bachelorette',
-    eventDate: '2027-03-01',
-  });
+  const { eventId } = await createEvent(
+    ctx.db,
+    ctx.clock,
+    loadTemplates(),
+    organizer.id,
+    { templateKey: 'bachelorette', eventDate: '2027-03-01' },
+    { testMode: true },
+  );
   return { organizerId: organizer.id, eventId };
 }
 
@@ -45,10 +49,14 @@ describe('an insert that returns no row', () => {
     });
     await skipInserts('events');
     await expect(
-      createEvent(ctx.db, ctx.clock, loadTemplates(), organizer.id, {
-        templateKey: 'bachelorette',
-        eventDate: '2027-03-01',
-      }),
+      createEvent(
+        ctx.db,
+        ctx.clock,
+        loadTemplates(),
+        organizer.id,
+        { templateKey: 'bachelorette', eventDate: '2027-03-01' },
+        { testMode: true },
+      ),
     ).rejects.toThrow('Insert returned no row');
   });
 

@@ -2,11 +2,11 @@ import { mkdirSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { type DraftPlanInput, draftPlan, PLAN_NOTICES, type PlanProvider } from '../src/ai/index.ts';
+import { templatePlan } from '../src/ai/mock.ts';
 import { events, tasks } from '../src/db/schema.ts';
 import { register } from '../src/services/auth.ts';
 import { createEvent } from '../src/services/events.ts';
 import { addHelperToEvent } from '../src/services/helpers.ts';
-import { templatePlan } from '../src/services/plans.ts';
 import { loadTemplates } from '../src/templates/index.ts';
 import { TEST_DB_DIR } from './dbDir.ts';
 import { setupTestApp, type TestContext } from './helpers.ts';
@@ -170,6 +170,16 @@ describe('draftPlan timeout (NFR-6)', () => {
     await draftPlan(input(), deps({ provider: answering(validPlan) }));
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it('falls back and clears its timer when the provider throws before returning a promise', async () => {
+    vi.useFakeTimers();
+    const provider: PlanProvider = () => {
+      throw new Error('kastet med en gang');
+    };
+    expectFallback(await draftPlan(input(), deps({ provider })));
+    expectLoggedReason('error');
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
 
 describe('draftPlan forced failure (D4)', () => {
@@ -177,6 +187,11 @@ describe('draftPlan forced failure (D4)', () => {
     const provider = vi.fn(answering(validPlan));
     expectFallback(await draftPlan(input({ forceFailure: true }), deps({ provider, testMode: true })));
     expect(provider).not.toHaveBeenCalled();
+    expectLoggedReason('forced');
+  });
+
+  it('falls back, not to the mock, when test mode is on and there is no provider (no key)', async () => {
+    expectFallback(await draftPlan(input({ forceFailure: true }), deps({ testMode: true })));
     expectLoggedReason('forced');
   });
 

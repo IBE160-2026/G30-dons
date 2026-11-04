@@ -49,6 +49,10 @@ const BACHELORETTE_DONE_COUNT = 6;
 
 const DONE_NOTES = ['Ferdig! Kvitteringen ligger i fellesmappa.', 'Ordnet.', 'Bekreftet på e-post.'];
 
+// The seed runs only in test mode and with no AI provider, so both events get the mock plan,
+// which is the template's default plan (Story 2.1, D1) and keeps EXPECTED_COUNTS valid.
+const SEED_PLAN = { testMode: true } as const;
+
 export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
   const seedDay = seedClock.today();
   const { clock, at } = movableClock(seedDay);
@@ -109,16 +113,23 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
     organizerId = kari.id;
   });
   step(WEDDING_CREATED_DAYS_AGO, 9, async () => {
-    eventIds.wedding = await createEvent(db, clock, templates, organizerId, {
-      templateKey: 'wedding',
-      name: SEED_EVENT_NAMES.wedding,
-      occasion: 'Bryllup med middag og fest',
-      location: 'Molde',
-      eventDate: addDays(seedDay, WEDDING_DAYS_AHEAD),
-      guestCount: 80,
-      todo: 'Vielse, middag, taler og fest.',
-      otherInfo: 'Kari og Jon gifter seg. Alle hjelpere får sine oppgaver her.',
-    });
+    ({ eventId: eventIds.wedding } = await createEvent(
+      db,
+      clock,
+      templates,
+      organizerId,
+      {
+        templateKey: 'wedding',
+        name: SEED_EVENT_NAMES.wedding,
+        occasion: 'Bryllup med middag og fest',
+        location: 'Molde',
+        eventDate: addDays(seedDay, WEDDING_DAYS_AHEAD),
+        guestCount: 80,
+        todo: 'Vielse, middag, taler og fest.',
+        otherInfo: 'Kari og Jon gifter seg. Alle hjelpere får sine oppgaver her.',
+      },
+      SEED_PLAN,
+    ));
     for (const t of await listForEvent(db, organizerId, eventIds.wedding)) taskIds.wedding.set(t.title, t.id);
   });
   step(WEDDING_CREATED_DAYS_AGO, 10, async () => {
@@ -199,16 +210,23 @@ export async function seed(db: Db, seedClock: Clock): Promise<SeedResult> {
 
   // The Bachelorette party, 20 days ago, with the same three named helpers (same links).
   step(BACHELORETTE_CREATED_DAYS_AGO, 17, async () => {
-    eventIds.bachelorette = await createEvent(db, clock, templates, organizerId, {
-      templateKey: 'bachelorette',
-      name: SEED_EVENT_NAMES.bachelorette,
-      occasion: 'Overraskelse for Lise',
-      location: 'Ålesund',
-      eventDate: addDays(seedDay, BACHELORETTE_DAYS_AHEAD),
-      guestCount: 12,
-      todo: 'Aktivitet på dagen, middag og fest.',
-      otherInfo: 'Lise må ikke få vite noe!',
-    });
+    ({ eventId: eventIds.bachelorette } = await createEvent(
+      db,
+      clock,
+      templates,
+      organizerId,
+      {
+        templateKey: 'bachelorette',
+        name: SEED_EVENT_NAMES.bachelorette,
+        occasion: 'Overraskelse for Lise',
+        location: 'Ålesund',
+        eventDate: addDays(seedDay, BACHELORETTE_DAYS_AHEAD),
+        guestCount: 12,
+        todo: 'Aktivitet på dagen, middag og fest.',
+        otherInfo: 'Lise må ikke få vite noe!',
+      },
+      SEED_PLAN,
+    ));
     for (const t of await listForEvent(db, organizerId, eventIds.bachelorette)) taskIds.bachelorette.set(t.title, t.id);
   });
   step(BACHELORETTE_CREATED_DAYS_AGO, 18, async () => {

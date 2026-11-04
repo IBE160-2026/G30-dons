@@ -158,8 +158,9 @@ describe('creating an event from a template', () => {
     const agent = await loggedIn();
     const { res } = await createEvent(agent, { templateKey: 'wedding', eventDate: '2027-06-12' });
     const page = await agent.get(res.headers.location!);
-    expect(page.text).toContain('Arrangementet er opprettet.');
-    expect(page.text).toContain('Planen er en testplan fra malen, fordi ingen AI-nøkkel er satt opp.');
+    expect(page.text).toContain(
+      '<p class="flash" role="status">Arrangementet er opprettet.\nPlanen er en testplan fra malen, fordi ingen AI-nøkkel er satt opp.</p>',
+    );
     // A flash is shown once.
     expect((await agent.get(res.headers.location!)).text).not.toContain('Planen er en testplan');
   });

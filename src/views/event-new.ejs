@@ -41,6 +41,8 @@
     <textarea id="otherInfo" name="otherInfo" rows="3" maxlength="2000"><%= values.otherInfo || '' %></textarea>
     <% if (errors.otherInfo) { %><p class="field-error"><%= errors.otherInfo %></p><% } %>
 
+    <p class="muted">Når du oppretter arrangementet, sendes beskrivelsen (hva, hvor, antall gjester, hva må gjøres og annen informasjon) til en AI-tjeneste som lager et utkast til plan. Navn og e-post til hjelperne sendes aldri.</p>
+
     <button type="submit">Opprett arrangement</button>
   </form>
   <p><a href="<%= paths.overview() %>">Avbryt</a></p>
