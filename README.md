@@ -115,7 +115,7 @@ Tallene under stemmer på dagen testdataene lages, og før du har endret noe. En
 
 ## Kjente begrensninger
 
-- Planen kommer fra malens standardplan. AI-utkastet kommer i Epic 2.
+- Ingen ekte AI ennå: appen lager alltid en testplan fra malen og sier det etter at arrangementet er opprettet. Tilkoblingen til Anthropic kommer i Story 2.2, og knappen «Simuler AI-feil» i Story 4.2.
 - Ingen e-post: hjelperlenker deles bare ved å kopiere dem. Påminnelser, testinnboksen og «Send påminnelser nå» kommer i Epic 3.
 - Hjelperen kan ikke endre et ja til nei (eller omvendt), og arrangøren kan ikke åpne en oppgave på nytt for samme hjelper ennå.
 - Arrangementer kan ikke endres eller slettes, og hjelpere kan ikke fjernes ennå.
@@ -141,6 +141,7 @@ src/                  applikasjonen
   routes/             HTTP-ruter (arrangør og hjelper) og paths.ts for alle URL-er
   services/           brukstilfeller; det eneste laget som skriver til databasen
   domain/             rene regler: oppgavestatus, statusregler, datoer og feilmeldinger
+  ai/                 draftPlan: AI-utkast til plan, mock-plan og fallback til malens plan
   db/                 databasetilkobling, skjema og migreringer
   templates/          malene for bryllup og utdrikningslag
   views/              EJS-sider
