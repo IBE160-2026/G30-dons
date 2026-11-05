@@ -311,7 +311,7 @@ masterplan/
     config.ts        # AD-10
     clock.ts         # AD-4
     domain/          # taskRules.ts, status.ts, plan.ts, reminderDue.ts, dates.ts, errors.ts
-    services/        # auth, events, plans, helpers, tasks, messages, reminders
+    services/        # auth, events, helpers, tasks, messages, reminders
     ai/              # index.ts (draftPlan), schema.ts, mock.ts, anthropic.ts
     mail/            # index.ts (send), texts.ts, outbox.ts, transport.ts
     db/              # schema.ts, client.ts, migrate.ts, migrations/
@@ -368,7 +368,7 @@ flowchart LR
 | --- | --- | --- |
 | FR-1, FR-2 account and isolation | services/auth, routes/organizer | AD-5, AD-16 |
 | FR-3, FR-4, FR-29, FR-32 events | services/events | AD-1, AD-12 |
-| FR-5, FR-6, FR-7 plan draft and editing | ai/, domain/plan.ts, services/plans, services/tasks | AD-8, AD-2, AD-13 |
+| FR-5, FR-6, FR-7 plan draft and editing | ai/, domain/plan.ts, services/tasks | AD-8, AD-2, AD-13 |
 | FR-8 to FR-11, FR-30 helpers and assignment | services/helpers, services/tasks | AD-2, AD-5 |
 | FR-12 to FR-16, FR-31 helper page and answers | routes/helper.ts, services/tasks | AD-2, AD-6 |
 | FR-17, FR-18 reminders | services/reminders, domain/reminderDue.ts, mail/ | AD-7, AD-9 |

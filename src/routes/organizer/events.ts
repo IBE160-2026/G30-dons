@@ -219,8 +219,12 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
     const parsed = eventSchema.safeParse(values);
     if (!parsed.success) return rerender(fieldErrors(parsed.error));
     try {
-      const eventId = await createEvent(db, clock, templates, organizerOf(res).id, parsed.data);
-      setFlash(req, 'Arrangementet er opprettet.');
+      // No AI provider until Story 2.2, and the Simulate AI failure toggle comes with Story 4.2.
+      const { eventId, notice } = await createEvent(db, clock, templates, organizerOf(res).id, parsed.data, {
+        testMode: config.testMode,
+        forceFailure: false,
+      });
+      setFlash(req, ['Arrangementet er opprettet.', notice].filter(Boolean).join('\n'));
       res.redirect(paths.event(eventId));
     } catch (err) {
       const field = fieldOf(err);

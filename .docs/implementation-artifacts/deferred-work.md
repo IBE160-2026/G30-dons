@@ -18,3 +18,7 @@ The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS w
   summary: Run the manual browser check of **Kopier lenke** (clipboard write, "Kopiert!" label, select-field fallback) before Story 1.3 is accepted, or add a DOM test environment.
   evidence: The automated tests only check that `copy.js` is served and contains the expected strings; the repo has no jsdom/happy-dom or browser runner.
   status: Clipboard write checked manually in a browser on 2026-10-28, after the `copy.js` change in `261b8d6`: the link is copied correctly (recorded in `docs/traceability.md`). The "Kopiert!" label and the select-field fallback were not part of that check.
+
+- source_spec: `.docs/implementation-artifacts/spec-2-1-ai-plan-draft-with-mock-and-fallback.md`
+  summary: Store the plan source (`ai`, `mock` or `fallback`) on the event if a later story needs it, for example to show it after the flash is gone or to count fallbacks.
+  evidence: Decision D5 (approved 2026-10-28) shows the source only in the flash after the event is created; no `plan_source` column and no migration in Story 2.1. Once the flash is read, the app cannot tell which plan an event got.

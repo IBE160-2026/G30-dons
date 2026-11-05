@@ -1,6 +1,6 @@
 # Sporbarhet
 
-Dokumentet har to deler: først kobles hver story i Epic 1 til akseptansekriteriene, koden og testene, deretter kobles hvert krav (FR/NFR) til testene. Alle automatiske tester kjøres med `npm test`. Det som ikke kan testes automatisk uten nettleser eller Docker, er merket **manuell**, med fremgangsmåte.
+Dokumentet har to deler: først kobles hver story i Epic 1 og Epic 2 til akseptansekriteriene, koden og testene, deretter kobles hvert krav (FR/NFR) til testene. Alle automatiske tester kjøres med `npm test`. Det som ikke kan testes automatisk uten nettleser eller Docker, er merket **manuell**, med fremgangsmåte.
 
 ## Story → akseptansekriterier → kode → tester (Epic 1)
 
@@ -17,7 +17,7 @@ Akseptansekriteriene er forkortet fra `.docs/planning-artifacts/epics.md`. Kodef
 | 1.1 | A får 404 for B sine id-er, og ingen av B sine data vises (FR2) | `routes/middleware.ts`, `views/404.ejs` | `events.test.ts`, `helpers.test.ts`, `helperPage.test.ts`, `summaries.test.ts` | ✅ Story 1.1 hadde ingen ressurser med id ennå, så kriteriet testes med ressursene fra 1.2–1.5. |
 | 1.1 | `npm test` bruker eksplisitt testmiljø, fersk SQLite-fil og fast klokke; `config.ts` validerer alle innstillinger (FR27, FR23, AD-10) | `config.ts`, `clock.ts` | `config.test.ts`, `dates.test.ts`; oppsett i `helpers.ts` og `globalSetup.ts` | ✅ |
 | 1.1 | Øktcookien er `httpOnly` og `sameSite=lax`, og helmet er på (AD-16) | `app.ts` | `app.test.ts` | ✅ |
-| 1.2 | Arrangement fra Bryllup- eller Utdrikningslag-malen; oppgavene lages fra `defaultPlan` som Unassigned; malene valideres med zod ved oppstart (FR3, FR6, AD-8) | `services/events.ts`, `services/plans.ts`, `domain/plan.ts`, `templates/index.ts`, `templates/wedding.json`, `templates/bachelorette.json`, `routes/organizer/events.ts`, `views/event-new.ejs` | `events.test.ts`, `plan.test.ts` | ✅ |
+| 1.2 | Arrangement fra Bryllup- eller Utdrikningslag-malen; oppgavene lages fra `defaultPlan` som Unassigned; malene valideres med zod ved oppstart (FR3, FR6, AD-8) | `services/events.ts`, `ai/mock.ts` (`templatePlan`, flyttet fra `services/plans.ts` i Story 2.1), `domain/plan.ts`, `templates/index.ts`, `templates/wedding.json`, `templates/bachelorette.json`, `routes/organizer/events.ts`, `views/event-new.ejs` | `events.test.ts`, `plan.test.ts` | ✅ |
 | 1.2 | En malfrist før i dag settes til i dag (FR5, AD-8) | `domain/plan.ts` | `plan.test.ts`, `events.test.ts` | ✅ |
 | 1.2 | A får 404 for B sine arrangementer og oppgaver, og ingenting endres (FR2) | `routes/organizer/events.ts`, `services/events.ts`, `services/tasks.ts` | `events.test.ts` | ✅ |
 | 1.2 | Uten dato eller med dato i fortiden: ikke opprettet, norsk feil med HTTP 422 (FR3) | `services/events.ts`, `domain/errors.ts`, `routes/organizer/events.ts` | `events.test.ts` | ✅ |
@@ -50,6 +50,20 @@ Akseptansekriteriene er forkortet fra `.docs/planning-artifacts/epics.md`. Kodef
 
 **Oppsummert:** Alle seks stories har automatiske tester. Ett akseptansekriterium mangler automatisk test (Docker-imaget i 1.6), og fire er bare delvis automatisert (oppstart med `npm run dev` i 1.1, utklippstavlen i 1.3, 360 px i 1.4 og README-innholdet i 1.6).
 
+## Story → akseptansekriterier → kode → tester (Epic 2)
+
+Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-2-1-ai-plan-draft-with-mock-and-fallback.md`. I Story 2.1 finnes ingen ekte AI-leverandør (den kommer i Story 2.2), så appen bruker alltid mock-planen. AI- og fallback-veien testes med en falsk leverandør, uten nett.
+
+| Story | Akseptansekriterium | Kode | Tester | Dekning |
+|---|---|---|---|---|
+| 2.1 | Skjemaet for nytt arrangement sier over knappen at beskrivelsen sendes til en AI-tjeneste, og at navn og e-post til hjelperne aldri sendes (NFR3, AD-8) | `views/event-new.ejs` | `events.test.ts` | ✅ |
+| 2.1 | Uten leverandør (ingen nøkkel) gir `draftPlan` malens mock-plan med `source: 'mock'` og testplan-varselet, og arrangementssiden viser varselet én gang (FR23, AD-8) | `ai/index.ts`, `ai/mock.ts`, `services/events.ts`, `routes/organizer/events.ts`, `public/styles.css` (utenfor `src/`) | `draftPlan.test.ts`, `events.test.ts` | ✅ |
+| 2.1 | Feil form, 0 eller 41 oppgaver, tittel på 121 tegn eller frist etter arrangementet gir malens plan med `source: 'fallback'`; en gyldig plan med frist før i dag får frist i dag (FR5, FR6, AD-8) | `ai/schema.ts`, `ai/index.ts`, `domain/plan.ts` | `draftPlan.test.ts`, `plan.test.ts` | ✅ |
+| 2.1 | Leverandøren kaster, svarer ikke på 30 s, eller `forceFailure` i testmodus gir fallback med norsk varsel, og arrangementet opprettes likevel; med `TEST_MODE=false` ignoreres `forceFailure` (FR6, NFR6) | `ai/index.ts`, `services/events.ts` | `draftPlan.test.ts` | ✅ Tidsavbruddet testes med falske timere. |
+| 2.1 | Leverandøren kjøres før noen arrangementsrad finnes, og alle oppgaver er Unassigned uten hjelper (AD-8, AD-2) | `services/events.ts`, `services/tasks.ts` | `draftPlan.test.ts` | ✅ |
+| 2.1 | Leverandøren får bare `templateKey`, `eventDate` og `description`, og beskrivelsen har verken arrangementsnavn eller hjelperdata (NFR3) | `ai/index.ts`, `services/events.ts` (`describeEvent`) | `draftPlan.test.ts` | ✅ |
+| 2.1 | Ingen test åpner en nettverksforbindelse; `npm test`, `npm run typecheck` og `npm run lint` er grønne (FR27) | `ai/index.ts` (leverandøren er en parameter) | alle | ✅ |
+
 ## Krav → tester
 
 ### Bygget så langt
@@ -60,8 +74,8 @@ Akseptansekriteriene er forkortet fra `.docs/planning-artifacts/epics.md`. Kodef
 | FR-2 | Hver arrangør ser bare sine egne data | `tests/events.test.ts`, `tests/helpers.test.ts`, `tests/helperPage.test.ts`, `tests/summaries.test.ts` | Andres id-er gir 404 og endrer ingenting. |
 | FR-3 | Opprette arrangement fra mal | `tests/events.test.ts`, `tests/plan.test.ts` | Dato i fortiden avvises. |
 | FR-4 | Flere arrangementer samtidig, én fane hver | `tests/events.test.ts` | |
-| FR-5 | Plan med frister (malens plan) | `tests/plan.test.ts`, `tests/events.test.ts` | Frister før i dag settes til i dag. AI-utkastet kommer i Epic 2. |
-| FR-6 | Malens standardplan | `tests/plan.test.ts`, `tests/events.test.ts` | Malene valideres ved oppstart. Fallback fra AI kommer i Epic 2. |
+| FR-5 | Plan med frister (AI-utkast, mock eller mal) | `tests/plan.test.ts`, `tests/draftPlan.test.ts`, `tests/events.test.ts` | Hver plan går gjennom `domain/plan.ts`; frister før i dag settes til i dag. AI-veien testes med en falsk leverandør; den ekte leverandøren kommer i Story 2.2. |
+| FR-6 | Malens standardplan som fallback | `tests/plan.test.ts`, `tests/draftPlan.test.ts`, `tests/events.test.ts` | Malene valideres ved oppstart. Feil, tidsavbrudd, ugyldig plan og tvunget feil gir malens plan med varsel. |
 | FR-7 | Redigere planen | `tests/events.test.ts`, `tests/helperPage.test.ts` | Legge til, endre, slette; endring av akseptert oppgave merkes (AD-13). Påminnelser kommer i Epic 3. |
 | FR-8 | Legge til hjelpere på e-post | `tests/helpers.test.ts` | Maks fem; samme e-post gir samme hjelper og lenke. |
 | FR-9 | Tildele oppgave | `tests/helpers.test.ts`, `tests/taskRules.test.ts` | |
@@ -75,17 +89,20 @@ Akseptansekriteriene er forkortet fra `.docs/planning-artifacts/epics.md`. Kodef
 | FR-20 | Oppsummeringer i arrangementet | `tests/summaries.test.ts`, `tests/seed.test.ts` | Med testdata gir hver oppsummering tallene i `docs/fixtures.md`. |
 | FR-21 | Statusregler | `tests/status.test.ts`, `tests/dates.test.ts` | Oslo-dato, 7-dagers- og 3-dagersreglene, tidligere arrangementer. |
 | FR-22 | Oppdatert ved neste lasting | `tests/summaries.test.ts` | |
+| FR-23 | Kjøre uten nøkler (mock-AI) | `tests/draftPlan.test.ts`, `tests/events.test.ts` | Uten leverandør brukes mock-planen med testplan-varselet. Testinnboksen kommer i Epic 3. |
 | FR-25 | Testdata | `tests/seed.test.ts` | Tall som `EXPECTED_COUNTS`, to ulike seed-dager, gyldige rader, ny seed gir samme lenker, avvisning uten testmodus eller med `libsql://`. |
 | FR-27 | Automatiske tester | alle `tests/*.test.ts`, særlig `tests/config.test.ts` og `tests/seed.test.ts` | Hjelpemodulen `tests/helpers.ts` gir hver test egen database, eksplisitt testmiljø og fast dato (1. november 2026). Ingen nett eller nøkler. |
 | FR-28 | Oppsett og dokumentasjon | `tests/config.test.ts`, `tests/seed.test.ts` + **manuell** | Testene sjekker standardinnstillingene og at `docs/fixtures.md` har de riktige tallene. **Manuell:** les `README.md` og `.env.example`. |
 | FR-33 | Levering med Docker | **manuell** | `docker build -t masterplan .` og `docker run --rm --env-file .env.example -p 3000:3000 masterplan`, deretter `/health`, testinnlogging og oversikten. `npm test` bruker ikke Docker. Resultatet av den manuelle kjøringen står under «Implementation Notes» i `.docs/implementation-artifacts/spec-1-6-seed-data-docker-and-examiner-guide.md`. |
 | NFR-1 | Hjelpersiden på mobil fra 360 px | `tests/helperPage.test.ts` (indirekte) + **manuell** | Den automatiske testen er bare en indirekte sjekk: den ser etter at stilarket ikke har faste bredder over 360 px. Selve kravet sjekkes manuelt. **Manuell:** åpne en hjelperlenke i nettleserens mobilvisning med 360 px bredde, og sjekk at siden ikke kan rulles sidelengs og at knappene er lette å trykke på. |
 | NFR-2 | Sikkerhet | `tests/auth.test.ts`, `tests/app.test.ts`, `tests/helperPage.test.ts` | Saltede scrypt-hasher, helmet, sikre informasjonskapsler, hjelperhoder. |
+| NFR-3 | Personvern mot AI-tjenesten | `tests/draftPlan.test.ts`, `tests/events.test.ts` | Leverandøren får bare `templateKey`, `eventDate` og en beskrivelse uten arrangementsnavn og hjelperdata; skjemaet opplyser om det. |
+| NFR-6 | Tidsgrense for AI-utkastet | `tests/draftPlan.test.ts` | 30 s med falske timere; forespørselen avbrytes og malens plan brukes. |
 
 ### Ikke bygget ennå
 
 | Krav | Kommer i |
 |---|---|
-| FR-5 (AI-utkast), FR-6 (fallback fra AI), FR-23 (mock-AI) | Epic 2 |
-| FR-10 (e-post), FR-17, FR-18, FR-24, FR-26 | Epic 3 |
+| FR-5 (ekte AI-utkast fra Anthropic), NFR-4 (kostnadstak) | Story 2.2 |
+| FR-10 (e-post), FR-17, FR-18, FR-23 (ingen e-post i testmodus, testinnboksen), FR-24, FR-26 | Epic 3 |
 | FR-14, FR-29, FR-30, FR-31, FR-32 | Senere epics |
