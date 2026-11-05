@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { eq, isNotNull, isNull } from 'drizzle-orm';
 import request from 'supertest';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { resetAndSeed, runSeedCommand, startupSeedDecision } from '../seed/command.ts';
 import { EXPECTED_COUNTS, SEED_EVENT_NAMES, SEED_HELPERS, type SeedEventKey, TEST_LOGIN } from '../seed/fixture.ts';
 import { type SeedResult, seed } from '../seed/seed.ts';
@@ -27,15 +27,20 @@ import { setupTestApp, type TestContext } from './helpers.ts';
 let ctx: TestContext;
 let seeded: SeedResult;
 
-beforeEach(async () => {
+beforeAll(() => {
   mkdirSync(TEST_DB_DIR, { recursive: true });
-  ctx = await setupTestApp();
-  seeded = await seed(ctx.db, ctx.clock);
 });
 
-afterEach(() => {
-  ctx.close();
-});
+/** Gives each test in the calling describe a new app with the seed loaded. A file seed takes about 1 s on Windows, so only the describes that read `ctx` or `seeded` use it. */
+function useSeededApp() {
+  beforeEach(async () => {
+    ctx = await setupTestApp();
+    seeded = await seed(ctx.db, ctx.clock);
+  });
+  afterEach(() => {
+    ctx.close();
+  });
+}
 
 const EVENT_KEYS: SeedEventKey[] = ['wedding', 'bachelorette'];
 
@@ -56,9 +61,9 @@ async function actualCounts(db: Db, result: SeedResult, key: SeedEventKey, today
   };
 }
 
-const testDbUrl = () => pathToFileURL(join(TEST_DB_DIR, `${randomUUID()}.db`)).href;
-
 describe('seed counts', () => {
+  useSeededApp();
+
   it('matches EXPECTED_COUNTS through the event summary and the overview', async () => {
     const today = ctx.clock.today();
     for (const key of EVENT_KEYS) {
@@ -115,34 +120,37 @@ describe('seed counts', () => {
       );
     }
   });
+});
 
-  // 2026-10-26 and 2027-03-29 are the days right after the Oslo DST changes, so the seed's past
-  // steps (up to 60 days back) cross a change; 2027-03-28T22:30Z is 00:30 Oslo time on the 29th.
-  it('gives the same counts on summer and winter seed days and right after each DST change', async () => {
-    for (const iso of [
-      '2027-07-15T21:30:00.000Z',
-      '2027-01-20T06:00:00.000Z',
-      '2026-10-26T07:00:00.000Z',
-      '2027-03-28T22:30:00.000Z',
-    ]) {
-      const db = await openDb({ url: testDbUrl() });
-      try {
-        await runMigrations(db);
-        const clock = fixedClock(iso);
-        const result = await seed(db, clock);
-        for (const key of EVENT_KEYS) {
-          expect(await actualCounts(db, result, key, clock.today()), `${key} seeded at ${iso}`).toEqual(
-            EXPECTED_COUNTS[key],
-          );
-        }
-      } finally {
-        db.$client.close();
+// 2026-10-26 and 2027-03-29 are the days right after the Oslo DST changes, so the seed's past
+// steps (up to 60 days back) cross a change; 2027-03-28T22:30Z is 00:30 Oslo time on the 29th.
+// Only the date logic is under test here, so each day seeds an in-memory database (about 0.15 s
+// instead of 1 s for a file on Windows). The file database is covered by the other describes
+// and by the `npm run seed` test.
+describe('seed counts on summer and winter days and right after each DST change', () => {
+  it.each([
+    '2027-07-15T21:30:00.000Z',
+    '2027-01-20T06:00:00.000Z',
+    '2026-10-26T07:00:00.000Z',
+    '2027-03-28T22:30:00.000Z',
+  ])('matches EXPECTED_COUNTS when seeded at %s', async (iso) => {
+    const db = await openDb({ url: ':memory:' });
+    try {
+      await runMigrations(db);
+      const clock = fixedClock(iso);
+      const result = await seed(db, clock);
+      for (const key of EVENT_KEYS) {
+        expect(await actualCounts(db, result, key, clock.today()), key).toEqual(EXPECTED_COUNTS[key]);
       }
+    } finally {
+      db.$client.close();
     }
   });
 });
 
 describe('seeded rows', () => {
+  useSeededApp();
+
   it('every seeded task passes assertFieldInvariant', async () => {
     const rows = await ctx.db.select().from(tasks);
     expect(rows.length).toBe(EXPECTED_COUNTS.wedding.total + EXPECTED_COUNTS.bachelorette.total);
@@ -220,6 +228,8 @@ describe('assertFieldInvariant', () => {
 });
 
 describe('seeded helper links', () => {
+  useSeededApp();
+
   it('opens each helper page with his own tasks', async () => {
     for (const h of SEED_HELPERS) {
       const res = await request(ctx.app).get(`/h/${h.token}`);
