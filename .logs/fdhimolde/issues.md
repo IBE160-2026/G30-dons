@@ -13,5 +13,4 @@
 - [x] 2026-10-28 [spec-story-2-1](994-2026-10-28-15-18-23-spec-story-2-1.md) — Godkjenn eller endre D1–D5 i spec 2.1 (branch `story/2-1-ai-plan-draft`), og sett status til `ready-for-dev` (løst 2026-11-03)
 - [x] 2026-11-03 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Implementer story 2.1 mot de nye testene (`src/ai/`, ny `createEvent`-signatur, varsler), og la `insertGuards.test.ts` og `seed/seed.ts` følge signaturen (løst 2026-11-04)
 - [ ] 2026-11-03 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Seed-testen for DST-skifte går over tidsgrensen i full suite på Windows (6,6 s, grønn alene)
-- [x] 2026-11-04 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Manuell sjekk av story 2.1 med `npm run dev` på 360 px: AI-varselet på skjemaet og bekreftelsen på to linjer (løst 2026-11-04)
-- [ ] 2026-11-04 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Sett story 2.1 til `done` i `sprint-status.yaml` når PR-en er slått inn
+- [x] 2026-11-04 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Sett story 2.1 til `done` i `sprint-status.yaml` når PR-en er slått inn (løst 2026-11-05)
