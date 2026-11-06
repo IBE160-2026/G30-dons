@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-24-2026 19:41
-last_updated: 11-05-2026 19:28
+last_updated: 11-06-2026 09:39
 project: MasterPlan
 project_key: NOKEY
 tracking_system: file-system
@@ -55,12 +55,15 @@ development_status:
   epic-3: backlog
   3-1-reminders-and-the-test-inbox: backlog
   3-2-real-email-through-the-gmail-api: backlog
+  # 3.3 (FR14, Should) er skilt ut fra 4.4 2026-11-06 og bygges rett etter 3.1 og før epic 4,
+  # fordi suksesskriterium 3 i briefen krever det. Se docs/ki-logg.md.
+  3-3-ola-changes-his-answer: backlog
   epic-3-retrospective: optional
 
   epic-4: backlog
   4-1-send-helper-links-by-email: backlog
   4-2-test-mode-controls: backlog
   4-3-correct-or-remove-a-helper: backlog
-  4-4-undo-reopen-and-change-answers: backlog
+  4-4-undo-and-reopen: backlog
   4-5-edit-and-delete-events: backlog
   epic-4-retrospective: optional
