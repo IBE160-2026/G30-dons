@@ -9,7 +9,9 @@ import { absoluteUrl, paths } from '../routes/paths.ts';
 
 // FR-17, FR-18, AD-7: the reminder check. Due reminders are computed when it runs. Each one is
 // claimed in reminders_sent (unique per task and yes) before the email is sent, and the claim is
-// released if sending fails, so each yes gets at most one reminder and none is lost. The test-mode
+// released if sending fails, so each yes gets at most one reminder and a failed send is retried on
+// the next run. A crash between the claim and the send loses that one reminder: the architecture
+// accepts at-most-once here, because an email cannot share a database transaction. The test-mode
 // button calls run now; Story 3.2 adds the cron route that calls the same function.
 
 export interface ReminderDeps {
