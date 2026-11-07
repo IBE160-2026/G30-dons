@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-24-2026 19:41
-last_updated: 11-06-2026 09:39
+last_updated: 11-07-2026 15:04
 project: MasterPlan
 project_key: NOKEY
 tracking_system: file-system
@@ -54,10 +54,12 @@ development_status:
 
   epic-3: backlog
   3-1-reminders-and-the-test-inbox: backlog
-  3-2-real-email-through-the-gmail-api: backlog
   # 3.3 (FR14, Should) er skilt ut fra 4.4 2026-11-06 og bygges rett etter 3.1 og før epic 4,
   # fordi suksesskriterium 3 i briefen krever det. Se docs/ki-logg.md.
   3-3-ola-changes-his-answer: backlog
+  # 3.2 bygges etter 3.3 (endret 2026-11-07): Must-kravet om påminnelser dekkes av 3.1 i testmodus.
+  # Ekte e-post trengs bare ved publisering, så 3.2 henger sammen med 1.7 og utsettes eller kuttes med den.
+  3-2-real-email-through-the-gmail-api: backlog
   epic-3-retrospective: optional
 
   epic-4: backlog

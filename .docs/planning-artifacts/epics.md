@@ -13,7 +13,7 @@ inputDocuments:
 
 ## Overview
 
-This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. There is no separate UX design document. The UX notes in the PRD addendum are used instead. The deadline is 14 November 2026. Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Story 3.3 (changing an answer, FR14) is Should, but it is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 asks for it (moved out of Story 4.4 on 2026-11-06, see `docs/ki-logg.md`). Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
+This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. There is no separate UX design document. The UX notes in the PRD addendum are used instead. The deadline is 14 November 2026. Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Story 3.3 (changing an answer, FR14) is Should, but it is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 asks for it (moved out of Story 4.4 on 2026-11-06, see `docs/ki-logg.md`). Story 3.2 (real email through the Gmail API) is only needed when the app is deployed, so it is built after Story 3.3 and is deferred or cut together with Story 1.7 (2026-11-07). The reminders themselves are covered by Story 3.1 in test mode. Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
 
 ## Requirements Inventory
 
@@ -149,7 +149,7 @@ Kari describes her event, and the AI drafts the task list, falling back to the t
 
 ### Epic 3: Reminders keep helpers on track (Must)
 Helpers get one fixed-text reminder email per yes at the right time. In test mode every email goes to the test inbox, and the examiner can trigger reminders with **Send due reminders now**. When deployed, email goes through the Gmail API. `MAIL_TRANSPORT=disabled` is only an emergency fallback.
-Story 3.3 lets a helper change an answer (Should, built after Story 3.1 and before Epic 4).
+Build order: 3.1, 3.3, 3.2. Story 3.3 lets a helper change an answer (Should, built after Story 3.1 and before Epic 4). Story 3.2 is only needed when the app is deployed, so it is deferred or cut together with Story 1.7.
 **FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container), FR14 (Story 3.3). NFR7, NFR8.
 
 ### Epic 4: More control for Kari (Should, cut from the end)
@@ -390,7 +390,7 @@ So that I can see the whole loop in a few minutes without keys or accounts.
 
 ### Story 1.7: Deploy for the friends test
 
-*Cut note: hosting is not a course requirement; the delivery is the code and the Dockerfile (FR33, Story 1.6). If this story causes problems, it is the first thing cut, before any FR. The friends test then runs on a laptop on the same network, or is dropped and reported as such.*
+*Cut note: hosting is not a course requirement; the delivery is the code and the Dockerfile (FR33, Story 1.6). If this story causes problems, it is the first thing cut, before any FR. The friends test then runs on a laptop on the same network, or is dropped and reported as such. Story 3.2 (real email) is only needed for a deployed app, so it is deferred or cut together with this story.*
 
 As the developer,
 I want the app running on free hosting,
@@ -552,39 +552,6 @@ So that I don't forget what I promised.
 **When** I log in with the test account and click **Send påminnelser nå**
 **Then** the reminders appear in the test inbox inside the container, with no keys or network, and the README's Docker steps and "Ting å prøve" mention the test inbox (FR33, FR24, AD-17)
 
-### Story 3.2: Real email through the Gmail API
-
-As the developer,
-I want the deployed app to send real email from the dedicated MasterPlan Gmail account,
-So that my friends get reminders during the test.
-
-**Acceptance Criteria:**
-
-**Given** `MAIL_TRANSPORT=gmail` and the four Gmail settings
-**When** `mail.send` runs with `TEST_MODE` off
-**Then** the message is built as MIME by Nodemailer's `MailComposer` and sent over HTTPS with the Gmail REST API, through `google-auth-library` (AD-9)
-**And** the sender name is "MasterPlan på vegne av ‹organizer›", and `Reply-To` is the organizer's email
-**And** a failed send throws `MailError` and logs one line
-
-**Given** `MAIL_TRANSPORT` is missing or unknown, or Gmail settings are missing while it is `gmail`
-**When** the app starts with `TEST_MODE` off
-**Then** it refuses to start, with a clear error (AD-10)
-
-**Given** `scripts/gmail-auth.ts` and the Gmail section in `docs/deploy.md`
-**When** I follow them once
-**Then** I can:
-- create a Google Cloud project
-- set the OAuth consent screen to "In production"
-- get a refresh token
-- store all settings on Render only
-
-**And** the guide explains the fallback: set `MAIL_TRANSPORT=disabled`
-
-**Given** cron-job.org
-**When** it is set up as in `docs/deploy.md`
-**Then** it calls `GET /health`, then the reminder POST 3 minutes later, then the POST again 10 minutes after that, every day (AD-7)
-**And** a real reminder sent to my own address arrives in the inbox, not spam (manual check in `docs/traceability.md`)
-
 ### Story 3.3: Ola changes his answer
 
 *Priority note: FR14 is Should, but this story is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 ("Changing an answer") asks for an automated test of it. It was moved out of Story 4.4 on 2026-11-06. Estimated at about a quarter of Story 2.1, since `domain/taskRules.ts`, `tasks.apply`, the messages row and the helper page buttons from Story 1.4 are reused. No migration is needed.*
@@ -616,6 +583,41 @@ So that a change of plans is visible to Kari instead of a task silently stalling
 **Given** Kari's overview and event view
 **When** Ola changes an answer and Kari reloads
 **Then** the counts follow the new status: a Declined task is in Needs a helper, an Accepted task is not (FR19, FR20, FR21)
+
+### Story 3.2: Real email through the Gmail API
+
+*Order and cut note: this story is built after Story 3.3. The brief's Must requirement for reminders is covered by Story 3.1 in test mode. Real email is only needed when the app is deployed, so this story belongs with Story 1.7 and is deferred or cut together with it (changed on 2026-11-07, see `docs/ki-logg.md`).*
+
+As the developer,
+I want the deployed app to send real email from the dedicated MasterPlan Gmail account,
+So that my friends get reminders during the test.
+
+**Acceptance Criteria:**
+
+**Given** `MAIL_TRANSPORT=gmail` and the four Gmail settings
+**When** `mail.send` runs with `TEST_MODE` off
+**Then** the message is built as MIME by Nodemailer's `MailComposer` and sent over HTTPS with the Gmail REST API, through `google-auth-library` (AD-9)
+**And** the sender name is "MasterPlan på vegne av ‹organizer›", and `Reply-To` is the organizer's email
+**And** a failed send throws `MailError` and logs one line
+
+**Given** `MAIL_TRANSPORT` is missing or unknown, or Gmail settings are missing while it is `gmail`
+**When** the app starts with `TEST_MODE` off
+**Then** it refuses to start, with a clear error (AD-10)
+
+**Given** `scripts/gmail-auth.ts` and the Gmail section in `docs/deploy.md`
+**When** I follow them once
+**Then** I can:
+- create a Google Cloud project
+- set the OAuth consent screen to "In production"
+- get a refresh token
+- store all settings on Render only
+
+**And** the guide explains the fallback: set `MAIL_TRANSPORT=disabled`
+
+**Given** cron-job.org
+**When** it is set up as in `docs/deploy.md`
+**Then** it calls `GET /health`, then the reminder POST 3 minutes later, then the POST again 10 minutes after that, every day (AD-7)
+**And** a real reminder sent to my own address arrives in the inbox, not spam (manual check in `docs/traceability.md`)
 
 ## Epic 4: More control for Kari (Should, cut from the end)
 
