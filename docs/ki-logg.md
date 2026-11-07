@@ -75,3 +75,11 @@ En gjennomgang av epics mot briefen viste at hjelperen skal kunne endre svaret s
 | Dato | Type | Forslag | Hva som ble gjort | Kilde | Commit |
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-06 | Presisert | KI anslo omfanget av story 4.4 ut fra koden og foreslo å ta FR14 ut som en egen liten story etter 3.1. Gjenbruk fra story 1.4: `HELPER_MOVES` i `domain/taskRules.ts`, `tasks.apply` med én meldingsrad per svar, `acceptedAt = now` ved ja og knappene på hjelpersiden. Det trengs ingen migrering, og FR14 alene er anslått til omtrent en fjerdedel av story 2.1 (~20 linjer kode og ~60–80 linjer tester, mot ~200 og ~400 i 2.1). | Godtatt. Begrunnelse: FR14 dekker suksesskriterium 3 i briefen og er billig. FR14 er nå story 3.3 og bygges rett etter 3.1 og før epic 4. FR31 (gjenåpning) blir i 4.4, som fortsatt kan kuttes. KI la den nye storyen i epic 3 og ikke først i epic 4, fordi «Story 4.2» er referert i kode, README, spec 2.1 og denne loggen, og en ny nummerering ville gjort de referansene feil. Rekkefølgen for Should i PRD §8 er oppdatert. Akseptansekriteriene i 3.3 tar med en fallgruve KI fant i koden: `accepted_at` må tømmes når et ja blir nei, ellers bryter oppgaven `assertFieldInvariant`. | Samtalen | [261bfcc](https://github.com/IBE160-2026/G30-dons/commit/261bfcc) |
+
+## Rekkefølgen i epic 3: 3.1, 3.3, 3.2
+
+Etter at FR14 ble skilt ut som story 3.3, sto story 3.2 (ekte e-post gjennom Gmail API) fortsatt foran 3.3 i `epics.md` og `sprint-status.yaml`.
+
+| Dato | Type | Forslag | Hva som ble gjort | Kilde | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 2026-11-07 | Presisert | Rekkefølgen i epic 3 fulgte nummereringen (3.1, 3.2, 3.3), selv om 3.3 skulle bygges rett etter 3.1. Epic 3 var også beskrevet som Must som aldri kuttes, inkludert Gmail-delen. | Jeg bestemte rekkefølgen 3.1, 3.3, 3.2. Begrunnelse: Must-kravet om påminnelser i briefen dekkes av 3.1 i testmodus. 3.2 dekker ingen FR og trengs bare når appen er publisert, så den henger sammen med 1.7 og utsettes eller kuttes sammen med den. `epics.md` (oversikt, epic-liste, notat på 3.2 og kuttnotatet i 1.7) og `sprint-status.yaml` er oppdatert. | Samtalen | [4498c0a](https://github.com/IBE160-2026/G30-dons/commit/4498c0a) |
