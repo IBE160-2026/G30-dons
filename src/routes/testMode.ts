@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Clock } from '../clock.ts';
 import type { Config } from '../config.ts';
 import type { Db } from '../db/client.ts';
+import type { OutboxEmail } from '../db/schema.ts';
 import { formatDateTimeNb } from '../domain/dates.ts';
 import { send } from '../mail/index.ts';
 import { listOutbox } from '../mail/outbox.ts';
@@ -18,14 +19,27 @@ export function remindersSentText(count: number): string {
   return count === 1 ? '1 påminnelse er sendt.' : `${count} påminnelser er sendt.`;
 }
 
+/**
+ * One email as the test inbox shows it. A text line that is one of the email's links is shown as
+ * that link, so each link appears once; links missing from the text are listed below it.
+ */
+function inboxCard(email: OutboxEmail) {
+  const lines = email.text.split('\n').map((line) => ({ text: line, isLink: email.links.includes(line) }));
+  const inText = new Set(lines.filter((l) => l.isLink).map((l) => l.text));
+  return {
+    ...email,
+    sentAtText: formatDateTimeNb(email.createdAt),
+    lines,
+    extraLinks: email.links.filter((link) => !inText.has(link)),
+  };
+}
+
 export function testModeRoutes(db: Db, clock: Clock, config: Config): Router {
   const router = Router();
 
   router.get(paths.testInbox(), requireLogin(db), async (_req, res) => {
     const emails = await listOutbox(db, organizerOf(res).id);
-    res.render('test-inbox', {
-      emails: emails.map((e) => ({ ...e, sentAtText: formatDateTimeNb(e.createdAt) })),
-    });
+    res.render('test-inbox', { emails: emails.map(inboxCard) });
   });
 
   // D3: runs the whole check, the same as the cron route in Story 3.2 will.

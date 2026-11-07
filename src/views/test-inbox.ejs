@@ -13,10 +13,10 @@
         <li class="outbox-email">
           <h2><%= email.subject %></h2>
           <p class="muted outbox-meta">Fra: <%= email.fromName %> (svar går til <%= email.replyTo %>)<br>Til: <%= email.to %><br><%= email.sentAtText %></p>
-          <p class="outbox-text"><%= email.text %></p>
-          <% if (email.links.length > 0) { %>
+          <p class="outbox-text"><% email.lines.forEach((line, i) => { %><%= i > 0 ? '\n' : '' %><% if (line.isLink) { %><a href="<%= line.text %>"><%= line.text %></a><% } else { %><%= line.text %><% } %><% }) %></p>
+          <% if (email.extraLinks.length > 0) { %>
             <ul class="outbox-links">
-              <% for (const link of email.links) { %>
+              <% for (const link of email.extraLinks) { %>
                 <li><a href="<%= link %>"><%= link %></a></li>
               <% } %>
             </ul>
