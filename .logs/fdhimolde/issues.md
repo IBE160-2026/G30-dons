@@ -15,3 +15,5 @@
 - [x] 2026-11-03 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Seed-testen for DST-skifte går over tidsgrensen i full suite på Windows (6,6 s, grønn alene) (løst 2026-11-05, [ustabil-seed-test](992-2026-11-05-20-15-08-ustabil-seed-test.md))
 - [x] 2026-11-04 [tester-story-2-1](993-2026-11-03-19-52-25-tester-story-2-1.md) — Sett story 2.1 til `done` i `sprint-status.yaml` når PR-en er slått inn (løst 2026-11-05)
 - [ ] 2026-11-06 [skill-ut-fr14](991-2026-11-06-09-40-26-skill-ut-fr14.md) — Story 4.4: bestem hva det betyr å gjenåpne en ferdig oppgave uten hjelper (`helperId = null` etter `markDone` fra Ikke tildelt)
+- [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1 er `ready-for-dev`: skriv testene fra specen, og implementer deretter
+- [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.2: avgjør hvordan mange gamle påminnelser unngås når e-post slås på sent (D4 og D5, `deferred-work.md`)
