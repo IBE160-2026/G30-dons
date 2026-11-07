@@ -17,6 +17,10 @@ export const paths = {
   assignTask: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/assign`,
   helpers: (eventId: number | string) => `/events/${eventId}/helpers`,
   markDone: (eventId: number | string, taskId: number | string) => `/events/${eventId}/tasks/${taskId}/done`,
+  /** FR-24: the organizer's test inbox (test mode only). */
+  testInbox: () => '/test/innboks',
+  /** FR-26: «Send påminnelser nå» (test mode only). */
+  runReminders: () => '/test/paminnelser',
   helperPage: (token: string) => `/h/${token}`,
   /** The helper page with one of its fixed notices (the query only picks a text). */
   helperNotice: (token: string, notice: 'lagret' | 'feil' | 'lang') =>

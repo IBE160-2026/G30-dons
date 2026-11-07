@@ -14,6 +14,7 @@ import { authRoutes } from './routes/organizer/auth.ts';
 import { eventRoutes } from './routes/organizer/events.ts';
 import { overviewRoutes } from './routes/organizer/overview.ts';
 import { paths } from './routes/paths.ts';
+import { testModeRoutes } from './routes/testMode.ts';
 import { loadTemplates } from './templates/index.ts';
 
 export interface AppDeps {
@@ -46,6 +47,7 @@ export function createApp({ config, db, clock, templatesDir }: AppDeps): Express
     res.locals.paths = paths;
     res.locals.formatDate = formatDateNb;
     res.locals.organizer = undefined;
+    res.locals.testMode = config.testMode;
     res.locals.flash = undefined;
     next();
   });
@@ -75,6 +77,8 @@ export function createApp({ config, db, clock, templatesDir }: AppDeps): Express
   app.use(authRoutes(db, clock));
   app.use(overviewRoutes(db, clock));
   app.use(eventRoutes(db, clock, templates, config));
+  // AD-10: the test inbox and test controls exist only in test mode.
+  if (config.testMode) app.use(testModeRoutes(db, clock, config));
 
   app.use((_req, res) => {
     res.status(404).render('404');

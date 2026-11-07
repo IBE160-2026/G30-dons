@@ -10,10 +10,15 @@
   <header class="site-header">
     <a class="brand" href="<%= paths.overview() %>">MasterPlan</a>
     <% if (organizer) { %>
-      <form method="post" action="<%= paths.logout() %>" class="inline">
-        <span class="who"><%= organizer.name %></span>
-        <button type="submit" class="link-button">Logg ut</button>
-      </form>
+      <div class="header-actions">
+        <% if (testMode) { %>
+          <a href="<%= paths.testInbox() %>">Testinnboks</a>
+        <% } %>
+        <form method="post" action="<%= paths.logout() %>" class="inline">
+          <span class="who"><%= organizer.name %></span>
+          <button type="submit" class="link-button">Logg ut</button>
+        </form>
+      </div>
     <% } %>
   </header>
   <main class="page">
