@@ -2,7 +2,8 @@
 title: 'Story 3.1: Reminders and the test inbox'
 type: 'feature'
 created: '2026-11-07'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '4344a9f4390c83238470ed7135b8910e753d95a1'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
