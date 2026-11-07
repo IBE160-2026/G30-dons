@@ -17,3 +17,5 @@
 - [ ] 2026-11-06 [skill-ut-fr14](991-2026-11-06-09-40-26-skill-ut-fr14.md) — Story 4.4: bestem hva det betyr å gjenåpne en ferdig oppgave uten hjelper (`helperId = null` etter `markDone` fra Ikke tildelt)
 - [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1 er `ready-for-dev`: skriv testene fra specen, og implementer deretter
 - [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.2: avgjør hvordan mange gamle påminnelser unngås når e-post slås på sent (D4 og D5, `deferred-work.md`)
+- [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Før avvikene fra spec 3.1 inn i Implementation Notes (eksakt tekst i stedet for snapshot, seed-testen i `tests/seedReminders.test.ts`)
+- [ ] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — EPERM fra `seed/command.ts:73` i testkjøringen på Windows: en halvferdig testdatabase blir liggende
