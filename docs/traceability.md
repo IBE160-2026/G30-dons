@@ -105,4 +105,5 @@ Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-2-1-ai-plan-dra
 |---|---|
 | FR-5 (ekte AI-utkast fra Anthropic), NFR-4 (kostnadstak) | Story 2.2 |
 | FR-10 (e-post), FR-17, FR-18, FR-23 (ingen e-post i testmodus, testinnboksen), FR-24, FR-26 | Epic 3 |
-| FR-14, FR-29, FR-30, FR-31, FR-32 | Senere epics |
+| FR-14 (endre svar) | Story 3.3 |
+| FR-29, FR-30, FR-31, FR-32 | Epic 4 |

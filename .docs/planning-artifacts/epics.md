@@ -13,7 +13,7 @@ inputDocuments:
 
 ## Overview
 
-This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. There is no separate UX design document. The UX notes in the PRD addendum are used instead. The deadline is 14 November 2026. Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
+This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. There is no separate UX design document. The UX notes in the PRD addendum are used instead. The deadline is 14 November 2026. Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Story 3.3 (changing an answer, FR14) is Should, but it is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 asks for it (moved out of Story 4.4 on 2026-11-06, see `docs/ki-logg.md`). Story 3.2 (real email through the Gmail API) is only needed when the app is deployed, so it is built after Story 3.3 and is deferred or cut together with Story 1.7 (2026-11-07). The reminders themselves are covered by Story 3.1 in test mode. Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
 
 ## Requirements Inventory
 
@@ -116,7 +116,7 @@ FR10: Epic 1 (copy link) + Epic 4 (send link by email)
 FR11: Epic 1 - reassign
 FR12: Epic 1 - link access and security
 FR13: Epic 1 - yes/no answers
-FR14: Epic 4 - change the answer
+FR14: Epic 3 (Story 3.3) - change the answer
 FR15: Epic 1 - Done / Can't be done (reminder link part in Epic 3)
 FR16: Epic 1 - organizer marks Done
 FR17: Epic 3 - reminder timing
@@ -149,11 +149,12 @@ Kari describes her event, and the AI drafts the task list, falling back to the t
 
 ### Epic 3: Reminders keep helpers on track (Must)
 Helpers get one fixed-text reminder email per yes at the right time. In test mode every email goes to the test inbox, and the examiner can trigger reminders with **Send due reminders now**. When deployed, email goes through the Gmail API. `MAIL_TRANSPORT=disabled` is only an emergency fallback.
-**FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container). NFR7, NFR8.
+Build order: 3.1, 3.3, 3.2. Story 3.3 lets a helper change an answer (Should, built after Story 3.1 and before Epic 4). Story 3.2 is only needed when the app is deployed, so it is deferred or cut together with Story 1.7.
+**FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container), FR14 (Story 3.3). NFR7, NFR8.
 
 ### Epic 4: More control for Kari (Should, cut from the end)
-These are conveniences built in cut-list order: sending links by email, the other test-mode controls, correcting or removing helpers, undo and changed answers, and editing or deleting events.
-**FRs covered:** FR10 (email), FR26 (other controls), FR30, FR31, FR14, FR29, FR32.
+These are conveniences built in cut-list order: sending links by email, the other test-mode controls, correcting or removing helpers, undo and reopen, and editing or deleting events.
+**FRs covered:** FR10 (email), FR26 (other controls), FR30, FR31, FR29, FR32.
 
 ## Epic 1: Kari plans with templates and Ola answers by link (first deployable version)
 
@@ -389,7 +390,7 @@ So that I can see the whole loop in a few minutes without keys or accounts.
 
 ### Story 1.7: Deploy for the friends test
 
-*Cut note: hosting is not a course requirement; the delivery is the code and the Dockerfile (FR33, Story 1.6). If this story causes problems, it is the first thing cut, before any FR. The friends test then runs on a laptop on the same network, or is dropped and reported as such.*
+*Cut note: hosting is not a course requirement; the delivery is the code and the Dockerfile (FR33, Story 1.6). If this story causes problems, it is the first thing cut, before any FR. The friends test then runs on a laptop on the same network, or is dropped and reported as such. Story 3.2 (real email) is only needed for a deployed app, so it is deferred or cut together with this story.*
 
 As the developer,
 I want the app running on free hosting,
@@ -551,7 +552,41 @@ So that I don't forget what I promised.
 **When** I log in with the test account and click **Send påminnelser nå**
 **Then** the reminders appear in the test inbox inside the container, with no keys or network, and the README's Docker steps and "Ting å prøve" mention the test inbox (FR33, FR24, AD-17)
 
+### Story 3.3: Ola changes his answer
+
+*Priority note: FR14 is Should, but this story is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 ("Changing an answer") asks for an automated test of it. It was moved out of Story 4.4 on 2026-11-06. Estimated at about a quarter of Story 2.1, since `domain/taskRules.ts`, `tasks.apply`, the messages row and the helper page buttons from Story 1.4 are reused. No migration is needed.*
+
+As a helper,
+I want to change my yes to a no, or my no back to a yes,
+So that a change of plans is visible to Kari instead of a task silently stalling.
+
+**Acceptance Criteria:**
+
+**Given** an Accepted task on Ola's page
+**When** he taps **Nei**, with or without a message
+**Then** `tasks.apply` moves it to Declined, clears `accepted_at` (the field invariant in `assertFieldInvariant`), and writes exactly one `messages` row, which shows as a New reply (FR14, AD-2)
+
+**Given** a Declined task that is still Ola's
+**When** he taps **Ja**, with or without a message
+**Then** it becomes Accepted with a new `accepted_at = now`, and one `messages` row is written (FR14, AD-2)
+**And** the new `accepted_at` restarts the 14-day reminder clock: `reminders.run` from Story 3.1 treats it as a new yes and sends its own reminder (FR14, FR17, AD-7)
+
+**Given** a Declined task that Kari has reassigned to another helper
+**When** Ola's stale page posts **Ja**
+**Then** it is refused, and nothing changes (FR12, AD-6)
+
+**Given** the helper page
+**When** a task is Accepted or Declined
+**Then** the button for the other answer is shown with a label that makes clear it changes an earlier answer, and it is easy to tap at 360 px (NFR1, NFR9)
+**And** tapping the same answer again with no message changes nothing, as in Story 1.4
+
+**Given** Kari's overview and event view
+**When** Ola changes an answer and Kari reloads
+**Then** the counts follow the new status: a Declined task is in Needs a helper, an Accepted task is not (FR19, FR20, FR21)
+
 ### Story 3.2: Real email through the Gmail API
+
+*Order and cut note: this story is built after Story 3.3. The brief's Must requirement for reminders is covered by Story 3.1 in test mode. Real email is only needed when the app is deployed, so this story belongs with Story 1.7 and is deferred or cut together with it (changed on 2026-11-07, see `docs/ki-logg.md`).*
 
 As the developer,
 I want the deployed app to send real email from the dedicated MasterPlan Gmail account,
@@ -641,11 +676,13 @@ So that tasks never sit with the wrong person.
 **When** I remove them
 **Then** the `event_helpers` row is deleted. Their Open, Accepted, Declined and Can't be done tasks in that event become Unassigned and leave their page, while Done tasks keep their helper. The Helper row is kept (FR30, AD-2, AD-12)
 
-### Story 4.4: Undo, reopen and change answers
+### Story 4.4: Undo and reopen
+
+*Changing an answer (FR14) was moved out of this story to Story 3.3 on 2026-11-06. This story keeps FR31 and can still be cut.*
 
 As a helper or organizer,
-I want to correct an answer,
-So that a tap by mistake or a change of plans doesn't get stuck.
+I want to correct a finished task,
+So that a tap by mistake doesn't get stuck.
 
 **Acceptance Criteria:**
 
@@ -657,11 +694,7 @@ So that a tap by mistake or a change of plans doesn't get stuck.
 **When** I reopen it, for the same helper or another
 **Then** it becomes Open, with a new `assigned_at` and `accepted_at` cleared (FR31, AD-2)
 
-**Given** an Accepted task
-**When** Ola changes his answer to no, or later back to yes
-**Then** the status changes and a New reply is created. A new yes sets a new `accepted_at`, so the 14-day clock restarts (FR14, AD-2, AD-7)
-
-*Cut note: if time runs short, FR14 (changing an answer) can be dropped from this story first, because FR31 ranks above it.*
+*Cut note: the whole story can be dropped if time runs short.*
 
 ### Story 4.5: Edit and delete events
 

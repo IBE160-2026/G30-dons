@@ -347,15 +347,15 @@ The delivery is the source code plus a `Dockerfile`. The examiner can build and 
 **Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28, FR-33. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys from the Docker container, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 
 **Should, built in this order if time allows:**
-1. Send the helper link by email (FR-10, email part).
-2. The other test-mode controls (FR-26).
-3. Correct or remove a helper (FR-30).
-4. Undo and reopen (FR-31).
-5. Change the answer (FR-14).
+1. Change the answer (FR-14), right after the reminders. Moved up from 5th place on 2026-11-06, because the brief's success criterion 3 asks for it (see `docs/ki-logg.md`).
+2. Send the helper link by email (FR-10, email part).
+3. The other test-mode controls (FR-26).
+4. Correct or remove a helper (FR-30).
+5. Undo and reopen (FR-31).
 6. Edit event fields (FR-29).
 7. Delete an event (FR-32).
 
-**Cut list.** If time runs out, cut from the bottom of the Should list: FR-32, then FR-29, FR-14, FR-31, FR-30, the other FR-26 controls, and FR-10 email last.
+**Cut list.** If time runs out, cut from the bottom of the Should list: FR-32, then FR-29, FR-31, FR-30, the other FR-26 controls, FR-10 email, and FR-14 last.
 
 **Hosting (NFR-8).** Hosting is not required for the delivery. Deployment for the friends test stays planned, but if it causes problems it is cut first, before any FR. Without it, the friends test can run on a laptop on the same network, or is dropped and reported as such.
 
