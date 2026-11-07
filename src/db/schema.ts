@@ -105,3 +105,39 @@ export const messages = sqliteTable('messages', {
 });
 
 export type Message = typeof messages.$inferSelect;
+
+// AD-7: one row per reminder sent, unique per yes (task_id, accepted_at). The row is claimed before
+// the email is sent and deleted if sending fails, so each yes gets at most one reminder.
+export const remindersSent = sqliteTable(
+  'reminders_sent',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    taskId: integer('task_id')
+      .notNull()
+      .references(() => tasks.id, { onDelete: 'cascade' }),
+    acceptedAt: text('accepted_at').notNull(),
+    sentAt: text('sent_at').notNull(),
+  },
+  (t) => [unique('reminders_sent_task_accepted_unique').on(t.taskId, t.acceptedAt)],
+);
+
+export const MAIL_KINDS = ['reminder'] as const;
+export type MailKind = (typeof MAIL_KINDS)[number];
+
+// AD-9: in test mode every email is stored here instead of sent, and shown in the organizer's test inbox.
+export const outboxEmails = sqliteTable('outbox_emails', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  organizerId: integer('organizer_id')
+    .notNull()
+    .references(() => organizers.id),
+  to: text('to').notNull(),
+  fromName: text('from_name').notNull(),
+  replyTo: text('reply_to').notNull(),
+  subject: text('subject').notNull(),
+  text: text('text').notNull(),
+  links: text('links', { mode: 'json' }).$type<string[]>().notNull(),
+  kind: text('kind', { enum: MAIL_KINDS }).notNull(),
+  createdAt: text('created_at').notNull(),
+});
+
+export type OutboxEmail = typeof outboxEmails.$inferSelect;

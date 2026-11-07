@@ -22,6 +22,8 @@ export const paths = {
   helperNotice: (token: string, notice: 'lagret' | 'feil' | 'lang') =>
     `/h/${token}?${notice === 'lagret' ? 'lagret=1' : notice === 'feil' ? 'feil=1' : 'feil=lang'}`,
   helperTask: (token: string, taskId: number | string) => `/h/${token}/tasks/${taskId}`,
+  /** FR-18: the reminder link, which shows only the helper's Accepted tasks. */
+  helperReminder: (token: string) => `/h/${token}?view=accepted`,
 } as const;
 
 export function absoluteUrl(appBaseUrl: string, path: string): string {
