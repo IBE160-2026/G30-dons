@@ -12,7 +12,7 @@
       <% for (const email of emails) { %>
         <li class="outbox-email">
           <h2><%= email.subject %></h2>
-          <p class="muted outbox-meta">Til: <%= email.to %><br><%= email.sentAtText %></p>
+          <p class="muted outbox-meta">Fra: <%= email.fromName %> (svar går til <%= email.replyTo %>)<br>Til: <%= email.to %><br><%= email.sentAtText %></p>
           <p class="outbox-text"><%= email.text %></p>
           <% if (email.links.length > 0) { %>
             <ul class="outbox-links">
