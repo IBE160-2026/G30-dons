@@ -22,3 +22,7 @@ The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS w
 - source_spec: `.docs/implementation-artifacts/spec-2-1-ai-plan-draft-with-mock-and-fallback.md`
   summary: Store the plan source (`ai`, `mock` or `fallback`) on the event if a later story needs it, for example to show it after the flash is gone or to count fallbacks.
   evidence: Decision D5 (approved 2026-10-28) shows the source only in the flash after the event is created; no `plan_source` column and no migration in Story 2.1. Once the flash is read, the app cannot tell which plan an event got.
+
+- source_spec: `.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md`
+  summary: Decide how to avoid a burst of old reminders when real email is switched on late (Story 3.2), for example by skipping reminders whose deadline has passed or that fell due more than a few days before the first real run.
+  evidence: Decisions D4 and D5 (approved 2026-11-07) together mean that with `MAIL_TRANSPORT=disabled` no reminder is claimed, and a late run sends every due reminder, also for passed deadlines. If the app runs for weeks with email disabled and Gmail is then enabled, the first run can send many old reminders at once, some about deadlines that have already passed. In test mode the same applies to the first click on **Send påminnelser nå** (12 for the seed data, which is expected). Settle it in Story 3.2 before the friends test.
