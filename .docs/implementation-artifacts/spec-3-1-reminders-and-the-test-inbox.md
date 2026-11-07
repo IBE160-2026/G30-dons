@@ -2,7 +2,7 @@
 title: 'Story 3.1: Reminders and the test inbox'
 type: 'feature'
 created: '2026-11-07'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '4344a9f4390c83238470ed7135b8910e753d95a1'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -223,6 +223,28 @@ Implemented 2026-11-07 on `story/3-1-reminders-and-the-test-inbox`, in the order
 - **KEEP:** the rest of the ACs and the matrix, unchanged.
 
 ## Review Triage Log
+
+Review 1 (2026-11-07), three layers: blind hunter (BH), edge-case hunter (ECH), verification gap (VG). Diff from `bbec7be~1`, so the tests are included. No intent_gap or bad_spec, so no loopback. The findings were shown to the user before any fix.
+
+| # | Layer | Finding | Verdict | Evidence | Route |
+|---|---|---|---|---|---|
+| 1 | VG, BH | The «Testinnboks» link is never checked for a logged-in organizer with test mode off; the negative test checks `/logg-inn`, where no header block renders | medium | `views/partials/top.ejs`: the whole `header-actions` block is inside `if (organizer)`, so the assertion in `tests/testInbox.test.ts` («does not exist with test mode off») passes even without the `testMode` guard. AD-10 and D2 are untested for the one place a production user would see. The fix changes a test. | patch (test change, needs the user's approval) |
+| 2 | ECH, BH | The comment in `services/reminders.ts` says «none is lost», but a crash between the claim and `send` loses that one reminder | low | True: the claim is committed before `send`. The architecture review (`reconcile-prd.md`, AD-7) accepts at-most-once in that case, so the code is as designed; only the comment overclaims. Direct correction. | patch |
+| 3 | BH | The test inbox does not show the sender («MasterPlan på vegne av ‹arrangør›») or Reply-To, although both are stored | low | `views/test-inbox.ejs` shows «Til» and the time only. FR-24 does not require the sender, but AD-9 says the inbox must not show something different from what is sent, and the examiner meets it on every email. One line in the view. | patch |
+| 4 | BH | The reminder link shows twice in each email card: in the text and in the link list | low | `views/test-inbox.ejs`: the text (with `pre-line`) contains the URL, and `outbox-links` repeats it. Seen on every card, and noisy at 360 px. Small view change: render a text line that equals one of the email's links as the link itself, and drop the separate list. | patch |
+| 5 | BH | `EXPECTED_REMINDERS_DUE` says «on any seed day», and `docs/fixtures.md` says «Pynte lokalet» is due 6 days later, but the test seeds on one day only | low | `tests/seedReminders.test.ts` uses the fixed clock only; `tests/seed.test.ts` already checks two seed days for the other counts. The fix adds tests. | patch (test change, needs the user's approval) |
+| 6 | BH | `ARCHITECTURE-SPINE.md` (AD-9) still says «A snapshot test covers the reminder text» | low | Spine line 176. The Spec Change Log replaced the snapshot with a full expected-text test, so the plan and the code disagree. Direct correction of one line. | patch |
+| 7 | VG, ECH, BH | `mail.send` returns normally with test mode off, so a caller could treat an unsent email as sent | false | AD-9 specifies exactly this for `disabled`: «send writes nothing and logs one line». `run` checks D4 before claiming, and the «send by email» button in Story 4.1 is hidden with `disabled` (AD-9). No caller in this story reaches the branch with a claim. | reject |
+| 8 | ECH | A non-conflict DB error on the claim insert aborts the whole run with a 500 | low | True: the insert is outside the per-task `try`. Sends before it are kept (outbox rows and claims), and the next run continues. A local SQLite error during a test-mode click is unlikely, and the fix adds a guard. | reject |
+| 9 | ECH | If the release `delete` itself throws, the claim stays and that reminder is never retried | low | True, but it needs a DB failure right after a send failure. Unlikely, and the fix adds a guard. | reject |
+| 10 | ECH | A helper who answers Done between the select and the send still gets a reminder | low | True, in a window of milliseconds inside one request. The fix adds a conditional insert. | reject |
+| 11 | ECH | Many due reminders in one HTTP request could time out | low | Test mode only; each send is one local insert (12 in the seed). Unlikely, and the fix adds batching or background work. | reject |
+| 12 | BH | If every send fails, the flash says «Ingen påminnelser har forfalt.», which is false | low | True: the flash counts only `sent`. In test mode a failure is a local insert error, which is unlikely; the fix adds a return value and a new text. | reject |
+| 13 | BH | A yes exactly on the 3-day point gives a reminder the same day | false | Intended: matrix row «Yes on the 3-day point → due T» (frozen) and FR-17 («after the 3-days-before point gets no reminder»). Changing it would edit the spec. | reject |
+| 14 | BH | README step 12 tells the reader to do steps 12–14 first or re-seed | low | True, and stated in the step. Moving the reminder steps before step 6 would break the counts in steps 1–2 (Ola's Ferdig changes «2 haster» and «15 av 23»). Docker step 5 runs on fresh data and is correct. | reject |
+| 15 | BH | The Docker check (AC 8) and the 360 px check are not run | false | True that they are not run, but they are already tracked in `.logs/fdhimolde/issues.md` and marked «ikke kjørt ennå» in `docs/traceability.md`, as the finding asks. They stay open until Docker Desktop runs. | reject |
+| 16 | BH | `outbox_emails` has no index on `(organizer_id, created_at)` and no delete rule | false | Organizers are never deleted (no story deletes them), so no orphan outbox rows can occur; AD-12 lists the cascades and leaves this one out. The index matters only at volumes the test inbox never reaches. | reject |
+| 17 | ECH | AC 7 points to `tests/seed.test.ts`, but the test is in `tests/seedReminders.test.ts` | false | Recorded and explained in the Spec Change Log (2026-11-07). The fix would edit the spec. | reject |
 
 ## Design Notes
 
