@@ -173,7 +173,7 @@ Done tasks keep their status and helper when the helper is removed. The helper p
 - **Prevents:** emails leaking from test mode; the test inbox showing something different from what is sent; tone drifting between stories.
 - **Rule:**
   - **One entry point.** `mail/send({ organizerId, to, subject, text, links, kind: 'helper_link' | 'reminder' })` is the only way to send. It looks up the organizer's name and email itself.
-  - **Fixed texts.** All email text comes from `mail/texts.ts`. It is fixed, Norwegian, respectful and direct, with dates formatted `nb-NO`. A snapshot test covers the reminder text.
+  - **Fixed texts.** All email text comes from `mail/texts.ts`. It is fixed, Norwegian, respectful and direct, with dates formatted `nb-NO`. A test checks the full reminder text against the fixed text decided before the code (changed from a snapshot test in Story 3.1, because a snapshot is recorded from the code itself and cannot be written first; see the Spec Change Log in `spec-3-1-reminders-and-the-test-inbox.md`).
   - **Test mode.** With `TEST_MODE=true`, `send` inserts a row into `outbox_emails` with `organizer_id`, `to`, `from_name`, `reply_to`, `subject`, `text`, `links` (JSON), `kind` and `created_at`. The test inbox lists only the logged-in organizer's rows.
   - **Real sending.** `MAIL_TRANSPORT` chooses how mail leaves when `TEST_MODE` is off:
     - `gmail`: the message is built as MIME by Nodemailer's `MailComposer` and sent with the Gmail REST API (`users.messages.send`, HTTPS port 443) from the dedicated MasterPlan Gmail account. An access token is obtained from the stored refresh token through `google-auth-library`. The OAuth consent screen is set to "In production", so the refresh token does not expire after 7 days.

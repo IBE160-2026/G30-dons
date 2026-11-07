@@ -532,7 +532,7 @@ So that I don't forget what I promised.
 - the one task it covers, with its date in `nb-NO` format
 - a reminder link `/h/:token?view=accepted`
 
-**And** a snapshot test covers the text (FR18, NFR7, NFR9)
+**And** a test checks the full text against the fixed text decided before the code, not a recorded snapshot (FR18, NFR7, NFR9; changed 2026-11-07, see the Spec Change Log in spec 3.1)
 
 **Given** the reminder link
 **When** Ola opens it
