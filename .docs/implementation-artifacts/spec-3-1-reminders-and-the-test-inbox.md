@@ -163,15 +163,15 @@ Reuse the Epic 1 and 2 code; don't restructure it.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `tests/reminderDue.test.ts`, `tests/reminders.test.ts`, `tests/mailTexts.test.ts`, `tests/testInbox.test.ts`, and additions to `tests/helperPage.test.ts` and `tests/seed.test.ts` -- written first, from the matrix and the ACs -- FR-17, FR-18, FR-24, FR-26, FR-15
-- [ ] `src/db/schema.ts` + `src/db/migrations/0004_*` -- the two tables -- AD-12, AD-14
-- [ ] `src/domain/reminderDue.ts` -- the timing rule -- FR-17, AD-7
-- [ ] `src/mail/index.ts`, `src/mail/texts.ts`, `src/mail/outbox.ts` -- `send`, `MailError`, fixed texts, outbox insert and list -- AD-9, NFR-7
-- [ ] `src/services/reminders.ts` -- `run` with claim, send and release -- AD-7
-- [ ] `src/routes/testMode.ts`, `src/routes/paths.ts`, `src/app.ts` -- the inbox and the button -- FR-24, FR-26
-- [ ] `src/views/test-inbox.ejs`, `src/views/partials/top.ejs`, `src/views/helper.ejs`, `public/styles.css` -- inbox, header link, reminder view, as in the UX sketches -- FR-24, FR-18, NFR-1
-- [ ] `seed/fixture.ts`, `docs/fixtures.md` -- expected reminder count
-- [ ] Docs: README (Docker section, «Ting å prøve», «Kjente begrensninger»: no automatic daily check until 3.2), `docs/traceability.md` (FR-17, FR-18, FR-24, FR-26 and the Docker check moved from «Ikke bygget ennå»), `sprint-status.yaml`
+- [x] `tests/reminderDue.test.ts`, `tests/reminders.test.ts`, `tests/mailTexts.test.ts`, `tests/testInbox.test.ts`, and additions to `tests/helperPage.test.ts` and `tests/seed.test.ts` -- written first, from the matrix and the ACs -- FR-17, FR-18, FR-24, FR-26, FR-15
+- [x] `src/db/schema.ts` + `src/db/migrations/0004_*` -- the two tables -- AD-12, AD-14
+- [x] `src/domain/reminderDue.ts` -- the timing rule -- FR-17, AD-7
+- [x] `src/mail/index.ts`, `src/mail/texts.ts`, `src/mail/outbox.ts` -- `send`, `MailError`, fixed texts, outbox insert and list -- AD-9, NFR-7
+- [x] `src/services/reminders.ts` -- `run` with claim, send and release -- AD-7
+- [x] `src/routes/testMode.ts`, `src/routes/paths.ts`, `src/app.ts` -- the inbox and the button -- FR-24, FR-26
+- [x] `src/views/test-inbox.ejs`, `src/views/partials/top.ejs`, `src/views/helper.ejs`, `public/styles.css` -- inbox, header link, reminder view, as in the UX sketches -- FR-24, FR-18, NFR-1
+- [x] `seed/fixture.ts`, `docs/fixtures.md` -- expected reminder count
+- [x] Docs: README (Docker section, «Ting å prøve», «Kjente begrensninger»: no automatic daily check until 3.2), `docs/traceability.md` (FR-17, FR-18, FR-24, FR-26 and the Docker check moved from «Ikke bygget ennå»), `sprint-status.yaml`
 
 **Acceptance Criteria** (each names the test that proves it):
 1. Given Accepted tasks and a fixed clock, when `reminderDueDate` and `isReminderDue` run, then every timing row of the matrix holds, including Oslo midnight. *Test:* `tests/reminderDue.test.ts`.
@@ -197,6 +197,20 @@ From `CLAUDE.md`. The story is done when:
 7. The work is on `story/3-1-reminders-and-the-test-inbox` with small commits (tests, schema and domain, mail and service, routes and views, docs), merged through a pull request that says how it was tested and which faults were found in AI-generated code; each corrected, rejected or clarified AI suggestion is logged in `docs/ki-logg.md`; `npm run lint` passes before each commit.
 
 ## Implementation Notes
+
+Implemented 2026-11-07 on `story/3-1-reminders-and-the-test-inbox`, in the order the user asked for, with lint, typecheck and the full test run before each commit. The tests from `bbec7be` were used as written; no test was changed.
+
+- **Commits:** `2d5118c` (`domain/reminderDue.ts`), `75c4c46` (mail module, texts, schema and migration), `844ebea` (`services/reminders.run`), `b51e12c` (test inbox and button), `df1ff1f` (reminder view and seed).
+- **One migration for both tables** (`0004_reminders_and_outbox.sql`), as the spec and AD-14 say. It came with the mail commit, so `reminders_sent` exists one commit before the service that uses it.
+- **`send` as a dependency.** `run(deps, now, today)` takes `deps.send` with the same signature as `mail.send(db, config, message, now)`, so production passes `send` itself and tests pass a failing one. The Story 3.2 cron route can call `run` the same way.
+- **D4 checked in two places.** `run` returns before claiming anything when test mode is off and `MAIL_TRANSPORT=disabled`; `send` also writes nothing in that case, as a second guard. Neither logs the recipient.
+- **Logging.** One summary line per run («Påminnelser: N sendt, M feilet.») and one `console.error` line per failed send with the task id only.
+- **Paths from a service.** `services/reminders.ts` builds the reminder link with `routes/paths.ts` and `absoluteUrl`, as AD-1 requires every URL to come from `paths.ts`; `seed/command.ts` already does the same.
+- **Reminder view.** `routes/helper.ts` filters the existing `helperPage` result with `onlyAccepted`; no new service function. The view shows «fra ‹arrangør›» under the heading, as in the UX sketch.
+- **Header.** The «Testinnboks» link and the logout form share a new `.header-actions` row that wraps at narrow widths.
+- **Docs.** README (Docker step 5, «Ting å prøve» 12–14, «Kjente begrensninger», the environment table), `docs/traceability.md` (Epic 3 table and the FR rows) and `docs/fixtures.md` (reminders straight after seeding). «Ting å prøve» notes that step 6 makes «Bestille kake» Done, which lowers the count to 11.
+- **Not done yet:** the Docker check (AC 8) and the 360 px check, because Docker Desktop was not running on 2026-11-07. Both are marked «ikke kjørt ennå» in `docs/traceability.md`.
+- **Verified:** `npm test` (20 files, 335 tests), `npm run typecheck` and `npm run lint` are green.
 
 ## Spec Change Log
 
