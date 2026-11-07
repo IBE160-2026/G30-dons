@@ -63,8 +63,24 @@ describe('access', () => {
     });
     expect((await request(ctx.app).get('/test/innboks')).status).toBe(404);
     expect((await request(ctx.app).post('/test/paminnelser').type('form').send({})).status).toBe(404);
-    const login = await request(ctx.app).get('/logg-inn');
-    expect(login.text).not.toContain('Testinnboks');
+
+    // The header link only renders for a logged-in organizer, so log in first. With test mode off
+    // the session cookie is `secure`: send the request as HTTPS behind the proxy and pass the
+    // cookies on by hand, since supertest's cookie jar never sends a secure cookie over http.
+    const registered = await request(ctx.app)
+      .post('/registrer')
+      .set('X-Forwarded-Proto', 'https')
+      .type('form')
+      .send({ name: 'Kari', email: 'kari@example.no', password: 'hemmelig123' });
+    const cookie = ([] as string[])
+      .concat(registered.headers['set-cookie'] ?? [])
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    const overview = await request(ctx.app).get('/').set('X-Forwarded-Proto', 'https').set('Cookie', cookie);
+    expect(overview.status).toBe(200);
+    expect(overview.text).toContain('Logg ut');
+    expect(overview.text).not.toContain('href="/test/innboks"');
+    expect(overview.text).not.toContain('Testinnboks');
   });
 
   it('shows the «Testinnboks» link in the header for a logged-in organizer in test mode', async () => {
