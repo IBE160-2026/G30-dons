@@ -59,6 +59,13 @@ export const EXPECTED_COUNTS: Record<SeedEventKey, ExpectedCounts> = {
   },
 };
 
+/**
+ * FR-17 (story 3.1): reminders due straight after seeding, on any seed day. Wedding: Bestille kake
+ * and Planlegge bordplassering (deadline − 3 has passed). Bachelorette: all 10 Accepted tasks
+ * (said yes 18 days ago, so the 14-day point has passed).
+ */
+export const EXPECTED_REMINDERS_DUE = 12;
+
 /** Event names as the seed creates them. */
 export const SEED_EVENT_NAMES: Record<SeedEventKey, string> = {
   wedding: 'Bryllupet til Kari og Jon',

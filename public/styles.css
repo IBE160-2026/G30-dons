@@ -601,3 +601,8 @@ select {
   margin: 0;
   padding-left: 1.25rem;
 }
+
+/* FR-18: the link from the reminder view back to the full helper page. */
+.helper-all-link {
+  margin: 1.5rem 0 0;
+}

@@ -30,6 +30,15 @@ Ola, Kim og Siri er de samme hjelperne i begge arrangementene, med én lenke hve
 
 Oversikten viser derfor **Bryllupet** med «2 haster · 4 trenger hjelper» og **Utdrikningslaget** som «I rute».
 
+## Påminnelser rett etter seed
+
+Første klikk på **Send påminnelser nå** i testinnboksen sender **12 påminnelser** (`EXPECTED_REMINDERS_DUE` i `seed/fixture.ts`, sjekket av `tests/seedReminders.test.ts`). Et nytt klikk sender ingen.
+
+| Arrangement | Påminnelser | Hvorfor |
+|---|---|---|
+| Bryllupet til Kari og Jon | 2 | «Bestille kake» (Siri) og «Planlegge bordplassering» (Ola): 3 dager før fristen er passert. «Pynte lokalet» (Per) får sin om 6 dager, 14 dager etter ja-et. |
+| Utdrikningslag for Lise | 10 | Alle de 10 aksepterte oppgavene: ja-et kom for 18 dager siden, så 14-dagerspunktet er passert. |
+
 ## Hva som ligger bak tallene (Bryllupet)
 
 | Oppgave | Status | Hvorfor |

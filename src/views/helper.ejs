@@ -1,7 +1,12 @@
 <%- include('partials/helper-top') %>
 <header class="helper-header">
   <p class="helper-brand">MasterPlan</p>
-  <h1><%= header %></h1>
+  <% if (reminderView) { %>
+    <h1>Oppgaver du har sagt ja til</h1>
+    <p class="muted">fra <%= page.organizerName %></p>
+  <% } else { %>
+    <h1><%= header %></h1>
+  <% } %>
 </header>
 <% if (notice) { %>
   <% if (notice.error) { %>
@@ -11,7 +16,7 @@
   <% } %>
 <% } %>
 <% if (page.events.length === 0) { %>
-  <p class="muted">Du har ingen oppgaver ennå.</p>
+  <p class="muted"><%= reminderView ? 'Du har ingen oppgaver som venter på deg nå.' : 'Du har ingen oppgaver ennå.' %></p>
 <% } %>
 <% for (const event of page.events) { %>
   <section class="helper-event">
@@ -39,5 +44,8 @@
       <% } %>
     </ul>
   </section>
+<% } %>
+<% if (reminderView) { %>
+  <p class="helper-all-link"><a href="<%= paths.helperPage(page.token) %>">Se alle oppgavene dine</a></p>
 <% } %>
 <%- include('partials/bottom') %>
