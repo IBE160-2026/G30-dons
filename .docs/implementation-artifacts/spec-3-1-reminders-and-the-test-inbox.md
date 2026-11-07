@@ -199,6 +199,14 @@ From `CLAUDE.md`. The story is done when:
 
 ## Spec Change Log
 
+**2026-11-07, tests written before the implementation (`bbec7be`).**
+- **Trigger:** two points in the spec could not be followed when the tests were written first. Approved by the user 2026-11-07.
+- **Amended:**
+  - AC 3 and Boundaries say «snapshot test». The test checks the subject and the full text from D1 with `toBe` instead, in `tests/mailTexts.test.ts`. Reason: a snapshot is recorded from the code itself on the first run, so it cannot be written before the code exists, and it would accept whatever text the code produced. The text is fixed in D1, so the test can state it in full. It still guards the text against changes, like a snapshot.
+  - AC 7 and the task list name `tests/seed.test.ts`. The seed reminder test is in a new file, `tests/seedReminders.test.ts`, instead. Reason: it imports `src/services/reminders.ts` and `src/mail/`, which did not exist yet. Vitest fails a whole file when an import is missing, so the existing seed tests in `tests/seed.test.ts` would have stopped running until the implementation was done.
+- **Known-bad state avoided:** a snapshot recorded from the first implementation, which would hide a text that differs from D1; and a test-first commit where the existing seed tests no longer ran.
+- **KEEP:** the rest of the ACs and the matrix, unchanged.
+
 ## Review Triage Log
 
 ## Design Notes
