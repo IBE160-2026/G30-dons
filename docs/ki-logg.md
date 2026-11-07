@@ -94,3 +94,12 @@ KI lagde specen for story 3.1 fra `epics.md` og foreslo seks beslutninger (D1–
 | 2026-11-07 | Presisert | KI nevnte ikke at D4 og D5 sammen kan gi mange påminnelser på én gang. | Jeg la til risikoen i `deferred-work.md`: hvis appen kjører lenge med e-post av og Gmail slås på senere, kan den første kjøringen sende mange gamle påminnelser, også for frister som har gått ut. Det skal avgjøres i story 3.2. | [deferred-work.md](../.docs/implementation-artifacts/deferred-work.md) | [7a36299](https://github.com/IBE160-2026/G30-dons/commit/7a36299) |
 | 2026-11-07 | Presisert | KI fulgte `epics.md` og la cron-ruten `POST /internal/reminders/run` og `CRON_SECRET` i 3.1. Den nevnte at de kunne flyttes til 3.2, men lot dem stå. | Jeg flyttet dem til 3.2. Begrunnelse: de trengs bare når appen er publisert og noe utenfor appen må starte den daglige sjekken. I testmodus og i Docker starter knappen den samme `reminders.run`. `epics.md`, kontekstfila for epic 3 og specen er oppdatert. | Samtalen | [c872b26](https://github.com/IBE160-2026/G30-dons/commit/c872b26) |
 | 2026-11-07 | Presisert | Specen hadde bare en skisse av testinnboksen under Design Notes. | Jeg ba om en egen UX-seksjon med tekstskisser av testinnboksen og av påminnelsessiden for hjelperen, med tomtilstander og tastaturbruk. | [spec 3.1, UX](../.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md#ux) | [7a36299](https://github.com/IBE160-2026/G30-dons/commit/7a36299) |
+
+## Gjennomgang av story 3.1
+
+KI-gjennomgangen av story 3.1 (tre lag) ga 17 funn. Seks ble rettet, og elleve ble avvist med begrunnelse. Alle står i Review Triage Log i spec 3.1.
+
+| Dato | Type | Funn | Hva som ble gjort | Kilde | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 2026-11-07 | Rettet | En test som ikke kunne feile. Den KI-skrevne testen for at lenken «Testinnboks» ikke vises med testmodus av, sjekket innloggingssiden. Der vises toppfeltets lenker aldri, fordi de bare vises for en innlogget arrangør. Testen ville derfor passert selv om lenken ble vist for alle i produksjon. | Testen logger nå inn en arrangør med testmodus av og sjekker oversikten. For å bevise at den virker, fjernet jeg sjekken på `testMode` i `top.ejs` midlertidig: da feilet testen på `href="/test/innboks"`. Sjekken ble satt tilbake. | [spec 3.1, #1](../.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md#review-triage-log) | [8596333](https://github.com/IBE160-2026/G30-dons/commit/8596333) |
+
