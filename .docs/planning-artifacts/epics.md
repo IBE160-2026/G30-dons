@@ -726,7 +726,7 @@ Kari and Ola get the pages described in the UX design. No new features: the same
 
 ### Story 5.1: Build the Porselen design
 
-*Order note: built next, before Story 3.3, because the design part is due 12 November 2026 and the application 14 November 2026 (decided 2026-11-10, see `docs/ki-logg.md`). Epic 5 is a new epic instead of a story in Epics 1–4, because the work cuts across them, and renumbering would break existing references (the same reason as for Story 3.3). The three items deferred from the UX review (`deferred-work.md`, 2026-11-10) are acceptance criteria here.*
+*Order note: built next, before Story 3.3, because the design part is due 12 November 2026 and the application 14 November 2026 (decided 2026-11-10, see `docs/ki-logg.md`). The design part is this story: done means the CSS is in use across the whole app and locked with a written rule and an automated test (the last acceptance criterion below). The UX documents are its basis. Epic 5 is a new epic instead of a story in Epics 1–4, because the work cuts across them, and renumbering would break existing references (the same reason as for Story 3.3). The three items deferred from the UX review (`deferred-work.md`, 2026-11-10) are acceptance criteria here.*
 
 As an organizer and as a helper,
 I want MasterPlan to look calm and warm and to show me at once what needs me,
@@ -771,6 +771,12 @@ So that planning a big gathering feels manageable, and answering a task takes a 
 **When** it is used by keyboard and screen reader
 **Then** the tab order follows the reading order, focus is visible, ornaments are hidden from screen readers, flashes use `role="status"` and errors `role="alert"`, and every text pair meets WCAG AA as listed in `DESIGN.md` (NFR9)
 **And** the keyboard check is done manually and recorded in `docs/traceability.md`
+
+**Given** every page in the app, organizer and helper pages, the test inbox, the plain pages and the forms
+**When** the story is done
+**Then** each one uses the new stylesheet, and no view keeps styles from before the redesign or inline styles
+**And** a written rule locks it: a new decision in `ARCHITECTURE-SPINE.md` says that colours, fonts, radii and spacing in `public/styles.css` come only from the custom properties that mirror the `DESIGN.md` tokens
+**And** an automated test enforces the rule: every colour token in `DESIGN.md` exists in `:root` with the same value, `public/styles.css` has no colour literals outside `:root`, and no view under `src/views/` has a `style` attribute (FR27)
 
 **Given** the test suite
 **When** the story is done

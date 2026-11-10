@@ -343,7 +343,7 @@ The delivery is the source code plus a `Dockerfile`. The examiner can build and 
 
 ## 8. Scope
 
-**Deadlines:** the design part 12 November 2026, the application 14 November 2026.
+**Deadlines:** the design part 12 November 2026, the application 14 November 2026. The design part means Story 5.1 built: the CSS from the UX design in use across the whole app, and locked with a written rule and an automated test. The UX documents are its basis.
 
 **Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28, FR-33. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys from the Docker container, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 
