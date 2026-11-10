@@ -103,3 +103,11 @@ KI-gjennomgangen av story 3.1 (tre lag) ga 17 funn. Seks ble rettet, og elleve b
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-07 | Rettet | En test som ikke kunne feile. Den KI-skrevne testen for at lenken «Testinnboks» ikke vises med testmodus av, sjekket innloggingssiden. Der vises toppfeltets lenker aldri, fordi de bare vises for en innlogget arrangør. Testen ville derfor passert selv om lenken ble vist for alle i produksjon. | Testen logger nå inn en arrangør med testmodus av og sjekker oversikten. For å bevise at den virker, fjernet jeg sjekken på `testMode` i `top.ejs` midlertidig: da feilet testen på `href="/test/innboks"`. Sjekken ble satt tilbake. | [spec 3.1, #1](../.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md#review-triage-log) | [8596333](https://github.com/IBE160-2026/G30-dons/commit/8596333) |
 
+
+## UX-design Porselen (bmad-ux)
+
+KI fasiliterte `bmad-ux` og skrev `DESIGN.md` og `EXPERIENCE.md` ut fra valgene mine. Etterpå sjekket en egen KI-gjennomgåer dokumentene mot BMAD-malen ([review-rubric.md](../.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md)).
+
+| Dato | Type | Forslag | Hva som ble gjort | Kilde | Commit |
+| --- | --- | --- | --- | --- | --- |
+| 2026-11-10 | Rettet | For å gjøre oppgavelisten roligere fjernet KI knappen «Marker som ferdig» fra hver rad. Den ble bare igjen på oppgaver som haster i kortet «Trenger deg nå». Da kunne Kari ikke selv markere de andre oppgavene som ferdige, for eksempel en oppgave Ola har sagt «Kan ikke gjøres» om. Det bryter FR-16 (Must). Gjennomgåeren fant feilen (høyt funn #2). | Jeg bestemte at Kari skal kunne markere alle oppgaver som ferdige, slik FR-16 krever. «Marker som ferdig» ligger nå i redigeringsboksen for hver oppgave som ikke er ferdig, uansett status, og på alle radene i «Trenger deg nå». Listen er fortsatt rolig. Endringen står også under Plan impact og Mock deviations i `EXPERIENCE.md`. | [EXPERIENCE.md](../.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/EXPERIENCE.md), [review-rubric.md](../.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md) | [59807ac](https://github.com/IBE160-2026/G30-dons/commit/59807ac) |
