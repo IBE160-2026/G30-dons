@@ -1,5 +1,5 @@
 <%- include('partials/top', { title: 'Oversikt' }) %>
-<section class="card">
+<section>
   <div class="heading-row">
     <h1>Oversikt</h1>
     <a class="button" href="<%= paths.newEvent() %>">Nytt arrangement</a>
@@ -10,7 +10,7 @@
   <% } else { %>
     <ul class="event-list">
       <% for (const event of events) { %>
-        <li class="overview-row">
+        <li class="overview-row card card-framed">
           <div class="overview-event">
             <a href="<%= paths.event(event.id) %>"><%= event.name %></a>
             <span class="muted"><%= formatDate(event.eventDate) %></span>

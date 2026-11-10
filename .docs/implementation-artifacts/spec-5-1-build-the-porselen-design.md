@@ -84,7 +84,7 @@ context:
 
 *Steps 1–3: the design deliverable, due 12 November 2026.*
 - [x] **1. Tokens, fonts and components.** `public/fonts/*` (WOFF2 and `OFL.txt`), `public/styles.css` -- `:root` tokens, `@font-face`, and the shared components from `DESIGN.md` (header, tabs, buttons, inputs, pills, flash, cards, framed card, empty state, plain page).
-- [ ] **2. Every page uses them.** `src/views/partials/*`, `login.ejs`, `register.ejs`, `overview.ejs`, `event-new.ejs`, `event.ejs`, `helper.ejs`, `helper-invalid.ejs`, `test-inbox.ejs`, `404.ejs`, `error.ejs` -- the new classes and layout on the current content and structure; remove the old CSS. Update the tests in the Code Map whose markup changes.
+- [x] **2. Every page uses them.** `src/views/partials/*`, `login.ejs`, `register.ejs`, `overview.ejs`, `event-new.ejs`, `event.ejs`, `helper.ejs`, `helper-invalid.ejs`, `test-inbox.ejs`, `404.ejs`, `error.ejs` -- the new classes and layout on the current content and structure; remove the old CSS. Update the tests in the Code Map whose markup changes.
 - [ ] **3. Locked with rule and test.** `tests/designTokens.test.ts` (AC 1), AD-18 in `ARCHITECTURE-SPINE.md`, and the keyboard test and 360 px check for the restyled pages recorded in `docs/traceability.md`.
 
 *Steps 4–5: moved to a new story if time runs short.*
@@ -124,6 +124,13 @@ From `CLAUDE.md`. The story is done when:
 - **Stylesheet:** `public/styles.css` now starts with `@font-face`, the `:root` tokens named after `DESIGN.md` (`--color-*`, `--font-*`, `--type-*`, `--radius-*`, `--space-*`, and single-value component tokens such as `--focus-ring-*`, `--flash-*` and `--card-frame-inset`), the base styles and the shared components (header with stripe, tabs that wrap, cards, `card-framed` with ❧, `card-action`, buttons, inputs, pills, progress bar, flash, label caps, empty state, plain page). Ornaments use `content: '❧' / ''`, so screen readers skip them.
 - **Bridge to step 2:** the page rules from before the redesign are kept below the components. The old variable names (`--bg`, `--accent`, …) are temporary aliases for the new tokens, so every page already uses the Porselen colors and fonts without broken layout. Step 2 replaces those rules and removes the aliases.
 - **Verified:** `npm test` (21 files, 344 tests), `npm run typecheck` and `npm run lint` are green.
+
+**Step 2 (2026-11-10).**
+- **Test first:** `tests/stylesheet.test.ts` checks that every class a view uses (including classes built from data, such as `status-<status>`) is styled, that the old aliases are gone, and that every `var(--…)` is defined. It failed before the step: the aliases were there, and `event.ejs` used `.helpers`, `.tasks`, `.panels`, `.reply-head` and `.reply-body` with no rule.
+- **Kept class names where tests pin the markup.** The tests check exact markup such as `class="badge">Ny<`, `panel panel-todo`, `status status-open` and `helper-status status-…`, and most of that markup is replaced in step 4. So in step 2 the existing class names are restyled with tokens and the component look (the status words, `.attention` and `.badge` are pills; the `<progress>` element is dark beige on the line track), and component classes are used where markup is not pinned: framed cards on the overview, the event details and the panels; `button-danger` for «Slett» and `button-secondary` for «Marker som ferdig» and «Tildel»; `label-caps` for the group labels; `plain-page` for 404, error and the invalid link. No existing test had to change.
+- **Test hooks:** `panel-done`, `panel-todo`, `panel-timeline` and `panel-messages` style nothing and only mark panels for `summaries.test.ts`. They are listed as temporary hooks in `stylesheet.test.ts` and go with the panels in step 4. The unused `.helpers` and `.tasks` classes were removed from the markup.
+- **Old CSS removed:** every page rule from before the redesign is rewritten with tokens; the aliases are gone; no color literal is left outside `:root`.
+- **Verified:** `npm test` (22 files, 348 tests), `npm run typecheck` and `npm run lint` are green.
 
 ## Spec Change Log
 
