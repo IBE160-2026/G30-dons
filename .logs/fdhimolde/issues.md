@@ -5,7 +5,7 @@
 - [x] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — Oppdater `sprint-status.yaml` (1.1–1.6 står som `review`) og før funnene fra «Review Triage Log» inn i ki-loggen (løst 2026-10-28)
 - [ ] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — Bygg story 2.1 (AI-utkast) og 3.1 (påminnelser), som brief-en kaller Must
 - [x] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — README: skjermbilder, mappeoversikt, tabell over miljøvariabler, lenker til `.docs/`, ki-logg og `CLAUDE.md`, og `npm run lint` (løst 2026-10-28)
-- [ ] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — Lag en kort UX-beskrivelse med skisser, og sjekk kontrast og tastaturnavigasjon
+- [x] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — Lag en kort UX-beskrivelse med skisser, og sjekk kontrast og tastaturnavigasjon (løst 2026-11-10: UX-beskrivelse, skisser og kontrast i [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md); tastaturnavigasjon i appen er eget punkt)
 - [x] 2026-10-28 [gap-analyse-sensorveiledning](997-2026-10-28-10-14-56-gap-analyse-sensorveiledning.md) — Kjør `npm run lint:fix` for de 7 advarslene og den ene info-meldingen (løst 2026-10-28)
 - [ ] 2026-10-28 [opprydding-etter-gap-analyse](996-2026-10-28-10-51-15-opprydding-etter-gap-analyse.md) — README mangler skjermbilder (oversikt og hjelperside på mobil)
 - [x] 2026-10-28 [opprydding-etter-gap-analyse](996-2026-10-28-10-51-15-opprydding-etter-gap-analyse.md) — Før funnene fra «Review Triage Log» i spec-filene inn i ki-loggen (løst 2026-10-28)
@@ -23,3 +23,7 @@
 - [x] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Gjennomgang av 3.1: godkjenn og rett patch-funnene #1–#6 i Review Triage Log (#1 og #5 endrer tester) (løst 2026-11-07, `8596333`–`9f5972a`)
 - [x] 2026-11-10 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1: kjør Docker-sjekken (AC 8) når Docker Desktop kjører, og før resultatet inn i specen og `docs/traceability.md` (løst 2026-11-10: bestått)
 - [x] 2026-11-10 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1: sett 3-1 til `done` i `sprint-status.yaml` og specen når PR #7 er merget (løst 2026-11-10)
+- [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Lag design-storyen i `epics.md` og `sprint-status.yaml` (epic, rekkefølge, kutt før fristen 14. november), og ta med de tre utsatte UX-funnene fra `deferred-work.md`
+- [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Oppdater PRD, `epics.md` og storyene etter Plan impact i `EXPERIENCE.md` (UJ-2, FR-20, hjelperknapper) før designet bygges
+- [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Ferdigstill UX-dokumentene: `status: final` og `doc_standards` (`bmad-review` structure og prose)
+- [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Sjekk tastaturnavigasjonen i appen når designet er bygget
