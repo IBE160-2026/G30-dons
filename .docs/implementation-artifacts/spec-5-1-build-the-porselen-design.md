@@ -2,7 +2,7 @@
 title: 'Story 5.1: Build the Porselen design'
 type: 'feature'
 created: '2026-11-10'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '83c383e116b8a986990b4c5da961bfb831b8ca97'
 route: 'dispatch'
 review_loop_iteration: 0
