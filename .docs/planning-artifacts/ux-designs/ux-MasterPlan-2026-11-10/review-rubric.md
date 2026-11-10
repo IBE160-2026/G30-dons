@@ -114,3 +114,41 @@ DESIGN.md has all eight canonical sections in order. EXPERIENCE.md has all requi
 - **Frontmatter:** DESIGN has name, description, status, created/updated and sources. EXPERIENCE lacks a description. Both are `status: draft`.
 - **No Mermaid** in either file.
 - **Assets:** `imports/Interiør 4.png` is a blank 1.5 kB file (memlog line 27).
+
+## Review Triage Log
+
+Review 1 (2026-11-10), one lens: rubric walker. The five high findings were fixed first. The user then approved this sorting of the medium and low findings: fix now (quick and important), defer with a reason, or reject with a reason. H = high, M = medium, L = low.
+
+| # | Sev. | Finding | Route |
+|---|---|---|---|
+| 1 | H | No Key Flow for UJ-4 (John, the examiner) | **fixed** in `59807ac`: Flow 5. |
+| 2 | H | FR-16 lost: «Marker som ferdig» only on Urgent rows | **fixed** in `59807ac`: on every task that is not Done, through the edit box and all «Trenger deg nå» rows (user decision, see `docs/ki-logg.md`). |
+| 3 | H | Helper task card and answer banner have no visual spec | **fixed** in `59807ac`: DESIGN.md → Components. The navy frame was kept, because navy is the main colour of «Porselen» (11:1 on ivory). |
+| 4 | H | Meldinger contradicts itself on «seen» (AD-15, FR-20) | **fixed** in `59807ac`: the preview does not mark seen; only `?panel=messages` does. |
+| 5 | H | Broken «Open items» reference; mocks show superseded details | **fixed** in `59807ac`: Mock deviations section. |
+| 6 | M | Flows not tied to UJ IDs; UJ-1 steps 4–6 in fragments | **fixed** in `37bd6b3`: UJ tags on every flow; Flow 4 adds helpers, edits and deletes a task, and copies links. |
+| 7 | M | Failure paths missing in Flows 2–4 | **fixed** in `37bd6b3`: decline branch, Can't be done branch, stale-page refusals, form error and slow AI. |
+| 8 | L | Flow 4 has no time and device | **fixed** in `37bd6b3`. |
+| 9 | M | Typography tokens not mapped to roles | **fixed** in `37bd6b3`: role table in DESIGN.md → Typography. |
+| 10 | M | Component tokens not atomic; no tokens for flash and focus ring | **deferred** to the design story (`deferred-work.md`): only matters when the tokens become CSS variables. |
+| 11 | L | `porcelain` unused, `text` unreferenced, `rounded.md` names no component | **fixed** in `37bd6b3`: `porcelain` removed, `text` and `rounded.md` given uses. |
+| 12 | L | Load-bearing contrast pairs not stated | **fixed** in `37bd6b3`: all recomputed and listed; field border on soft (3.1:1) called out. |
+| 13 | M | No flash component | **fixed**: visual in `59807ac`, behaviour row in `37bd6b3`. |
+| 14 | M | Status → pill mapping incomplete | **fixed** in `37bd6b3`: Status vocabulary in EXPERIENCE.md and a pill table in DESIGN.md. |
+| 15 | M | Components with behaviour but no visuals, or the reverse (tabs at 360 px, task row on a phone) | **deferred** to the design story (`deferred-work.md`): easier to settle against the real layout. The rest of the gaps were covered by #3, #13, #14 and the plain-page row. |
+| 16 | M | Nytt arrangement has no waiting state or double-submit guard | **fixed** in `37bd6b3`: Drafting state, and the server guard listed in Plan impact. |
+| 17 | M | No state for an answer refused from a stale page (FR-12); «Endret etter at du svarte» dropped | **fixed** in `37bd6b3`: Answer refused state; the marker is kept. |
+| 18 | M | 404 and error pages missing | **fixed** in `37bd6b3`: IA rows and states. |
+| 19 | L | Innlogging and Registrering states not specified | **rejected**: the redesign does not change them; FR-1 specifies them and they are tested. |
+| 20 | L | Oversikt edge cases (past event, today, no tasks) | **deferred** to the design story (`deferred-work.md`): the text depends on `summaries.ts` and should be decided and tested there. |
+| 21 | L | «Se alle oppgavene dine» and the non-empty test inbox not described | **rejected**: unchanged since Story 3.1 and described in its spec. |
+| 22 | M | DESIGN.md links no visual reference | **fixed** in `37bd6b3`: one reference line in Brand & Style. |
+| 23 | L | `imports/` referenced generically; blank `Interiør 4.png` | **fixed** in `37bd6b3`: marked as mood-only and the blank file named. The file itself is left in the git-ignored folder. |
+| 24 | L | References point into `.working/` | **fixed** in `37bd6b3`: the three key mocks moved to `mockups/` and the paths updated. |
+| 25 | L | Do's and Don'ts repeats rules from Colors and Typography | **rejected**: the reviewer itself says no fix is needed; the table is a checklist. |
+| 26 | M | «Trenger deg nå» restates Needs a helper wrongly | **fixed** in `37bd6b3`: refers to the Glossary and FR-21 instead. |
+| 27 | M | Glossary drift (status words, surface names) | **fixed** in `37bd6b3`: Status vocabulary and glossary names in the IA. |
+| 28 | M | Handwriting «in exactly two places» contradicts the helper greetings | **fixed** in `59807ac`. |
+| 29 | M | Plan impact incomplete | **fixed**: FR-16 and Meldinger in `59807ac`; task sentence, tab label, `?endre=`, double submit and the extra script in `37bd6b3`. |
+| 30 | L | Sources in frontmatter incomplete | **fixed** in `37bd6b3`. |
+| 31 | L | «Open items» absent; no `description` in EXPERIENCE.md | **fixed**: section in `59807ac`, description in `37bd6b3`. |
