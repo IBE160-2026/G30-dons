@@ -29,6 +29,13 @@
       "when": 1792912706494,
       "tag": "0003_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794064463259,
+      "tag": "0004_reminders_and_outbox",
+      "breakpoints": true
     }
   ]
 }

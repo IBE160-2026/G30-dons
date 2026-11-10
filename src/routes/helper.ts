@@ -5,7 +5,7 @@ import type { Db } from '../db/client.ts';
 import type { TaskStatus } from '../db/schema.ts';
 import { DomainError, errorText } from '../domain/errors.ts';
 import { HELPER_ACTIONS, type HelperAction } from '../domain/taskRules.ts';
-import { findByToken, helperPage } from '../services/helpers.ts';
+import { findByToken, type HelperPage, helperPage } from '../services/helpers.ts';
 import { applyAsHelper } from '../services/tasks.ts';
 import { paths } from './paths.ts';
 
@@ -63,6 +63,14 @@ function noticeOf(query: Record<string, unknown>): { text: string; error: boolea
   return undefined;
 }
 
+/** FR-18: the reminder link's view, with only the Accepted tasks and no empty event groups. */
+function onlyAccepted(page: HelperPage): HelperPage {
+  const events = page.events
+    .map((event) => ({ ...event, tasks: event.tasks.filter((t) => t.status === 'accepted') }))
+    .filter((event) => event.tasks.length > 0);
+  return { ...page, events };
+}
+
 function renderInvalid(res: Response): void {
   res.status(404).render('helper-invalid');
 }
@@ -81,10 +89,14 @@ export function helperRoutes(db: Db, clock: Clock): Router {
   const router = Router();
 
   router.get(paths.helperPage(':token'), async (req, res) => {
-    const page = await helperPage(db, req.params.token as string);
-    if (!page) return renderInvalid(res);
+    const fullPage = await helperPage(db, req.params.token as string);
+    if (!fullPage) return renderInvalid(res);
+    // Any other view value shows the full page.
+    const reminderView = req.query.view === 'accepted';
+    const page = reminderView ? onlyAccepted(fullPage) : fullPage;
     res.render('helper', {
       page,
+      reminderView,
       header:
         page.eventNames.length > 0
           ? `${page.organizerName} har invitert deg til å organisere ${joinNames(page.eventNames)}`

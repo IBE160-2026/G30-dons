@@ -1,6 +1,6 @@
 # Sporbarhet
 
-Dokumentet har to deler: først kobles hver story i Epic 1 og Epic 2 til akseptansekriteriene, koden og testene, deretter kobles hvert krav (FR/NFR) til testene. Alle automatiske tester kjøres med `npm test`. Det som ikke kan testes automatisk uten nettleser eller Docker, er merket **manuell**, med fremgangsmåte.
+Dokumentet har to deler: først kobles hver story i Epic 1, 2 og 3 til akseptansekriteriene, koden og testene, deretter kobles hvert krav (FR/NFR) til testene. Alle automatiske tester kjøres med `npm test`. Det som ikke kan testes automatisk uten nettleser eller Docker, er merket **manuell**, med fremgangsmåte.
 
 ## Story → akseptansekriterier → kode → tester (Epic 1)
 
@@ -64,6 +64,22 @@ Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-2-1-ai-plan-dra
 | 2.1 | Leverandøren får bare `templateKey`, `eventDate` og `description`, og beskrivelsen har verken arrangementsnavn eller hjelperdata (NFR3) | `ai/index.ts`, `services/events.ts` (`describeEvent`) | `draftPlan.test.ts` | ✅ |
 | 2.1 | Ingen test åpner en nettverksforbindelse; `npm test`, `npm run typecheck` og `npm run lint` er grønne (FR27) | `ai/index.ts` (leverandøren er en parameter) | alle | ✅ |
 
+## Story → akseptansekriterier → kode → tester (Epic 3)
+
+Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md`. Tidsregelen testes med simulert tid: ja-et gis ved den faste testklokka, og sjekken kjøres ved bestemte senere tidspunkter. Gmail og cron-ruten med `CRON_SECRET` hører til Story 3.2.
+
+| Story | Akseptansekriterium | Kode | Tester | Dekning |
+|---|---|---|---|---|
+| 3.1 | En påminnelse forfaller ved det som kommer først av 14 dager etter ja og 3 dager før fristen; ingen når ja-et kom etter 3-dagerspunktet; bare Akseptert; regnet fra Oslo-datoen (FR17, AD-4, AD-7) | `domain/reminderDue.ts` | `reminderDue.test.ts`, `reminders.test.ts` | ✅ |
+| 3.1 | Hver påminnelse registreres i `reminders_sent` (unik per oppgave og ja) før sending; ingen doble ved ny eller sen kjøring; nytt ja gir ny påminnelse; feil ved sending sletter registreringen og prøves igjen; med `disabled` og testmodus av sendes og registreres ingenting (FR17, AD-7, D4) | `services/reminders.ts`, `db/schema.ts`, `db/migrations/0004_reminders_and_outbox.sql` | `reminders.test.ts` | ✅ |
+| 3.1 | Fast norsk tekst fra D1 med én oppgave, dato i `nb-NO` og påminnelseslenken; «Hei,» uten navn (FR18, NFR7, AD-9) | `mail/texts.ts`, `routes/paths.ts` | `mailTexts.test.ts` | ✅ Teksten sjekkes mot hele den forventede teksten, ikke et lagret snapshot (se Spec Change Log i spec 3.1). |
+| 3.1 | I testmodus lagres e-posten i `outbox_emails` med mottaker, «MasterPlan på vegne av ‹arrangør›», Reply-To, emne, tekst, lenke og tid; testinnboksen viser bare egne e-poster, nyeste først, med tomtilstand; krever innlogging og gir 404 med testmodus av (FR24, AD-9) | `mail/index.ts`, `mail/outbox.ts`, `routes/testMode.ts`, `views/test-inbox.ejs`, `views/partials/top.ejs`, `app.ts` | `reminders.test.ts`, `testInbox.test.ts` | ✅ |
+| 3.1 | **Send påminnelser nå** kjører sjekken og viser en melding som teller bare egne påminnelser, med entall for én; knappen, lenken og ruten finnes bare i testmodus (FR26, D2, D3) | `routes/testMode.ts`, `views/test-inbox.ejs` | `testInbox.test.ts` | ✅ |
+| 3.1 | Påminnelseslenken `?view=accepted` viser bare oppgavene hjelperen har sagt ja til, med Ferdig og Kan ikke gjøres, skriver aldri, og har tomtilstand og lenke til hele siden; svar går til hele siden (FR15, FR18, FR12, D6) | `routes/helper.ts`, `views/helper.ejs`, `public/styles.css` (utenfor `src/`) | `helperPage.test.ts` | ⚠️ Innholdet testes. **Manuell:** åpne en påminnelseslenke og testinnboksen i mobilvisning med 360 px bredde. **Testet manuelt 2026-11-10:** ingen sidelengs rulling, og knappene er lette å trykke på. |
+| 3.1 | Rett etter seed sender sjekken 12 påminnelser (2 i Bryllupet, 10 i Utdrikningslaget), og en ny sjekk sender 0 (FR25, FR17) | `seed/fixture.ts` (`EXPECTED_REMINDERS_DUE`), `docs/fixtures.md` | `seedReminders.test.ts` | ✅ |
+| 3.1 | I Docker-containeren med `--env-file .env.example`: logg inn som Kari, klikk **Send påminnelser nå**, og 12 påminnelser vises i testinnboksen uten nøkler eller nett (FR33, FR24, AD-17) | Ingen ny kode; testinnboksen følger med `TEST_MODE=true` | **manuell** | ❌ **Ikke kjørt ennå.** Docker Desktop kjørte ikke 2026-11-07, og heller ikke 2026-11-10, så sjekken ble ikke gjort før pull requesten. Risikoen er vurdert som lav: storyen har ingen Docker-spesifikk kode, `Dockerfile` kopierer hele `src/` (med `src/mail/` og migrering `0004`), `.env.example` har `TEST_MODE=true`, og samme flyt testes uten Docker i `seedReminders.test.ts` og `testInbox.test.ts`. Fremgangsmåte: steg 1–5 i «Kjør med Docker» i `README.md`. |
+| 3.1 | Ingen test åpner en nettverksforbindelse; `npm test`, `npm run typecheck` og `npm run lint` er grønne (FR27) | `services/reminders.ts` (`send` er en parameter) | alle | ✅ |
+
 ## Krav → tester
 
 ### Bygget så langt
@@ -81,29 +97,35 @@ Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-2-1-ai-plan-dra
 | FR-9 | Tildele oppgave | `tests/helpers.test.ts`, `tests/taskRules.test.ts` | |
 | FR-10 | Kopiere hjelperlenken | `tests/helpers.test.ts` + **manuell** | Testen sjekker knappen, `copy.js` og den skrivebeskyttede lenken. **Manuell:** klikk «Kopier lenke» i en nettleser, lim inn, og sjekk at hele lenken kom med. **Testet manuelt 2026-10-28** etter endringen av `copy.js` i `261b8d6`: lenken kopieres riktig. E-post kommer i Epic 3. |
 | FR-11 | Tildele på nytt | `tests/helpers.test.ts`, `tests/helperPage.test.ts`, `tests/taskRules.test.ts` | Den gamle hjelperens side viser ikke lenger oppgaven. |
-| FR-12 | Tilgang med lenke | `tests/helperPage.test.ts`, `tests/helpers.test.ts`, `tests/seed.test.ts` | GET endrer aldri data; ugyldige lenker viser ingenting; 24 tilfeldige byte. |
+| FR-12 | Tilgang med lenke | `tests/helperPage.test.ts`, `tests/helpers.test.ts`, `tests/seed.test.ts` | GET endrer aldri data, heller ikke påminnelsesvisningen; ugyldige lenker viser ingenting; 24 tilfeldige byte. |
 | FR-13 | Svare ja eller nei | `tests/helperPage.test.ts`, `tests/taskRules.test.ts`, `tests/summaries.test.ts` | Svaret vises som nytt svar i arrangementet. |
-| FR-15 | Ferdig eller Kan ikke gjøres | `tests/helperPage.test.ts`, `tests/taskRules.test.ts` | |
+| FR-15 | Ferdig eller Kan ikke gjøres | `tests/helperPage.test.ts`, `tests/taskRules.test.ts` | Også fra påminnelseslenken. |
+| FR-17 | Når påminnelsen sendes | `tests/reminderDue.test.ts`, `tests/reminders.test.ts`, `tests/seedReminders.test.ts` | 14 dager etter ja eller 3 dager før fristen; høyst én per ja; sen sjekk tar igjen det den gikk glipp av. Simulert tid. |
+| FR-18 | Innholdet i påminnelsen | `tests/mailTexts.test.ts`, `tests/reminders.test.ts`, `tests/helperPage.test.ts` | Fast tekst, én oppgave per e-post, og påminnelseslenken viser bare aksepterte oppgaver. |
 | FR-16 | Arrangøren markerer ferdig | `tests/helperPage.test.ts`, `tests/taskRules.test.ts` | |
 | FR-19 | Oversikt over alle arrangementer | `tests/summaries.test.ts`, `tests/seed.test.ts` | Med testdata: Utdrikningslaget «I rute», Bryllupet «haster». |
 | FR-20 | Oppsummeringer i arrangementet | `tests/summaries.test.ts`, `tests/seed.test.ts` | Med testdata gir hver oppsummering tallene i `docs/fixtures.md`. |
 | FR-21 | Statusregler | `tests/status.test.ts`, `tests/dates.test.ts` | Oslo-dato, 7-dagers- og 3-dagersreglene, tidligere arrangementer. |
 | FR-22 | Oppdatert ved neste lasting | `tests/summaries.test.ts` | |
-| FR-23 | Kjøre uten nøkler (mock-AI) | `tests/draftPlan.test.ts`, `tests/events.test.ts` | Uten leverandør brukes mock-planen med testplan-varselet. Testinnboksen kommer i Epic 3. |
-| FR-25 | Testdata | `tests/seed.test.ts` | Tall som `EXPECTED_COUNTS`, to ulike seed-dager, gyldige rader, ny seed gir samme lenker, avvisning uten testmodus eller med `libsql://`. |
+| FR-23 | Kjøre uten nøkler (mock-AI, ingen e-post) | `tests/draftPlan.test.ts`, `tests/events.test.ts`, `tests/reminders.test.ts` | Uten leverandør brukes mock-planen med testplan-varselet. I testmodus havner all e-post i testinnboksen. |
+| FR-24 | Testinnboks | `tests/testInbox.test.ts`, `tests/reminders.test.ts` | Bare egne e-poster, nyeste først; krever innlogging; finnes ikke med testmodus av. |
+| FR-25 | Testdata | `tests/seed.test.ts`, `tests/seedReminders.test.ts` | Tall som `EXPECTED_COUNTS`, to ulike seed-dager, gyldige rader, ny seed gir samme lenker, avvisning uten testmodus eller med `libsql://`. 12 påminnelser rett etter seed. |
+| FR-26 | Send påminnelser nå | `tests/testInbox.test.ts` | De andre testkontrollene kommer i Story 4.2. |
 | FR-27 | Automatiske tester | alle `tests/*.test.ts`, særlig `tests/config.test.ts` og `tests/seed.test.ts` | Hjelpemodulen `tests/helpers.ts` gir hver test egen database, eksplisitt testmiljø og fast dato (1. november 2026). Ingen nett eller nøkler. |
 | FR-28 | Oppsett og dokumentasjon | `tests/config.test.ts`, `tests/seed.test.ts` + **manuell** | Testene sjekker standardinnstillingene og at `docs/fixtures.md` har de riktige tallene. **Manuell:** les `README.md` og `.env.example`. |
-| FR-33 | Levering med Docker | **manuell** | `docker build -t masterplan .` og `docker run --rm --env-file .env.example -p 3000:3000 masterplan`, deretter `/health`, testinnlogging og oversikten. `npm test` bruker ikke Docker. Resultatet av den manuelle kjøringen står under «Implementation Notes» i `.docs/implementation-artifacts/spec-1-6-seed-data-docker-and-examiner-guide.md`. |
-| NFR-1 | Hjelpersiden på mobil fra 360 px | `tests/helperPage.test.ts` (indirekte) + **manuell** | Den automatiske testen er bare en indirekte sjekk: den ser etter at stilarket ikke har faste bredder over 360 px. Selve kravet sjekkes manuelt. **Manuell:** åpne en hjelperlenke i nettleserens mobilvisning med 360 px bredde, og sjekk at siden ikke kan rulles sidelengs og at knappene er lette å trykke på. |
+| FR-33 | Levering med Docker | **manuell** | `docker build -t masterplan .` og `docker run --rm --env-file .env.example -p 3000:3000 masterplan`, deretter `/health`, testinnlogging og oversikten. `npm test` bruker ikke Docker. Resultatet av den manuelle kjøringen står under «Implementation Notes» i `.docs/implementation-artifacts/spec-1-6-seed-data-docker-and-examiner-guide.md`. Testinnboksen i containeren (Story 3.1, AC 8) er **ikke kjørt ennå** (Docker Desktop kjørte ikke, se Story 3.1 over). |
+| NFR-1 | Hjelpersiden på mobil fra 360 px | `tests/helperPage.test.ts` (indirekte) + **manuell** | Den automatiske testen er bare en indirekte sjekk: den ser etter at stilarket ikke har faste bredder over 360 px. Selve kravet sjekkes manuelt. **Manuell:** åpne en hjelperlenke i nettleserens mobilvisning med 360 px bredde, og sjekk at siden ikke kan rulles sidelengs og at knappene er lette å trykke på. Gjør det samme med en påminnelseslenke og testinnboksen (Story 3.1, **testet manuelt 2026-11-10**: bestått). |
 | NFR-2 | Sikkerhet | `tests/auth.test.ts`, `tests/app.test.ts`, `tests/helperPage.test.ts` | Saltede scrypt-hasher, helmet, sikre informasjonskapsler, hjelperhoder. |
 | NFR-3 | Personvern mot AI-tjenesten | `tests/draftPlan.test.ts`, `tests/events.test.ts` | Leverandøren får bare `templateKey`, `eventDate` og en beskrivelse uten arrangementsnavn og hjelperdata; skjemaet opplyser om det. |
 | NFR-6 | Tidsgrense for AI-utkastet | `tests/draftPlan.test.ts` | 30 s med falske timere; forespørselen avbrytes og malens plan brukes. |
+| NFR-7 | Respektfulle påminnelser | `tests/mailTexts.test.ts` | Fast tekst uten utropstegn eller humor. |
 
 ### Ikke bygget ennå
 
 | Krav | Kommer i |
 |---|---|
 | FR-5 (ekte AI-utkast fra Anthropic), NFR-4 (kostnadstak) | Story 2.2 |
-| FR-10 (e-post), FR-17, FR-18, FR-23 (ingen e-post i testmodus, testinnboksen), FR-24, FR-26 | Epic 3 |
+| Ekte e-post gjennom Gmail, den daglige sjekken med cron og `CRON_SECRET` (NFR-8) | Story 3.2 (bare ved publisering) |
+| FR-10 (e-post med hjelperlenken), FR-26 (de andre testkontrollene) | Story 4.1, 4.2 |
 | FR-14 (endre svar) | Story 3.3 |
 | FR-29, FR-30, FR-31, FR-32 | Epic 4 |

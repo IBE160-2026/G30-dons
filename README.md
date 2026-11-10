@@ -12,7 +12,7 @@ Repoet inneholder applikasjonen og dokumentasjon av utvikling, testing og kvalit
 
 ## Kjør med Docker (for sensor)
 
-Krever Docker. Appen kjører i testmodus med standardinnstillingene fra `.env.example`: ingen e-post sendes, ingen nøkler trengs, og databasen er en SQLite-fil inne i containeren. Første gang containeren starter, legges testdata inn.
+Krever Docker. Appen kjører i testmodus med standardinnstillingene fra `.env.example`: ingen e-post forlater maskinen (den havner i testinnboksen i appen), ingen nøkler trengs, og databasen er en SQLite-fil inne i containeren. Første gang containeren starter, legges testdata inn.
 
 1. **Bygg** (fra mappen med `Dockerfile`):
 
@@ -32,7 +32,9 @@ Krever Docker. Appen kjører i testmodus med standardinnstillingene fra `.env.ex
 
 4. **Logg inn** med `kari@example.no` / `hemmelig123`. Oversikten viser Bryllupet med oppgaver som haster, og Utdrikningslaget som «I rute».
 
-5. **Stopp og nullstill:** trykk `Ctrl+C` i terminalen (eller `docker stop <container>`). Med `--rm` slettes containeren og dataene, så neste `docker run` starter med nye testdata.
+5. **Påminnelser:** klikk **Testinnboks** øverst til høyre, og deretter **Send påminnelser nå**. Testinnboksen viser 12 påminnelser, uten nøkler eller nett. Påminnelsene sendes bare når du klikker knappen. Den automatiske daglige sjekken kommer først med publiseringen (Story 3.2).
+
+6. **Stopp og nullstill:** trykk `Ctrl+C` i terminalen (eller `docker stop <container>`). Med `--rm` slettes containeren og dataene, så neste `docker run` starter med nye testdata.
 
 Vil du beholde dataene mellom omstarter, gi containeren et navn og dropp `--rm`:
 
@@ -68,12 +70,12 @@ Alle innstillinger står i [.env.example](.env.example) med trygge standardverdi
 
 | Variabel | Hva den gjør | Standard i `.env.example` | Krav når `TEST_MODE=false` |
 |---|---|---|---|
-| `TEST_MODE` | Testmodus: ingen e-post forlater maskinen, og `npm run seed` er tillatt. Mangler den, er testmodus av. | `true` | Settes til `false` ved publisering. |
+| `TEST_MODE` | Testmodus: ingen e-post forlater maskinen (den havner i testinnboksen), testinnboksen og **Send påminnelser nå** er tilgjengelige, og `npm run seed` er tillatt. Mangler den, er testmodus av. | `true` | Settes til `false` ved publisering. |
 | `PORT` | Porten serveren lytter på. | `3000` | — |
 | `DATABASE_URL` | Databasen. En `file:`-sti er lokal SQLite, en `libsql://`-URL er Turso. | `file:./data/local.db` | Påkrevd. |
 | `DATABASE_AUTH_TOKEN` | Tilgangsnøkkel til databasen. | tom | Påkrevd når `DATABASE_URL` ikke er en `file:`-sti. |
 | `SESSION_SECRET` | Signerer øktcookien. | `local-dev-secret-change-me` | Påkrevd, minst 32 tilfeldige tegn, og ikke standardverdien. |
-| `APP_BASE_URL` | Adressen som brukes i hjelperlenkene. Tom betyr `http://localhost:PORT` i testmodus. | tom | Påkrevd, `http(s)`-URL. |
+| `APP_BASE_URL` | Adressen som brukes i hjelperlenkene og påminnelseslenkene. Tom betyr `http://localhost:PORT` i testmodus. | tom | Påkrevd, `http(s)`-URL. |
 | `MAIL_TRANSPORT` | Hvordan e-post sendes. Bare `disabled` støttes foreløpig. | `disabled` | Påkrevd. |
 
 ## Testinnlogging
@@ -112,11 +114,16 @@ Tallene under stemmer på dagen testdataene lages, og før du har endret noe. En
 9. Legg til, endre og slett en oppgave. Merk en oppgave som ferdig selv.
 10. Opprett et nytt arrangement fra malen Bryllup eller Utdrikningslag, og se at det får sin egen fane.
 11. Legg til én hjelper til i Bryllupet (det har fire). Ved fem hjelpere forsvinner skjemaet, fordi et arrangement kan ha maks fem.
+12. Åpne **Testinnboks** og klikk **Send påminnelser nå**. Gjør steg 12–14 først, eller etter en ny seed: steg 6 gjør «Bestille kake» ferdig, og da blir det én påminnelse mindre. Med nye testdata sier meldingen «12 påminnelser er sendt.»: 2 for Bryllupet og 10 for Utdrikningslaget (se [docs/fixtures.md](docs/fixtures.md)). Hver påminnelse gjelder én oppgave og har en lenke.
+13. Klikk **Send påminnelser nå** igjen. Meldingen sier «Ingen påminnelser har forfalt.», fordi hvert ja gir høyst én påminnelse.
+14. Åpne lenken i Olas påminnelse om «Planlegge bordplassering». Siden «Oppgaver du har sagt ja til» viser bare oppgavene han har sagt ja til. Velg **Ferdig**. Du kommer til hele hjelpersiden, og oppgaven står som Ferdig.
 
 ## Kjente begrensninger
 
 - Ingen ekte AI ennå: appen lager alltid en testplan fra malen og sier det etter at arrangementet er opprettet. Tilkoblingen til Anthropic kommer i Story 2.2, og knappen «Simuler AI-feil» i Story 4.2.
-- Ingen e-post: hjelperlenker deles bare ved å kopiere dem. Påminnelser, testinnboksen og «Send påminnelser nå» kommer i Epic 3.
+- Ingen ekte e-post: i testmodus havner påminnelsene i testinnboksen. Med `TEST_MODE=false` og `MAIL_TRANSPORT=disabled` sendes ingen påminnelser, og de blir heller ikke registrert som sendt. Gmail og den automatiske daglige sjekken (`POST /internal/reminders/run` med `CRON_SECRET`) kommer i Story 3.2, som bare trengs ved publisering.
+- Påminnelsene sjekkes bare når noen klikker **Send påminnelser nå**. En sjekk sender alle påminnelser som har forfalt, også for frister som har gått ut, så den første sjekken etter en lang pause kan sende mange på én gang (se `.docs/implementation-artifacts/deferred-work.md`).
+- Hjelperlenker deles bare ved å kopiere dem. E-post med lenken kommer i Story 4.1.
 - Hjelperen kan ikke endre et ja til nei (eller omvendt), og arrangøren kan ikke åpne en oppgave på nytt for samme hjelper ennå.
 - Arrangementer kan ikke endres eller slettes, og hjelpere kan ikke fjernes ennå.
 - Sidene oppdateres ikke av seg selv. Last siden på nytt for å se nye svar.

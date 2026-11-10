@@ -527,3 +527,77 @@ describe('messages table', () => {
     expect(await allMessages()).toHaveLength(0);
   });
 });
+
+describe('the reminder view (story 3.1, FR-15, FR-18)', () => {
+  const EMPTY = 'Du har ingen oppgaver som venter på deg nå.';
+
+  /** Ola: `task` Accepted, `otherTask` Open, `b2` Done. */
+  async function mixedScenario() {
+    const s = await scenario();
+    await helperPost(s.ola.linkToken, s.task.id, { action: 'yes' });
+    await assign(s.kari, s.bryllup, s.b2.id, s.ola.id);
+    await helperPost(s.ola.linkToken, s.b2.id, { action: 'yes' });
+    await helperPost(s.ola.linkToken, s.b2.id, { action: 'done' });
+    return s;
+  }
+
+  it('shows only his Accepted tasks, each with Ferdig and Kan ikke gjøres', async () => {
+    const { ola, task, otherTask, b2 } = await mixedScenario();
+    const res = await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`);
+    expect(res.status).toBe(200);
+    expectHelperHeaders(res);
+    expect(res.text).toContain('Oppgaver du har sagt ja til');
+    expect(res.text).toContain(task.title);
+    expect(res.text).not.toContain(otherTask.title);
+    expect(res.text).not.toContain(b2.title);
+    const ids = [...res.text.matchAll(/action="\/h\/[^/]+\/tasks\/(\d+)"/g)].map((m) => Number(m[1]));
+    expect(ids).toEqual([task.id]);
+    expect(res.text).toContain('value="done"');
+    expect(res.text).toContain('value="cantDo"');
+    expect(res.text).not.toContain('value="yes"');
+    expect(res.text).toContain(`href="/h/${ola.linkToken}"`);
+    expect(res.text).toContain('Se alle oppgavene dine');
+  });
+
+  it('leaves out events with no Accepted task', async () => {
+    const { ola } = await mixedScenario();
+    const res = await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`);
+    expect(res.text).toContain('<h2>Bryllup');
+    expect(res.text).not.toContain('<h2>Utdrikningslag');
+  });
+
+  it('shows an empty state with a link to the full page when nothing is Accepted', async () => {
+    const { ola } = await scenario();
+    const res = await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(EMPTY);
+    expect(res.text).toContain(`href="/h/${ola.linkToken}"`);
+    expect(res.text).not.toContain('action="/h/');
+  });
+
+  it('shows the full page for any other view value', async () => {
+    const { ola, otherTask } = await mixedScenario();
+    for (const view of ['all', 'ACCEPTED', '']) {
+      const res = await request(ctx.app).get(`/h/${ola.linkToken}?view=${view}`);
+      expect(res.text).toContain(otherTask.title);
+      expect(res.text).not.toContain('Oppgaver du har sagt ja til');
+    }
+  });
+
+  it('never writes, and gives the invalid-link page for a bad token', async () => {
+    const { ola } = await mixedScenario();
+    const before = await snapshot();
+    await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`);
+    expect(await snapshot()).toEqual(before);
+    const bad = await request(ctx.app).get('/h/ukjent-lenke-som-ikke-finnes-0000?view=accepted');
+    expect(bad.status).toBe(404);
+  });
+
+  it('after Ferdig from the reminder view, lands on the full page with the usual notice (D6)', async () => {
+    const { ola, task } = await mixedScenario();
+    const post = await helperPost(ola.linkToken, task.id, { action: 'done' });
+    expect(post.headers.location).toBe(`/h/${ola.linkToken}?lagret=1`);
+    const page = await request(ctx.app).get(post.headers.location);
+    expect(page.text).toContain(SAVED);
+  });
+});

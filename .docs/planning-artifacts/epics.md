@@ -506,6 +506,8 @@ Helpers get one fixed-text reminder email per yes at the right time. In test mod
 
 ### Story 3.1: Reminders and the test inbox
 
+*Scope note: the cron route `POST /internal/reminders/run` and the `CRON_SECRET` setting moved to Story 3.2 on 2026-11-07. They are only needed when the app is deployed and something outside it must start the daily check. In test mode and in the Docker container, **Send påminnelser nå** starts the same `reminders.run` (see `docs/ki-logg.md`).*
+
 As a helper,
 I want one friendly reminder before my task is due,
 So that I don't forget what I promised.
@@ -530,7 +532,7 @@ So that I don't forget what I promised.
 - the one task it covers, with its date in `nb-NO` format
 - a reminder link `/h/:token?view=accepted`
 
-**And** a snapshot test covers the text (FR18, NFR7, NFR9)
+**And** a test checks the full text against the fixed text decided before the code, not a recorded snapshot (FR18, NFR7, NFR9; changed 2026-11-07, see the Spec Change Log in spec 3.1)
 
 **Given** the reminder link
 **When** Ola opens it
@@ -539,10 +541,6 @@ So that I don't forget what I promised.
 **Given** `TEST_MODE=true`
 **When** an email is sent
 **Then** it is stored in `outbox_emails`. A logged-in organizer's test inbox page lists only her own rows, showing recipient, subject, text, links and time, and it can't be reached without login or when test mode is off (FR24, AD-9)
-
-**Given** `CRON_SECRET` is set
-**When** `POST /internal/reminders/run` arrives with the correct `X-Cron-Secret`, compared with `timingSafeEqual`
-**Then** the run starts. A wrong or missing secret gets 403, and the route doesn't exist when `CRON_SECRET` is unset (AD-7)
 
 **Given** `TEST_MODE=true` and a logged-in organizer
 **When** I click **Send påminnelser nå** (Send due reminders now)
@@ -586,7 +584,7 @@ So that a change of plans is visible to Kari instead of a task silently stalling
 
 ### Story 3.2: Real email through the Gmail API
 
-*Order and cut note: this story is built after Story 3.3. The brief's Must requirement for reminders is covered by Story 3.1 in test mode. Real email is only needed when the app is deployed, so this story belongs with Story 1.7 and is deferred or cut together with it (changed on 2026-11-07, see `docs/ki-logg.md`).*
+*Order and cut note: this story is built after Story 3.3. The brief's Must requirement for reminders is covered by Story 3.1 in test mode. Real email is only needed when the app is deployed, so this story belongs with Story 1.7 and is deferred or cut together with it (changed on 2026-11-07, see `docs/ki-logg.md`). For the same reason it also holds the cron route and `CRON_SECRET`, moved here from Story 3.1 on 2026-11-07.*
 
 As the developer,
 I want the deployed app to send real email from the dedicated MasterPlan Gmail account,
@@ -613,6 +611,10 @@ So that my friends get reminders during the test.
 - store all settings on Render only
 
 **And** the guide explains the fallback: set `MAIL_TRANSPORT=disabled`
+
+**Given** `CRON_SECRET` is set (at least 32 characters, read by `config.ts` and listed empty in `.env.example`)
+**When** `POST /internal/reminders/run` arrives with the correct `X-Cron-Secret`, compared with `timingSafeEqual`
+**Then** the same `reminders.run` from Story 3.1 starts. A wrong or missing secret gets 403, and the route doesn't exist when `CRON_SECRET` is unset (AD-7)
 
 **Given** cron-job.org
 **When** it is set up as in `docs/deploy.md`
