@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – typografi</title>
+<!-- Preview only: fonts are loaded from Google Fonts here. In the app they would be self-hosted in public/fonts/ (OFL). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Work+Sans:wght@400;600&family=Caveat:wght@500&family=Dancing+Script:wght@500&family=Homemade+Apple&display=swap" rel="stylesheet">
+<style>
+/* Palette 1 Porselen + dark beige progress #8C7353 */
+body { margin: 0; background: #ece8e1; color: #2E2A26; font-family: "Segoe UI", system-ui, sans-serif; }
+.sheet { max-width: 1280px; margin: 0 auto; padding: 24px 16px 48px; }
+.sheet > h1 { font-size: 22px; margin: 0 0 4px; }
+.sheet > p { margin: 0 0 24px; color: #555; max-width: 900px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; }
+@media (max-width: 420px) { .grid { grid-template-columns: 1fr; } }
+.v > h2 { font-size: 17px; margin: 0 0 2px; }
+.v > .reg { font-size: 13px; color: #555; margin: 0 0 10px; }
+.app { background: #FAF6EF; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fff; color: #24365A; }
+.logo { font-size: 21px; } .logo em { font-style: normal; color: #B58A3E; font-size: 15px; }
+.nav { font-size: 13px; color: #6F665C; }
+.trim { height: 8px; background: repeating-linear-gradient(90deg, #FAF6EF 0 6px, #C9D5E6 6px 9px); }
+.body { padding: 18px 20px 22px; }
+.hello { margin: 0; color: #24365A; font-size: 30px; line-height: 1.2; }
+.sub { color: #6F665C; font-size: 15px; margin: 4px 0 16px; }
+.ev { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 #ECE4D8, 0 8px 20px rgba(0,0,0,.05); margin-bottom: 12px; }
+.ev h4 { margin: 0; font-weight: 400; font-size: 21px; color: #24365A; }
+.date { font-size: 13px; color: #6F665C; }
+.pill { display: inline-block; margin-top: 8px; font-size: 13px; padding: 4px 10px; border-radius: 999px; font-weight: 600; background: #F7E5DA; color: #A2512F; }
+.stats { font-size: 14px; margin-top: 8px; }
+.prog { height: 6px; background: #ECE4D8; border-radius: 3px; margin-top: 8px; } .prog span { display: block; height: 100%; width: 65%; border-radius: 3px; background: #8C7353; }
+.task { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid #ECE4D8; gap: 8px; }
+.task .t { font-weight: 600; font-size: 15px; } .task .m { font-size: 13px; color: #6F665C; }
+.btn { background: #24365A; color: #fff; border: 0; padding: 8px 14px; border-radius: 999px; font-size: 14px; }
+.empty { text-align: center; padding: 6px 0 2px; color: #6F665C; font-size: 14px; }
+
+/* Pair 1: Lora (serif) + Source Sans 3 (sans), Caveat handwriting — warm book feel, very legible */
+.t1 { font-family: "Source Sans 3", system-ui, sans-serif; } .t1 .logo, .t1 .ev h4 { font-family: "Lora", Georgia, serif; } .t1 .hello { font-family: "Caveat", cursive; font-size: 36px; } .t1 .empty i { font-family: "Caveat", cursive; font-size: 20px; font-style: normal; }
+/* Pair 2: Cormorant Garamond (elegant serif) + Nunito Sans (soft sans), Dancing Script — most romantic */
+.t2 { font-family: "Nunito Sans", system-ui, sans-serif; } .t2 .logo, .t2 .ev h4 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; } .t2 .ev h4 { font-size: 24px; } .t2 .hello { font-family: "Dancing Script", cursive; font-size: 34px; } .t2 .empty i { font-family: "Dancing Script", cursive; font-size: 20px; font-style: normal; }
+/* Pair 3: Libre Baskerville (classic serif) + Work Sans (plain sans), Homemade Apple — most old-fashioned, handwritten invitation */
+.t3 { font-family: "Work Sans", system-ui, sans-serif; } .t3 .logo, .t3 .ev h4 { font-family: "Libre Baskerville", Georgia, serif; } .t3 .ev h4 { font-size: 19px; } .t3 .hello { font-family: "Homemade Apple", cursive; font-size: 24px; } .t3 .empty i { font-family: "Homemade Apple", cursive; font-size: 15px; font-style: normal; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Tre skriftpar for Porselen</h1>
+  <p>Hvert par har en skrift med seriffer for logo og arrangementsnavn, en skrift uten seriffer for all vanlig tekst og knapper, og en håndskrift som bare brukes i hilsenen og i en tom liste. Fargene er Porselen med mørk beige fremdriftslinje.</p>
+  <div class="grid">
+    <section class="v"><h2>1. Lora + Source Sans 3 + Caveat</h2><p class="reg">Varm bokskrift med uformell, lett lesbar håndskrift. Roligst.</p>
+      <div class="app t1"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span></span></div>
+            <div class="task" style="margin-top:10px"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november</div></div><button class="btn">Åpne</button></div></div>
+          <div class="ev"><div class="empty"><i>Ingen nye svar ennå</i><br>Svar fra hjelperne dukker opp her.</div></div>
+        </div></div></section>
+    <section class="v"><h2>2. Cormorant Garamond + Nunito Sans + Dancing Script</h2><p class="reg">Elegant og lett, med svungen håndskrift. Mest romantisk.</p>
+      <div class="app t2"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span></span></div>
+            <div class="task" style="margin-top:10px"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november</div></div><button class="btn">Åpne</button></div></div>
+          <div class="ev"><div class="empty"><i>Ingen nye svar ennå</i><br>Svar fra hjelperne dukker opp her.</div></div>
+        </div></div></section>
+    <section class="v"><h2>3. Libre Baskerville + Work Sans + Homemade Apple</h2><p class="reg">Klassisk bokskrift med blekkpenn-håndskrift, som en håndskrevet invitasjon. Mest gammeldags.</p>
+      <div class="app t3"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span></span></div>
+            <div class="task" style="margin-top:10px"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november</div></div><button class="btn">Åpne</button></div></div>
+          <div class="ev"><div class="empty"><i>Ingen nye svar ennå</i><br>Svar fra hjelperne dukker opp her.</div></div>
+        </div></div></section>
+  </div>
+</div>
+</body>
+</html>

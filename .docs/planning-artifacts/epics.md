@@ -7,13 +7,15 @@ inputDocuments:
   - .docs/planning-artifacts/architecture/architecture-MasterPlan-2026-10-24/cost-and-mock-plan.md
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/tilbakemelding-product-brief.md
+  - .docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md
+  - .docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/EXPERIENCE.md
 ---
 
 # MasterPlan - Epic Breakdown
 
 ## Overview
 
-This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. There is no separate UX design document. The UX notes in the PRD addendum are used instead. The deadline is 14 November 2026. Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Story 3.3 (changing an answer, FR14) is Should, but it is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 asks for it (moved out of Story 4.4 on 2026-11-06, see `docs/ki-logg.md`). Story 3.2 (real email through the Gmail API) is only needed when the app is deployed, so it is built after Story 3.3 and is deferred or cut together with Story 1.7 (2026-11-07). The reminders themselves are covered by Story 3.1 in test mode. Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
+This document breaks the MasterPlan v1 PRD and the architecture spine down into implementable stories. The UX design is in `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/` (`DESIGN.md` for the look, `EXPERIENCE.md` for the behaviour, 2026-11-10); it replaces the UX notes in the PRD addendum and is built by Story 5.1. The design part is due 12 November 2026 and the application 14 November 2026. Story 5.1 is built next, before Story 3.3 (decided 2026-11-10, see `docs/ki-logg.md`). Must stories come first in build order. Should stories follow in the PRD §8 cut-list order, so they can be dropped from the end. The AI plan draft (Epic 2) and the fixed-text reminders (Epic 3) are Must and are never cut. Story 3.3 (changing an answer, FR14) is Should, but it is built right after Story 3.1 and before Epic 4, because the brief's success criterion 3 asks for it (moved out of Story 4.4 on 2026-11-06, see `docs/ki-logg.md`). Story 3.2 (real email through the Gmail API) is only needed when the app is deployed, so it is built after Story 3.3 and is deferred or cut together with Story 1.7 (2026-11-07). The reminders themselves are covered by Story 3.1 in test mode. Each story creates only the tables and migrations it needs (AD-14): organizers in 1.1, events and tasks in 1.2, helpers and event_helpers in 1.3, messages in 1.4, and reminders_sent and outbox_emails in 3.1.
 
 ## Requirements Inventory
 
@@ -97,9 +99,7 @@ From the architecture spine (AD-1 to AD-17):
 
 ### UX Design Requirements
 
-There is no UX design document. The layout notes in the PRD addendum apply:
-- **Event view:** one tab per event, an information box on the left, and collapsible summary panels on the right.
-- **Helper page:** a white, mobile-first page with a header and one card per task, each with Yes/No buttons and a message box.
+The UX design is `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md` (palette «Porselen», typography, components) and `EXPERIENCE.md` (pages, behaviour, states, accessibility and key flows), made with `bmad-ux` on 2026-11-10. It replaces the layout notes in the PRD addendum. Stories 1.1–3.1 were built before it, against those notes; Story 5.1 brings the built pages in line with the UX design. `EXPERIENCE.md` → Plan impact lists what changes from the earlier plan.
 
 ### FR Coverage Map
 
@@ -118,11 +118,11 @@ FR12: Epic 1 - link access and security
 FR13: Epic 1 - yes/no answers
 FR14: Epic 3 (Story 3.3) - change the answer
 FR15: Epic 1 - Done / Can't be done (reminder link part in Epic 3)
-FR16: Epic 1 - organizer marks Done
+FR16: Epic 1 - organizer marks Done (kept on every task in the Story 5.1 layout)
 FR17: Epic 3 - reminder timing
 FR18: Epic 3 - reminder content
-FR19: Epic 1 - overview across events
-FR20: Epic 1 - event view summaries
+FR19: Epic 1 - overview across events (new layout in Story 5.1)
+FR20: Epic 1 - event view summaries (replaced by the Story 5.1 cards)
 FR21: Epic 1 - status rules
 FR22: Epic 1 - correct on every load
 FR23: Epic 1 (test-mode setting) + Epic 2 (mock AI)
@@ -151,6 +151,10 @@ Kari describes her event, and the AI drafts the task list, falling back to the t
 Helpers get one fixed-text reminder email per yes at the right time. In test mode every email goes to the test inbox, and the examiner can trigger reminders with **Send due reminders now**. When deployed, email goes through the Gmail API. `MAIL_TRANSPORT=disabled` is only an emergency fallback.
 Build order: 3.1, 3.3, 3.2. Story 3.3 lets a helper change an answer (Should, built after Story 3.1 and before Epic 4). Story 3.2 is only needed when the app is deployed, so it is deferred or cut together with Story 1.7.
 **FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container), FR14 (Story 3.3). NFR7, NFR8.
+
+### Epic 5: A calm, warm MasterPlan (UX design «Porselen»)
+Kari and Ola get the redesigned pages from the UX design: a calm, warm look with a clear overview, a tidy event view where Kari sees at once what needs her, and a helper page that is quick to answer on a phone. Built first among the remaining stories, before Story 3.3, because the design part is due 12 November 2026.
+**FRs covered:** no new FRs. It changes how FR12, FR13, FR15, FR16, FR19, FR20 and FR26 are shown, and changes FR20's summaries. NFR1, NFR9.
 
 ### Epic 4: More control for Kari (Should, cut from the end)
 These are conveniences built in cut-list order: sending links by email, the other test-mode controls, correcting or removing helpers, undo and reopen, and editing or deleting events.
@@ -715,3 +719,65 @@ So that my plans stay accurate.
 **Then** its tasks, messages, reminder logs and event-helper links are deleted, and its tasks disappear from all helper pages (FR32, AD-12)
 
 *Cut note: FR32 (delete) can be dropped first, then FR29 (edit).*
+
+## Epic 5: A calm, warm MasterPlan (UX design «Porselen»)
+
+Kari and Ola get the pages described in the UX design. No new features: the same routes, rules and data, shown in a way that is calm, warm and easy to take in.
+
+### Story 5.1: Build the Porselen design
+
+*Order note: built next, before Story 3.3, because the design part is due 12 November 2026 and the application 14 November 2026 (decided 2026-11-10, see `docs/ki-logg.md`). The design part is this story: done means the CSS is in use across the whole app and locked with a written rule and an automated test (the last acceptance criterion below). The UX documents are its basis. Epic 5 is a new epic instead of a story in Epics 1–4, because the work cuts across them, and renumbering would break existing references (the same reason as for Story 3.3). The three items deferred from the UX review (`deferred-work.md`, 2026-11-10) are acceptance criteria here.*
+
+As an organizer and as a helper,
+I want MasterPlan to look calm and warm and to show me at once what needs me,
+So that planning a big gathering feels manageable, and answering a task takes a minute.
+
+**Acceptance Criteria:**
+
+**Given** `public/styles.css`
+**When** the design is built
+**Then** the colour, typography, radius and spacing tokens in `DESIGN.md` exist as CSS custom properties with the same names, split into single values (for example border width and border colour separately), including tokens for the focus ring and the flash (deferred UX finding §2)
+**And** Lora, Source Sans 3 and Dancing Script are self-hosted as WOFF2 in `public/fonts/` with their OFL licences, and no page loads fonts or images from a third party (AD-16, AD-17)
+
+**Given** Kari's overview
+**When** it loads
+**Then** it shows the time-of-day greeting (Oslo time) and one framed card per event with status pill, «N av M ferdig», progress bar and days left, and the empty state «Her begynner det» when she has no events (FR19, FR21)
+**And** the card text is defined and tested for an event whose date has passed, an event today, and an event with no tasks (deferred UX finding §4)
+
+**Given** the event view
+**When** it loads
+**Then** it shows «Trenger deg nå» (tasks in Needs a helper, then Urgent tasks), the Fremdrift card with the count per status and the groups «Denne uka» and «Neste uke» (Monday–Sunday), the helper cards with «Kopier lenke» and no raw URL, and the Meldinger card with a preview that does not mark replies seen (FR20, FR21, AD-15)
+**And** «Vis alle svar» opens `?panel=messages`, which marks the listed replies seen as before (FR20, AD-15)
+
+**Given** the task list «Alle oppgaver»
+**When** Kari presses «Endre» on a task
+**Then** only that task opens in an edit box (`?endre=<taskId>`, works without JavaScript) with title, deadline, helper, «Lagre», «Avbryt», «Marker som ferdig» and «Slett oppgaven», and the other rows stay read-only (FR7, FR9, FR11)
+**And** «Marker som ferdig» is available for every task that is not Done, whatever its status, in the edit box and on every «Trenger deg nå» row (FR16)
+
+**Given** Ola's helper page
+**When** he opens his link
+**Then** it shows the neutral header «Du er invitert til å hjelpe til med …», the greeting from the organizer, the banner «N oppgaver venter på svaret ditt», the tasks grouped by event with unanswered ones framed and labelled «Svar ønskes», and the buttons «Ja, jeg tar den» and «Nei» at least 48 px high (FR12, FR13, NFR1, NFR9)
+**And** an answer from a stale page is refused with «Oppgaven er endret siden du åpnet siden. Se oppdatert status under.», and the marker «Endret etter at du svarte» is kept (FR12)
+
+**Given** the form «Nytt arrangement»
+**When** Kari submits it
+**Then** the page says the draft can take up to half a minute, an external script disables the button with the text «Lager utkast …», and a double submit never creates two events (FR3, FR5, NFR6)
+
+**Given** the tab row and a task row at 360 px
+**When** the design is built
+**Then** the spec for this story decides, in its UX section, whether the tabs wrap or scroll with many events and how a task row is laid out on a phone, and the pages have no sideways scrolling at 360 px (deferred UX finding §3, NFR1)
+
+**Given** every page
+**When** it is used by keyboard and screen reader
+**Then** the tab order follows the reading order, focus is visible, ornaments are hidden from screen readers, flashes use `role="status"` and errors `role="alert"`, and every text pair meets WCAG AA as listed in `DESIGN.md` (NFR9)
+**And** the keyboard check is done manually and recorded in `docs/traceability.md`
+
+**Given** every page in the app, organizer and helper pages, the test inbox, the plain pages and the forms
+**When** the story is done
+**Then** each one uses the new stylesheet, and no view keeps styles from before the redesign or inline styles
+**And** a written rule locks it: a new decision in `ARCHITECTURE-SPINE.md` says that colours, fonts, radii and spacing in `public/styles.css` come only from the custom properties that mirror the `DESIGN.md` tokens
+**And** an automated test enforces the rule: every colour token in `DESIGN.md` exists in `:root` with the same value, `public/styles.css` has no colour literals outside `:root`, and no view under `src/views/` has a `style` attribute (FR27)
+
+**Given** the test suite
+**When** the story is done
+**Then** the tests that checked the old panel texts follow the new cards, and `npm test`, `npm run typecheck` and `npm run lint` are green (FR27)

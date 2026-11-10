@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – fire retninger</title>
+<style>
+/* Page chrome for the comparison sheet (not part of any direction) */
+body { margin: 0; background: #ece8e1; font-family: "Segoe UI", system-ui, sans-serif; color: #2b2b2b; }
+.sheet { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+.sheet > h1 { font-size: 22px; margin: 0 0 4px; }
+.sheet > p { margin: 0 0 24px; color: #555; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 28px; }
+@media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+.dir h2 { font-size: 18px; margin: 0 0 4px; }
+.dir .why { font-size: 14px; color: #444; margin: 0 0 12px; min-height: 60px; }
+.frame { border-radius: 10px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.12); background: #fff; }
+.bar { height: 26px; background: #ddd8cf; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+.bar i { width: 9px; height: 9px; border-radius: 50%; background: #bdb6aa; display: block; }
+.swatches { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.swatches span { font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); }
+
+/* ============ A. Oppslagstavla (pinboard) ============
+   cream #F7F1E5  paper #FFFDF8  delft blue #2C4F7C  soft blue #DCE6F2
+   brass #A8833F  walnut ink #3B2F25  muted #6F6253  urgent terracotta #B4532F  done sage #5E7A5A */
+.a { background: #F7F1E5; color: #3B2F25; font-family: Georgia, "Palatino Linotype", serif; }
+.a .hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-bottom: 1px solid #E4D8C2; }
+.a .logo { font-size: 22px; color: #2C4F7C; letter-spacing: .5px; }
+.a .logo small { display: block; font-family: "Segoe Script", "Brush Script MT", cursive; font-size: 13px; color: #A8833F; }
+.a .nav { font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; color: #6F6253; }
+.a .body { padding: 22px; }
+.a .hello { font-family: "Segoe Script", "Brush Script MT", cursive; color: #2C4F7C; font-size: 22px; margin: 0; }
+.a .sub { font-size: 14px; color: #6F6253; margin: 2px 0 18px; }
+.a .board { padding: 18px; border-radius: 120px 120px 10px 10px; border: 3px solid #C9A86A;
+  background-color: #DCE6F2;
+  background-image: radial-gradient(circle at 20% 30%, #b9cbe2 0 6px, transparent 7px), radial-gradient(circle at 70% 70%, #b9cbe2 0 5px, transparent 6px), radial-gradient(circle at 45% 55%, #c8d7ea 0 9px, transparent 10px);
+  background-size: 46px 46px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 34px; }
+.a .card { background: #FFFDF8; padding: 14px 14px 12px; box-shadow: 0 3px 8px rgba(59,47,37,.18); position: relative; }
+.a .card:nth-child(1) { transform: rotate(-1.2deg); } .a .card:nth-child(2) { transform: rotate(1deg); }
+.a .card::before { content: ""; position: absolute; top: -6px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #E2C27E, #A8833F); }
+.a .card h3 { margin: 0; font-size: 18px; font-weight: normal; color: #2C4F7C; }
+.a .date { font-size: 12px; color: #6F6253; font-family: "Segoe UI", system-ui, sans-serif; }
+.a .state { margin-top: 10px; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; }
+.a .urgent { color: #B4532F; font-weight: 600; } .a .ok { color: #5E7A5A; font-weight: 600; }
+.a .note { font-family: "Segoe Script", "Brush Script MT", cursive; font-size: 13px; color: #6F6253; margin-top: 8px; }
+.a .new { margin-top: 16px; text-align: center; }
+.a .btn { font-family: "Segoe UI", system-ui, sans-serif; background: #2C4F7C; color: #fff; border: 0; padding: 10px 18px; border-radius: 6px; font-size: 14px; }
+
+/* ============ B. Oppskriftsboka (recipe book) ============
+   page #FBF6EC  ruled line #E8DCC6  sepia ink #4A3A2A  faded blue #5B7698  tab blue #C9D6E6
+   tab cream #EFE4CF  red-brown urgent #9C4A32  olive done #6B7442 */
+.b { background: #FBF6EC; color: #4A3A2A; font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif; }
+.b .hd { padding: 16px 26px 0; text-align: center; }
+.b .logo { font-size: 26px; letter-spacing: 3px; text-transform: uppercase; color: #4A3A2A; }
+.b .orn { color: #5B7698; font-size: 14px; letter-spacing: 6px; }
+.b .tabs { display: flex; gap: 4px; padding: 14px 26px 0; }
+.b .tab { padding: 6px 14px; border-radius: 8px 8px 0 0; background: #EFE4CF; font-size: 14px; }
+.b .tab.on { background: #C9D6E6; color: #2f4560; }
+.b .page { margin: 0 26px 22px; background: #FFFCF5; border: 1px solid #E8DCC6; padding: 18px 22px;
+  background-image: repeating-linear-gradient(#FFFCF5 0 27px, #E8DCC6 27px 28px); }
+.b h2 { margin: 0; font-size: 20px; font-style: italic; font-weight: normal; }
+.b .row { display: flex; justify-content: space-between; align-items: baseline; line-height: 28px; font-size: 15px; }
+.b .row b { font-weight: normal; }
+.b .lead { flex: 1; border-bottom: 1px dotted #b9a888; margin: 0 8px; transform: translateY(-5px); }
+.b .urgent { color: #9C4A32; font-style: italic; } .b .ok { color: #6B7442; font-style: italic; }
+.b .hand { font-family: "Segoe Script", "Brush Script MT", cursive; color: #5B7698; font-size: 14px; line-height: 28px; }
+.b .btn { background: transparent; color: #4A3A2A; border: 1px solid #4A3A2A; padding: 8px 16px; font-family: inherit; font-size: 14px; letter-spacing: 1px; }
+
+/* ============ C. Stua i kveldslys (living room, calm) ============
+   ivory #FAF6EF  linen #F1EADF  navy #24365A  porcelain blue #4D6E9E  lamp gold #C79A4B
+   text #2E2A26  muted #7A7066  urgent rust #A65B3A  done green #657E62 */
+.c { background: #FAF6EF; color: #2E2A26; font-family: "Segoe UI", system-ui, sans-serif; }
+.c .hd { display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; }
+.c .logo { font-family: Georgia, serif; font-size: 21px; color: #24365A; }
+.c .logo::after { content: " ❦"; color: #C79A4B; font-size: 16px; }
+.c .nav { font-size: 13px; color: #7A7066; }
+.c .stripe { height: 8px; background: repeating-linear-gradient(90deg, #FAF6EF 0 6px, #C9D5E6 6px 9px); }
+.c .body { padding: 26px 28px 30px; }
+.c h1 { font-family: Georgia, serif; font-weight: normal; font-size: 26px; margin: 0; color: #24365A; }
+.c .sub { color: #7A7066; font-size: 14px; margin: 4px 0 22px; }
+.c .ev { background: #FFFFFF; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 0 #E9E0D2, 0 8px 20px rgba(36,54,90,.06); border-left: 4px solid #C79A4B; }
+.c .ev.ok { border-left-color: #657E62; }
+.c .ev h3 { font-family: Georgia, serif; font-weight: normal; font-size: 19px; margin: 0; color: #24365A; }
+.c .ev .date { font-size: 13px; color: #7A7066; }
+.c .pill { font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #F6E6DB; color: #A65B3A; font-weight: 600; white-space: nowrap; }
+.c .pill.ok { background: #E7EEE4; color: #657E62; }
+.c .count { font-family: Georgia, serif; font-size: 13px; color: #7A7066; margin-top: 4px; }
+.c .btn { background: #24365A; color: #fff; border: 0; padding: 11px 20px; border-radius: 999px; font-size: 14px; }
+
+/* ============ D. Landkjøkkenet (country kitchen, practical) ============
+   cream #F8F4EA  sage #8A9A7B  deep sage #4F5E45  oak #B8895A  gingham blue #6E8BB5
+   white #FFFFFF  text #33352E  urgent brick #A9472F  done #4F5E45 */
+.d { background: #F8F4EA; color: #33352E; font-family: "Segoe UI", system-ui, sans-serif; }
+.d .hd { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #8A9A7B; color: #fff; }
+.d .logo { font-family: Georgia, serif; font-size: 20px; }
+.d .nav { font-size: 13px; opacity: .9; }
+.d .gingham { height: 10px; background-color: #fff; background-image: linear-gradient(90deg, rgba(110,139,181,.55) 50%, transparent 50%), linear-gradient(rgba(110,139,181,.55) 50%, transparent 50%); background-size: 10px 10px; }
+.d .body { padding: 20px; }
+.d h1 { font-family: Georgia, serif; font-size: 22px; margin: 0 0 14px; color: #4F5E45; font-weight: normal; }
+.d .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.d .ev { background: #fff; border-radius: 10px; border: 1px solid #E3DCCB; overflow: hidden; }
+.d .ev .top { background: #F1E6D4; padding: 10px 14px; border-bottom: 2px solid #B8895A; }
+.d .ev h3 { margin: 0; font-family: Georgia, serif; font-size: 17px; font-weight: normal; }
+.d .ev .date { font-size: 12px; color: #6d6a5f; }
+.d .ev ul { list-style: none; margin: 0; padding: 10px 14px 12px; font-size: 13px; }
+.d .ev li { display: flex; justify-content: space-between; padding: 3px 0; }
+.d .urgent { color: #A9472F; font-weight: 600; } .d .ok { color: #4F5E45; font-weight: 600; }
+.d .bar2 { height: 6px; background: #EFE8D8; border-radius: 3px; margin: 6px 14px 12px; }
+.d .bar2 span { display: block; height: 100%; border-radius: 3px; background: #8A9A7B; }
+.d .btn { background: #4F5E45; color: #fff; border: 0; padding: 10px 16px; border-radius: 8px; font-size: 14px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Fire retninger for MasterPlan</h1>
+  <p>Samme skjerm i alle fire: Karis oversikt rett etter innlogging, med Bryllup (2 haster, 15 av 23 ferdig) og Utdrikningslag (i rute). Farger og innhold er forslag til sammenligning – ingenting er bestemt.</p>
+
+  <div class="grid">
+
+    <section class="dir">
+      <h2>A. Oppslagstavla</h2>
+      <p class="why">Inspirert av oppslagstavla i Interiør 1: hvert arrangement er et lite kort festet med messingstift på blått blomstermønster. Håndskrift i små doser, delftblått og messing. Mest personlig og leken av de fire.</p>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i></div>
+        <div class="a">
+          <div class="hd"><div class="logo">MasterPlan<small>sammen får vi det til</small></div><div class="nav">Kari · Testinnboks · Logg ut</div></div>
+          <div class="body">
+            <p class="hello">God kveld, Kari</p>
+            <p class="sub">Dette er det som skjer på tavla di nå.</p>
+            <div class="board">
+              <div class="card"><h3>Bryllup</h3><div class="date">lørdag 6. juni 2027 · 208 dager igjen</div>
+                <div class="state"><span class="urgent">2 haster</span> · 1 trenger hjelper</div>
+                <div class="note">15 av 23 er ferdig</div></div>
+              <div class="card"><h3>Utdrikningslag</h3><div class="date">lørdag 3. april 2027 · 144 dager igjen</div>
+                <div class="state"><span class="ok">I rute</span></div>
+                <div class="note">Alt er i gode hender</div></div>
+            </div>
+            <div class="new"><button class="btn">Lag et nytt arrangement</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="swatches"><span style="background:#F7F1E5">krem</span><span style="background:#2C4F7C;color:#fff">delftblå</span><span style="background:#DCE6F2">porselen</span><span style="background:#A8833F;color:#fff">messing</span><span style="background:#B4532F;color:#fff">haster</span><span style="background:#5E7A5A;color:#fff">i rute</span></div>
+    </section>
+
+    <section class="dir">
+      <h2>B. Oppskriftsboka</h2>
+      <p class="why">En gammel oppskriftsbok: linjert papir, faner som skilleark, sepiablekk og bleknet blått. Klassisk og rolig typografi med prikkede ledelinjer. Mest gammeldags og tettest med tekst.</p>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i></div>
+        <div class="b">
+          <div class="hd"><div class="logo">MasterPlan</div><div class="orn">✿ ✿ ✿</div></div>
+          <div class="tabs"><span class="tab on">Oversikt</span><span class="tab">Bryllup</span><span class="tab">Utdrikningslag</span><span class="tab">+ Nytt</span></div>
+          <div class="page">
+            <h2>Dine arrangementer</h2>
+            <div class="row"><b>Bryllup, 6. juni 2027</b><span class="lead"></span><span class="urgent">2 haster</span></div>
+            <div class="row"><span>&nbsp;&nbsp;ferdig</span><span class="lead"></span><span>15 av 23</span></div>
+            <div class="row"><b>Utdrikningslag, 3. april 2027</b><span class="lead"></span><span class="ok">i rute</span></div>
+            <div class="hand">Neste frist: Bestille kake, 23. november</div>
+            <div class="row" style="margin-top:6px"><button class="btn">NYTT ARRANGEMENT</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="swatches"><span style="background:#FBF6EC">papir</span><span style="background:#4A3A2A;color:#fff">sepia</span><span style="background:#5B7698;color:#fff">bleknet blå</span><span style="background:#C9D6E6">fane</span><span style="background:#9C4A32;color:#fff">haster</span><span style="background:#6B7442;color:#fff">i rute</span></div>
+    </section>
+
+    <section class="dir">
+      <h2>C. Stua i kveldslys</h2>
+      <p class="why">Stua i Interiør 3 og 6: elfenben, lin, marineblått og lampegull. Mye luft, myke kort, en tynn stripe som i putetrekket. Roligst og mest oversiktlig; det romantiske ligger bare i detaljene.</p>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i></div>
+        <div class="c">
+          <div class="hd"><div class="logo">MasterPlan</div><div class="nav">Kari · Testinnboks · Logg ut</div></div>
+          <div class="stripe"></div>
+          <div class="body">
+            <h1>God kveld, Kari</h1>
+            <p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+            <div class="ev"><div><h3>Bryllup</h3><div class="date">6. juni 2027 · om 208 dager</div><div class="count">15 av 23 ferdig</div></div><span class="pill">2 haster</span></div>
+            <div class="ev ok"><div><h3>Utdrikningslag</h3><div class="date">3. april 2027 · om 144 dager</div><div class="count">8 av 14 ferdig</div></div><span class="pill ok">I rute</span></div>
+            <button class="btn">Nytt arrangement</button>
+          </div>
+        </div>
+      </div>
+      <div class="swatches"><span style="background:#FAF6EF">elfenben</span><span style="background:#24365A;color:#fff">marine</span><span style="background:#4D6E9E;color:#fff">porselen</span><span style="background:#C79A4B;color:#fff">lampegull</span><span style="background:#A65B3A;color:#fff">haster</span><span style="background:#657E62;color:#fff">i rute</span></div>
+    </section>
+
+    <section class="dir">
+      <h2>D. Landkjøkkenet</h2>
+      <p class="why">Kjøkkenet i Interiør 4 og 5: salviegrønt, eik, krem og rutete blått. Praktisk og hverdagslig varm, med mer informasjon synlig på hvert kort og en fremdriftslinje. Mest «arbeidsbenk».</p>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i></div>
+        <div class="d">
+          <div class="hd"><div class="logo">MasterPlan</div><div class="nav">Kari · Testinnboks · Logg ut</div></div>
+          <div class="gingham"></div>
+          <div class="body">
+            <h1>Hei, Kari!</h1>
+            <div class="cols">
+              <div class="ev"><div class="top"><h3>Bryllup</h3><div class="date">6. juni 2027</div></div>
+                <ul><li><span>Haster</span><span class="urgent">2</span></li><li><span>Trenger hjelper</span><span class="urgent">1</span></li><li><span>Ferdig</span><span>15 av 23</span></li></ul>
+                <div class="bar2"><span style="width:65%"></span></div></div>
+              <div class="ev"><div class="top"><h3>Utdrikningslag</h3><div class="date">3. april 2027</div></div>
+                <ul><li><span>Status</span><span class="ok">I rute</span></li><li><span>Ferdig</span><span>8 av 14</span></li><li><span>&nbsp;</span><span></span></li></ul>
+                <div class="bar2"><span style="width:57%"></span></div></div>
+            </div>
+            <button class="btn">+ Nytt arrangement</button>
+          </div>
+        </div>
+      </div>
+      <div class="swatches"><span style="background:#F8F4EA">krem</span><span style="background:#8A9A7B;color:#fff">salvie</span><span style="background:#B8895A;color:#fff">eik</span><span style="background:#6E8BB5;color:#fff">rutete blå</span><span style="background:#A9472F;color:#fff">haster</span><span style="background:#4F5E45;color:#fff">i rute</span></div>
+    </section>
+
+  </div>
+</div>
+</body>
+</html>

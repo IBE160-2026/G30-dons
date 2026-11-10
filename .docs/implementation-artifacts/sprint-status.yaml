@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-24-2026 19:41
-last_updated: 11-10-2026 12:38
+last_updated: 11-10-2026 15:38
 project: MasterPlan
 project_key: NOKEY
 tracking_system: file-system
@@ -51,6 +51,13 @@ development_status:
   2-1-ai-plan-draft-with-mock-and-fallback: done
   2-2-connect-the-anthropic-api-with-a-spending-cap: backlog
   epic-2-retrospective: optional
+
+  # Epic 5 (UX-designet Porselen) er lagt til 2026-11-10. Story 5.1 bygges først, før 3.3,
+  # fordi designdelen har frist 12. november og applikasjonen 14. november. Designdelen er 5.1 bygget:
+  # CSS-en tatt i bruk i hele appen og låst med regel og test. Se docs/ki-logg.md.
+  epic-5: backlog
+  5-1-build-the-porselen-design: backlog
+  epic-5-retrospective: optional
 
   epic-3: in-progress
   3-1-reminders-and-the-test-inbox: done

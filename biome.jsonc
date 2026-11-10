@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!_bmad", "!.claude", "!src/db/migrations"]
+    // The HTML files under ux-designs are static design sketches from bmad-ux, not app code.
+    "includes": ["**", "!_bmad", "!.claude", "!src/db/migrations", "!.docs/planning-artifacts/ux-designs/**/*.html"]
   },
   "formatter": {
     "indentStyle": "space",

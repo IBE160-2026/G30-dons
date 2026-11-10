@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – fargepaletter</title>
+<style>
+body { margin: 0; background: #ece8e1; font-family: "Segoe UI", system-ui, sans-serif; color: #2b2b2b; }
+.sheet { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+.sheet > h1 { font-size: 22px; margin: 0 0 4px; }
+.sheet > p { margin: 0 0 24px; color: #555; max-width: 900px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 28px; }
+@media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+.v h2 { font-size: 18px; margin: 0 0 2px; }
+.v .reg { font-size: 14px; color: #555; margin: 0 0 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chips span { font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(0,0,0,.12); }
+
+/* Shared component styles, driven by per-variant tokens */
+.app { background: var(--bg); color: var(--text); border-radius: 10px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; background: var(--header); color: var(--header-text); }
+.logo { font-family: Georgia, serif; font-size: 20px; }
+.logo em { font-style: normal; color: var(--ornament); font-size: 15px; }
+.nav { font-size: 13px; opacity: .85; }
+.trim { height: 8px; background: repeating-linear-gradient(90deg, var(--bg) 0 6px, var(--trim) 6px 9px); }
+.body { padding: 20px 22px 24px; }
+h3.hello { font-family: Georgia, serif; font-weight: normal; font-size: 24px; margin: 0; color: var(--heading); }
+.sub { color: var(--muted); font-size: 14px; margin: 2px 0 16px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ev { background: var(--surface); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 var(--line), 0 8px 20px rgba(0,0,0,.05); }
+.ev h4 { margin: 0; font-family: Georgia, serif; font-weight: normal; font-size: 18px; color: var(--heading); }
+.date { font-size: 12px; color: var(--muted); }
+.pill { display: inline-block; margin-top: 8px; font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+.pill.u { background: var(--urgent-bg); color: var(--urgent); }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.stats { font-size: 13px; margin-top: 8px; color: var(--text); }
+.prog { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; }
+.prog span { display: block; height: 100%; border-radius: 3px; background: var(--progress); }
+.panel { margin-top: 16px; background: var(--surface); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 var(--line); }
+.panel h5 { margin: 0 0 8px; font-family: Georgia, serif; font-weight: normal; font-size: 17px; color: var(--heading); display: flex; justify-content: space-between; }
+.panel h5 small { font-family: "Segoe UI", system-ui, sans-serif; font-size: 12px; color: var(--muted); }
+.task { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; gap: 8px; }
+.task .t { font-weight: 600; }
+.task .m { font-size: 12px; color: var(--muted); }
+.btn { background: var(--primary); color: var(--on-primary); border: 0; padding: 8px 14px; border-radius: 999px; font-size: 13px; white-space: nowrap; }
+.btn.ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.helper { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--soft); font-size: 13px; }
+.helper b { color: var(--heading); }
+.link { color: var(--link); text-decoration: underline; }
+
+/* 1. Porselen — ivory, navy, porcelain blue, brass
+   bg #FAF6EF surface #FFFFFF header #FFFFFF text #2E2A26 muted #6F665C heading #24365A
+   primary #24365A link #3F5F91 ornament #B58A3E trim #C9D5E6 soft #EEF2F8 line #ECE4D8
+   urgent #A2512F/#F7E5DA ok #55704F/#E6EEE2 progress #4D6E9E */
+.p1 { --bg:#FAF6EF; --surface:#FFFFFF; --header:#FFFFFF; --header-text:#24365A; --text:#2E2A26; --muted:#6F665C; --heading:#24365A;
+  --primary:#24365A; --on-primary:#fff; --link:#3F5F91; --ornament:#B58A3E; --trim:#C9D5E6; --soft:#EEF2F8; --line:#ECE4D8;
+  --urgent:#A2512F; --urgent-bg:#F7E5DA; --ok:#55704F; --ok-bg:#E6EEE2; --progress:#4D6E9E; }
+
+/* 2. Hage — cream, sage, oak, gingham blue as secondary
+   bg #F8F4EA surface #FFFFFF header #647657 text #33352E muted #686A5E heading #46553D
+   primary #46553D link #3E6194 ornament #F1E6D4 trim #B7C6DB soft #EEF0E6 line #E6DFCF
+   urgent #A3452D/#F6E2D9 ok #46553D/#E4EADD progress #7F9171 */
+.p2 { --bg:#F8F4EA; --surface:#FFFFFF; --header:#647657; --header-text:#fff; --text:#33352E; --muted:#686A5E; --heading:#46553D;
+  --primary:#46553D; --on-primary:#fff; --link:#3E6194; --ornament:#F1E6D4; --trim:#B7C6DB; --soft:#EEF0E6; --line:#E6DFCF;
+  --urgent:#A3452D; --urgent-bg:#F6E2D9; --ok:#46553D; --ok-bg:#E4EADD; --progress:#7F9171; }
+
+/* 3. Porselen og salvie — navy leads, sage for progress/done, oak for warmth
+   bg #F9F5EC surface #FFFFFF header #24365A text #2F2C27 muted #6D665B heading #24365A
+   primary #24365A link #3F5F91 ornament #D8B47A trim #A9B89B soft #F2ECE0 line #E8E0D1
+   urgent #A2512F/#F7E5DA ok #4F6646/#E3EBDD progress #8A9A7B */
+.p3 { --bg:#F9F5EC; --surface:#FFFFFF; --header:#24365A; --header-text:#fff; --text:#2F2C27; --muted:#6D665B; --heading:#24365A;
+  --primary:#24365A; --on-primary:#fff; --link:#3F5F91; --ornament:#D8B47A; --trim:#A9B89B; --soft:#F2ECE0; --line:#E8E0D1;
+  --urgent:#A2512F; --urgent-bg:#F7E5DA; --ok:#4F6646; --ok-bg:#E3EBDD; --progress:#8A9A7B; }
+
+/* 4. Lin og eik — warmest: linen, oak brown, denim blue used sparingly
+   bg #F6EFE3 surface #FFFCF7 header #F6EFE3 text #3A2F25 muted #75685A heading #5A3E27
+   primary #6B4A2E link #3D5A80 ornament #8FA6C4 trim #D9C4A3 soft #F1E7D6 line #E6D9C4
+   urgent #A2452B/#F5DFD3 ok #5A6E4B/#E5EADB progress #B8895A */
+.p4 { --bg:#F6EFE3; --surface:#FFFCF7; --header:#F6EFE3; --header-text:#5A3E27; --text:#3A2F25; --muted:#75685A; --heading:#5A3E27;
+  --primary:#6B4A2E; --on-primary:#fff; --link:#3D5A80; --ornament:#8FA6C4; --trim:#D9C4A3; --soft:#F1E7D6; --line:#E6D9C4;
+  --urgent:#A2452B; --urgent-bg:#F5DFD3; --ok:#5A6E4B; --ok-bg:#E5EADB; --progress:#B8895A; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Fire paletter for C + D</h1>
+  <p>Samme oppsett i alle fire: stemningen fra «Stua i kveldslys» (luft, myke kort, stripe under toppen, serif i overskrifter) og det praktiske fra «Landkjøkkenet» (tall per status og fremdriftslinje). Under oversikten vises panelet «Å gjøre» og en hjelperlenke, som i dag er de mest rotete delene. Bare fargene skiller dem.</p>
+  <div class="grid">
+<!-- The four variants share identical markup; only the class changes. -->
+    <section class="v">
+      <h2>1. Porselen</h2>
+      <p class="reg">Elfenben, marineblått og porselensblått, med messing som pynt. Rolig og lys, nærmest C.</p>
+      <div class="chips"><span style="background:#FAF6EF">bakgrunn</span><span style="background:#24365A;color:#fff">primær</span><span style="background:#3F5F91;color:#fff">lenke</span><span style="background:#B58A3E;color:#fff">pynt</span><span style="background:#4D6E9E;color:#fff">fremdrift</span><span style="background:#A2512F;color:#fff">haster</span><span style="background:#55704F;color:#fff">i rute</span></div>
+      <div class="app p1">
+        <div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body">
+          <h3 class="hello">God kveld, Kari</h3><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols">
+            <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+            <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div>
+          </div>
+          <div class="panel"><h5>Å gjøre <small>2 haster · 1 trenger hjelper</small></h5>
+            <div class="task"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november · haster</div></div><button class="btn ghost">Åpne</button></div>
+            <div class="task"><div><div class="t">Leie lokale</div><div class="m">Avslått av Kim: «Jeg er bortreist da»</div></div><button class="btn">Finn hjelper</button></div>
+            <div class="helper"><span><b>Ola</b> · 4 oppgaver</span><span><span class="link">Kopier lenke</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="v">
+      <h2>2. Hage</h2>
+      <p class="reg">Krem, salviegrønt og eik, med blått bare i lenker. Frisk og jordnær, nærmest D.</p>
+      <div class="chips"><span style="background:#F8F4EA">bakgrunn</span><span style="background:#46553D;color:#fff">primær</span><span style="background:#3E6194;color:#fff">lenke</span><span style="background:#647657;color:#fff">topp</span><span style="background:#B7C6DB">stripe</span><span style="background:#A3452D;color:#fff">haster</span><span style="background:#46553D;color:#fff">i rute</span></div>
+      <div class="app p2">
+        <div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body">
+          <h3 class="hello">God kveld, Kari</h3><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols">
+            <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+            <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div>
+          </div>
+          <div class="panel"><h5>Å gjøre <small>2 haster · 1 trenger hjelper</small></h5>
+            <div class="task"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november · haster</div></div><button class="btn ghost">Åpne</button></div>
+            <div class="task"><div><div class="t">Leie lokale</div><div class="m">Avslått av Kim: «Jeg er bortreist da»</div></div><button class="btn">Finn hjelper</button></div>
+            <div class="helper"><span><b>Ola</b> · 4 oppgaver</span><span><span class="link">Kopier lenke</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="v">
+      <h2>3. Porselen og salvie</h2>
+      <p class="reg">Marineblå topp og knapper, salviegrønt for fremdrift og «i rute», eik og messing som varme. En jevn blanding av C og D.</p>
+      <div class="chips"><span style="background:#F9F5EC">bakgrunn</span><span style="background:#24365A;color:#fff">primær</span><span style="background:#3F5F91;color:#fff">lenke</span><span style="background:#D8B47A">pynt</span><span style="background:#8A9A7B;color:#fff">fremdrift</span><span style="background:#A2512F;color:#fff">haster</span><span style="background:#4F6646;color:#fff">i rute</span></div>
+      <div class="app p3">
+        <div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body">
+          <h3 class="hello">God kveld, Kari</h3><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols">
+            <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+            <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div>
+          </div>
+          <div class="panel"><h5>Å gjøre <small>2 haster · 1 trenger hjelper</small></h5>
+            <div class="task"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november · haster</div></div><button class="btn ghost">Åpne</button></div>
+            <div class="task"><div><div class="t">Leie lokale</div><div class="m">Avslått av Kim: «Jeg er bortreist da»</div></div><button class="btn">Finn hjelper</button></div>
+            <div class="helper"><span><b>Ola</b> · 4 oppgaver</span><span><span class="link">Kopier lenke</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="v">
+      <h2>4. Lin og eik</h2>
+      <p class="reg">Lin, eikebrunt og litt dongeriblått. Varmest og mest rustikk, med minst blått.</p>
+      <div class="chips"><span style="background:#F6EFE3">bakgrunn</span><span style="background:#6B4A2E;color:#fff">primær</span><span style="background:#3D5A80;color:#fff">lenke</span><span style="background:#8FA6C4">pynt</span><span style="background:#B8895A;color:#fff">fremdrift</span><span style="background:#A2452B;color:#fff">haster</span><span style="background:#5A6E4B;color:#fff">i rute</span></div>
+      <div class="app p4">
+        <div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body">
+          <h3 class="hello">God kveld, Kari</h3><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols">
+            <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+            <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div>
+          </div>
+          <div class="panel"><h5>Å gjøre <small>2 haster · 1 trenger hjelper</small></h5>
+            <div class="task"><div><div class="t">Bestille kake</div><div class="m">Ola · frist 23. november · haster</div></div><button class="btn ghost">Åpne</button></div>
+            <div class="task"><div><div class="t">Leie lokale</div><div class="m">Avslått av Kim: «Jeg er bortreist da»</div></div><button class="btn">Finn hjelper</button></div>
+            <div class="helper"><span><b>Ola</b> · 4 oppgaver</span><span><span class="link">Kopier lenke</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

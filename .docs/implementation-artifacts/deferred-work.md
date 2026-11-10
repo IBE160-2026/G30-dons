@@ -26,3 +26,17 @@ The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS w
 - source_spec: `.docs/implementation-artifacts/spec-3-1-reminders-and-the-test-inbox.md`
   summary: Decide how to avoid a burst of old reminders when real email is switched on late (Story 3.2), for example by skipping reminders whose deadline has passed or that fell due more than a few days before the first real run.
   evidence: Decisions D4 and D5 (approved 2026-11-07) together mean that with `MAIL_TRANSPORT=disabled` no reminder is claimed, and a late run sends every due reminder, also for passed deadlines. If the app runs for weeks with email disabled and Gmail is then enabled, the first run can send many old reminders at once, some about deadlines that have already passed. In test mode the same applies to the first click on **Send påminnelser nå** (12 for the seed data, which is expected). Settle it in Story 3.2 before the friends test.
+
+The next three items come from the review of the UX design «Porselen» (2026-11-10). They belong to the design story that builds `DESIGN.md` and `EXPERIENCE.md`. Status 2026-11-10: all three are acceptance criteria in Story 5.1 in `epics.md`.
+
+- source_spec: `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md` (§2, medium)
+  summary: Split the component tokens in `DESIGN.md` into single values (for example `border-width`, `border-color`), and add tokens for the focus ring and the flash, when the tokens become CSS variables in `public/styles.css`.
+  evidence: Values like `1px solid {colors.navy}`, `height: 6px (overview), 10px (event view)` and `extends` cannot be flattened by a token resolver. They only matter once code reads the tokens, which happens in the design story.
+
+- source_spec: `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md` (§3, medium)
+  summary: Decide how the tab row behaves with many events at 360 px (wrap or scroll), and the anatomy of a task row on a phone. Write it in the UX section of the design story's spec.
+  evidence: `EXPERIENCE.md` → Responsive only says that task rows drop the helper column at 360 px, and nothing about tabs. Both are easier to settle against the real layout than on paper.
+
+- source_spec: `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md` (§4, low)
+  summary: Specify the event card on Oversikt for an event whose date has passed, an event today and an event with no tasks («0 av 0 ferdig»).
+  evidence: FR-21 leaves past events out of Urgent and Needs a helper, but the card text («om N dager», the progress bar) is not defined for these cases. The wording depends on the current rules in `src/services/summaries.ts` and should be decided and tested in the design story.

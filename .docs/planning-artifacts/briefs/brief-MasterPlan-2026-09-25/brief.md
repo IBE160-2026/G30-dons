@@ -18,7 +18,7 @@ Today these events are coordinated through group chats, notes and people's memor
 
 The organizer sees, across all her events, what's confirmed, declined or overdue. Later, evaluations will be summarized by AI and stored in an anonymized experience bank, so each event improves the next plan.
 
-Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI and due in November 2026.
+Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI. The design part is due 12 November 2026 and the application 14 November 2026. The design part means Story 5.1 built: the CSS from the UX design in use across the whole app, and locked with a written rule and an automated test. The UX documents are its basis.
 
 ## Who This Serves
 

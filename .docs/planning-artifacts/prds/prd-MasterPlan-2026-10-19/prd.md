@@ -2,14 +2,14 @@
 title: "PRD: MasterPlan"
 status: final
 created: 2026-10-19
-updated: 2026-10-25
+updated: 2026-11-10
 ---
 
 # PRD: MasterPlan
 
 ## 0. Document Purpose
 
-This PRD defines version 1 of MasterPlan for the IBE160 course project (solo, due 14 November 2026). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-33), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Design and technology detail is in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
+This PRD defines version 1 of MasterPlan for the IBE160 course project (solo; the design part is due 12 November 2026 and the application 14 November 2026). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-33), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Technology detail is in `addendum.md`. The visual design and the page behaviour are in the UX design (`.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md` and `EXPERIENCE.md`, 2026-11-10), which wins over the UX notes in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
 
 ## 1. Vision
 
@@ -47,8 +47,8 @@ Kari is the maid of honor and plans both the wedding and the bachelorette party.
 
 Ola is the best man and helps with both events. Kari sends him his link on Messenger.
 
-1. Ola taps the link, and the page opens with no account. The header reads: *"Kari has invited you to organize Wedding and Bachelorette party with MasterPlan!"*
-2. The page lists all his tasks from both events. Each reads *"Kari wants you to buy napkins and straws by [date]"*, with **Yes / No** buttons and a message box.
+1. Ola taps the link, and the page opens with no account. The header reads: *"You have been invited to help with Wedding and Bachelorette party"*, with a short handwritten greeting from Kari under it. (Changed from "Kari has invited you to organize …" in the UX design on 2026-11-10: a neutral header, with Kari named in the greeting.)
+2. The page lists all his tasks from both events, grouped by event, and the ones he has not answered stand out. Each shows the task title and its deadline, with **Yes, I'll take it / No** buttons and an optional message. (Changed from the sentence "Kari wants you to … by [date]" in the UX design on 2026-11-10.)
 3. Ola answers each task, sometimes with a message. Kari sees it the next time she loads her pages.
 4. When he has bought the napkins, he marks the task **Done** on the same page.
 5. For accepted tasks he has not finished, he gets a reminder email 14 days after his yes or 3 days before the deadline, whichever comes first. Its link shows only those tasks.
@@ -60,10 +60,10 @@ Ola is the best man and helps with both events. Kari sends him his link on Messe
 *Organizer, desktop web, a few weeks later.*
 
 1. Kari logs in. The first page shows which event needs attention: *Wedding: 2 urgent · Bachelorette party: all on track.*
-2. She opens the **Wedding** tab. An information box shows the date, guest count and general information. Beside it, collapsible panels each show a one-line summary, such as *12 of 30 done* or *3 urgent, 2 needs a helper*.
-3. She expands **To do** and sees two tasks that need a helper. One was declined. Ola marked the other **Can't be done** and said why in a message.
+2. She opens the **Wedding** tab. The title line shows the date, days to go, place and guest count, with the rest of the information one click away. First comes **Needs you now**, with the tasks in Needs a helper and the Urgent ones; then **Progress** with *12 of 30 done*, a count per status and the deadlines this week and next week. (Changed from the information box and collapsible panels in the UX design on 2026-11-10.)
+3. In **Needs you now** she sees two tasks that need a helper. One was declined. Ola marked the other **Can't be done** and said why in a message.
 4. She reassigns the first task and shares the link. The task disappears from the original helper's page. She does the second task herself and marks it **Done**.
-5. She reads the new replies in the **Messages** panel.
+5. She reads the new replies in the **Messages** card.
 6. **Outcome:** nothing on the wedding is stuck without Kari knowing. Every open task has a helper or is done, and she can see what is due next.
 
 ### UJ-4: John, the examiner, runs MasterPlan in test mode
@@ -107,8 +107,8 @@ All later sections use these terms exactly.
 - **Reminder:** a fixed-text email to a helper about one Accepted task, containing a reminder link.
 - **Reminder link:** a link that shows the helper only their Accepted tasks.
 - **Overview:** the organizer's first page, with one summary per event.
-- **Event view:** the organizer's page for one event (one tab per event), with an information box and summary panels.
-- **New reply:** an answer, changed answer or message that the organizer has not yet seen. It counts as seen once she opens the Messages panel of that event.
+- **Event view:** the organizer's page for one event (one tab per event), with the event details and the summary cards in FR-20.
+- **New reply:** an answer, changed answer or message that the organizer has not yet seen. It counts as seen once she opens the full list of replies ("Show all replies") of that event.
 - **Mock AI:** a fixed plan used instead of the language model when no AI key is configured.
 - **Test mode:** a setting (on in `.env.example`) under which no email leaves the machine and the test inbox and test-mode controls are available. Used by examiners and automated tests.
 - **Test inbox:** a page, available only in test mode and only to a logged-in organizer, that lists every email the app would have sent on her behalf.
@@ -258,11 +258,12 @@ The overview shows one summary per event: On track, or the number of Urgent task
 - Given the seed data, the overview shows the Bachelorette party as On track and the Wedding as having Urgent tasks.
 
 #### FR-20: Event view summaries · Must
-The event view shows the event name, date, guest count and general information, plus these summaries:
-- **Done:** "N of M done".
-- **To do:** the number of Urgent tasks and of tasks in Needs a helper, with each task listed.
-- **Timeline:** days until the event and the next deadline.
-- **Messages:** the number of New replies, with each reply listed.
+The event view shows the event name, date, days until the event, place and guest count, with the other event fields one click away, plus these summaries:
+- **Needs you now:** the tasks in Needs a helper, then the Urgent tasks, each with its action. Hidden when there are none.
+- **Progress:** "N of M done", the number of tasks per status, and the tasks due in the rest of this week and in next week (Monday to Sunday).
+- **Messages:** the number of New replies and a preview of the newest; the full list on request.
+
+The layout replaced the Done / To do / Timeline / Messages panels on 2026-11-10 (UX design, Story 5.1). "Next deadline" is now covered by the week groups.
 
 Consequence: given the seed data, each summary shows the counts in the fixture table (FR-25).
 
@@ -342,7 +343,7 @@ The delivery is the source code plus a `Dockerfile`. The examiner can build and 
 
 ## 8. Scope
 
-**Deadline: 14 November 2026.**
+**Deadlines:** the design part 12 November 2026, the application 14 November 2026. The design part means Story 5.1 built: the CSS from the UX design in use across the whole app, and locked with a written rule and an automated test. The UX documents are its basis.
 
 **Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28, FR-33. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys from the Docker container, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 

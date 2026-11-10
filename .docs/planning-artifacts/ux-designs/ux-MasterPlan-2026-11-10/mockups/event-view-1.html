@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – arrangementssiden</title>
+<!-- Preview only: Google Fonts here; self-hosted in public/fonts/ in the app. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Source+Sans+3:wght@400;600&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Porselen: bg #FAF6EF surface #FFFFFF text #2E2A26 muted #6F665C navy #24365A link #3F5F91 brass #B58A3E
+   stripe #C9D5E6 soft #EEF2F8 line #ECE4D8 urgent #A2512F/#F7E5DA ok #55704F/#E6EEE2 progress #8C7353
+   waiting (new) #6F665C/#F1ECE3 */
+:root { --bg:#FAF6EF; --surface:#fff; --text:#2E2A26; --muted:#6F665C; --navy:#24365A; --link:#3F5F91; --brass:#B58A3E;
+  --stripe:#C9D5E6; --soft:#EEF2F8; --line:#ECE4D8; --urgent:#A2512F; --urgent-bg:#F7E5DA; --ok:#55704F; --ok-bg:#E6EEE2; --progress:#8C7353; --wait-bg:#F1ECE3; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 "Source Sans 3", system-ui, sans-serif; }
+.note-bar { background: #2E2A26; color: #fff; font-size: 13px; padding: 8px 16px; }
+header.site { background: var(--surface); display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; }
+.logo { font-family: Lora, Georgia, serif; font-size: 21px; color: var(--navy); } .logo em { font-style: normal; color: var(--brass); font-size: 15px; }
+.who { font-size: 14px; color: var(--muted); } .who a { color: var(--link); margin-left: 14px; }
+.trim { height: 8px; background: repeating-linear-gradient(90deg, var(--bg) 0 6px, var(--stripe) 6px 9px); }
+nav.tabs { max-width: 1120px; margin: 0 auto; padding: 16px 24px 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border-radius: 999px; font-size: 15px; color: var(--navy); text-decoration: none; }
+.tab.on { background: var(--navy); color: #fff; } .tab.new { color: var(--link); }
+main { max-width: 1120px; margin: 0 auto; padding: 16px 24px 48px; }
+.hero { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.hero h1 { font-family: Lora, Georgia, serif; font-weight: 400; font-size: 34px; color: var(--navy); margin: 0; }
+.hero .meta { color: var(--muted); }
+.hero details summary { color: var(--link); cursor: pointer; font-size: 15px; }
+.hero details dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 8px 0 0; font-size: 15px; }
+.hero dt { color: var(--muted); }
+.layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: 0 1px 0 var(--line), 0 8px 20px rgba(36,54,90,.05); margin-bottom: 18px; }
+.card h2 { font-family: Lora, Georgia, serif; font-weight: 400; font-size: 21px; color: var(--navy); margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card h2 small { font-family: "Source Sans 3", sans-serif; font-size: 14px; color: var(--muted); }
+.lead { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+.act { border-left: 4px solid var(--urgent); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.row:first-of-type { border-top: 0; }
+.row .t { font-weight: 600; } .row .m { font-size: 14px; color: var(--muted); }
+.row .m q { font-style: italic; }
+.ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+select, input[type=text], input[type=date] { font: inherit; font-size: 15px; padding: 7px 10px; border: 1px solid #CFC5B5; border-radius: 8px; background: #fff; color: var(--text); min-height: 40px; }
+.btn { font: inherit; font-size: 15px; font-weight: 600; background: var(--navy); color: #fff; border: 0; padding: 8px 16px; border-radius: 999px; min-height: 40px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--navy); border: 1px solid var(--navy); }
+.btn.quiet { background: transparent; color: var(--link); padding: 8px 6px; font-weight: 400; text-decoration: underline; }
+.btn.danger { background: transparent; color: var(--urgent); border: 1px solid var(--urgent); }
+.pill { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.p-urgent { background: var(--urgent-bg); color: var(--urgent); } .p-ok { background: var(--ok-bg); color: var(--ok); }
+.p-wait { background: var(--wait-bg); color: var(--muted); } .p-acc { background: var(--soft); color: var(--navy); }
+.progress-wrap { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+.bar { height: 10px; background: var(--line); border-radius: 5px; } .bar span { display: block; height: 100%; width: 65%; border-radius: 5px; background: var(--progress); }
+.big { font-family: Lora, Georgia, serif; font-size: 20px; color: var(--navy); }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.week li { list-style: none; } .week ul { margin: 0; padding: 0; }
+.day { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--brass); font-weight: 600; margin-top: 10px; }
+.helper { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.helper:first-of-type { border-top: 0; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--soft); color: var(--navy); display: grid; place-items: center; font-family: Lora, serif; font-size: 17px; flex: none; }
+.helper .info { flex: 1; min-width: 0; } .helper .name { font-weight: 600; } .helper .sum { font-size: 13px; color: var(--muted); }
+.copied { font-size: 13px; color: var(--ok); }
+details.add summary { color: var(--link); cursor: pointer; margin-top: 10px; }
+label { display: block; font-size: 14px; font-weight: 600; margin: 10px 0 4px; }
+.group { margin-top: 14px; }
+.group > summary, .group-h { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; cursor: pointer; padding: 6px 0; }
+.trow { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+@media (max-width: 600px) { .trow { grid-template-columns: 1fr auto; } .trow .who-col { display: none; } }
+.trow .t { font-weight: 600; } .trow .d { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.editbox { background: var(--soft); border-radius: 12px; padding: 14px 16px; margin: 4px 0 10px; }
+.editbox .fields { display: grid; grid-template-columns: 1fr 170px 170px; gap: 10px; }
+@media (max-width: 700px) { .editbox .fields { grid-template-columns: 1fr; } }
+.editbox .bar-actions { display: flex; justify-content: space-between; margin-top: 12px; flex-wrap: wrap; gap: 8px; }
+.empty { text-align: center; color: var(--muted); padding: 10px 0 4px; }
+.empty i { display: block; font-family: "Dancing Script", cursive; font-style: normal; font-size: 24px; color: var(--navy); }
+.variants { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .variants { grid-template-columns: 1fr; } }
+.vlabel { font-size: 13px; font-weight: 600; color: #fff; background: var(--brass); display: inline-block; padding: 2px 10px; border-radius: 4px; margin-bottom: 8px; }
+.etable { width: 100%; border-collapse: collapse; font-size: 15px; }
+.etable td { padding: 6px 4px; border-top: 1px solid var(--line); }
+.etable input, .etable select { width: 100%; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="note-bar">Skisse av arrangementssiden (Bryllup). Innholdet er eksempler. Nederst: to måter å endre oppgaver på – velg én.</div>
+<header class="site"><span class="logo">MasterPlan <em>❦</em></span><span class="who">Kari<a href="#">Testinnboks</a><a href="#">Logg ut</a></span></header>
+<div class="trim"></div>
+<nav class="tabs" aria-label="Arrangementer"><a class="tab" href="#">Oversikt</a><a class="tab on" href="#" aria-current="page">Bryllup</a><a class="tab" href="#">Utdrikningslag</a><a class="tab new" href="#">+ Nytt arrangement</a></nav>
+
+<main>
+  <div class="hero">
+    <div><h1>Bryllup</h1><div class="meta">Lørdag 6. juni 2027 · om 208 dager · Grand Hotell · 80 gjester</div></div>
+    <details><summary>Vis alle detaljer</summary><dl><dt>Hva</dt><dd>Bryllupet til Anne og Jonas</dd><dt>Hva må gjøres</dt><dd>Lokale, mat, pynt, musikk</dd><dt>Annen info</dt><dd>Brudeparet ønsker blå og hvite blomster</dd></dl><p><a href="#" style="color:var(--link)">Endre detaljer</a></p></details>
+  </div>
+
+  <div class="layout">
+    <div>
+      <!-- 1. Must act now: delegate first, then urgent -->
+      <section class="card act" aria-labelledby="now">
+        <h2 id="now">Trenger deg nå <small>3 oppgaver</small></h2>
+        <p class="lead">Disse må få en hjelper, eller er nær fristen.</p>
+        <div class="row"><div><div class="t">Leie lokale</div><div class="m">Kim sa nei: <q>Jeg er bortreist den helgen</q> · frist 1. desember</div></div>
+          <form class="ctl"><label class="sr" for="a1">Ny hjelper for Leie lokale</label><select id="a1"><option>Velg hjelper</option><option>Ola</option><option>Siri</option></select><button class="btn" type="button">Gi oppgaven</button></form></div>
+        <div class="row"><div><div class="t">Bestille blomster</div><div class="m">Ingen hjelper ennå · frist 10. desember</div></div>
+          <form class="ctl"><label class="sr" for="a2">Hjelper for Bestille blomster</label><select id="a2"><option>Velg hjelper</option><option>Ola</option><option>Siri</option></select><button class="btn" type="button">Gi oppgaven</button></form></div>
+        <div class="row"><div><div class="t">Bestille kake</div><div class="m">Ola sa ja · frist 23. november <span class="pill p-urgent">Haster</span></div></div>
+          <div class="ctl"><button class="btn ghost" type="button">Marker som ferdig</button></div></div>
+      </section>
+
+      <!-- 2. Total progress -->
+      <section class="card" aria-labelledby="prog">
+        <h2 id="prog">Fremdrift</h2>
+        <div class="progress-wrap"><div class="bar" role="img" aria-label="15 av 23 oppgaver ferdig"><span></span></div><span class="big">15 av 23 ferdig</span></div>
+        <div class="counts"><span class="pill p-urgent">1 haster</span><span class="pill p-urgent">2 trenger hjelper</span><span class="pill p-wait">2 venter på svar</span><span class="pill p-acc">3 i gang</span><span class="pill p-ok">15 ferdig</span></div>
+      </section>
+
+      <!-- 3. Next week -->
+      <section class="card week" aria-labelledby="wk">
+        <h2 id="wk">Neste uke <small>11.–17. november</small></h2>
+        <div class="day">Torsdag 13. november</div>
+        <ul><li class="row"><div><div class="t">Sende ut invitasjoner</div><div class="m">Siri</div></div><span class="pill p-acc">I gang</span></li></ul>
+        <div class="day">Søndag 16. november</div>
+        <ul><li class="row"><div><div class="t">Bestemme meny</div><div class="m">Ola</div></div><span class="pill p-wait">Venter på svar</span></li></ul>
+      </section>
+    </div>
+
+    <aside>
+      <section class="card" aria-labelledby="hh">
+        <h2 id="hh">Hjelpere <small>3 av 5</small></h2>
+        <div class="helper"><span class="avatar" aria-hidden="true">O</span><div class="info"><div class="name">Ola</div><div class="sum">5 oppgaver · 1 haster</div></div><button class="btn ghost" type="button">Kopier lenke</button></div>
+        <div class="helper"><span class="avatar" aria-hidden="true">S</span><div class="info"><div class="name">Siri</div><div class="sum">4 oppgaver · alt i rute</div><div class="copied" role="status">Lenken er kopiert</div></div><button class="btn ghost" type="button">Kopier lenke</button></div>
+        <div class="helper"><span class="avatar" aria-hidden="true">K</span><div class="info"><div class="name">Kim</div><div class="sum">2 oppgaver · 1 avslått</div></div><button class="btn ghost" type="button">Kopier lenke</button></div>
+        <details class="add"><summary>+ Legg til hjelper</summary>
+          <label for="he">E-post</label><input id="he" type="text" style="width:100%"><label for="hn">Navn (valgfritt)</label><input id="hn" type="text" style="width:100%"><p><button class="btn" type="button">Legg til</button></p></details>
+      </section>
+      <section class="card"><h2>Meldinger <small>2 nye</small></h2>
+        <div class="row"><div><div class="t">Kim · Leie lokale</div><div class="m">Sa nei: <q>Jeg er bortreist den helgen</q></div></div></div>
+        <p style="margin:6px 0 0"><a href="#" style="color:var(--link)">Vis alle svar</a></p></section>
+    </aside>
+  </div>
+
+  <!-- 4. All tasks: two editing variants -->
+  <h2 style="font-family:Lora,serif;font-weight:400;color:var(--navy);font-size:26px;margin:24px 0 10px">Alle oppgaver</h2>
+  <div class="variants">
+    <section class="card">
+      <span class="vlabel">Variant A · én oppgave åpnes</span>
+      <p class="lead">Listen er rolig tekst. «Endre» åpner bare den ene oppgaven, rett i listen.</p>
+      <div class="group-h">Trenger hjelper (2)</div>
+      <div class="trow"><span class="t">Leie lokale</span><span class="d">1. des</span><span class="pill p-urgent">Avslått</span><button class="btn quiet" type="button">Endre</button></div>
+      <div class="trow"><span class="t">Bestille blomster</span><span class="d">10. des</span><span class="pill p-urgent">Ingen hjelper</span><button class="btn quiet" type="button">Endre</button></div>
+      <div class="group-h">Venter på svar (2)</div>
+      <div class="trow"><span class="t">Bestemme meny</span><span class="d">16. nov</span><span class="pill p-wait">Ola</span><button class="btn quiet" type="button" aria-expanded="true">Lukk</button></div>
+      <div class="editbox"><div class="fields"><div><label for="e1">Oppgave</label><input id="e1" type="text" value="Bestemme meny" style="width:100%"></div><div><label for="e2">Frist</label><input id="e2" type="date" value="2026-11-16" style="width:100%"></div><div><label for="e3">Hjelper</label><select id="e3" style="width:100%"><option>Ola</option><option>Siri</option><option>Kim</option></select></div></div>
+        <div class="bar-actions"><button class="btn danger" type="button">Slett oppgaven</button><span class="ctl"><button class="btn ghost" type="button">Avbryt</button><button class="btn" type="button">Lagre</button></span></div></div>
+      <div class="trow"><span class="t">Velge musikk</span><span class="d">2. feb</span><span class="pill p-wait">Kim</span><button class="btn quiet" type="button">Endre</button></div>
+      <div class="group-h">I gang (3)</div>
+      <div class="trow"><span class="t">Bestille kake</span><span class="d">23. nov</span><span class="pill p-urgent">Haster · Ola</span><button class="btn quiet" type="button">Endre</button></div>
+      <div class="trow"><span class="t">Sende ut invitasjoner</span><span class="d">13. nov</span><span class="pill p-acc">Siri</span><button class="btn quiet" type="button">Endre</button></div>
+      <details class="group"><summary>Ferdig (15) – vis</summary><div class="trow"><span class="t">Booke fotograf</span><span class="d">1. okt</span><span class="pill p-ok">Ferdig · Siri</span><button class="btn quiet" type="button">Endre</button></div></details>
+      <p style="margin-top:12px"><button class="btn ghost" type="button">+ Ny oppgave</button></p>
+    </section>
+
+    <section class="card">
+      <span class="vlabel">Variant B · hele listen åpnes</span>
+      <p class="lead">Listen er rolig tekst. «Endre oppgaver» gjør hele listen redigerbar på én gang, og «Lagre alle» lukker den.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="group-h">Redigerer 8 åpne oppgaver</span><span class="ctl"><button class="btn ghost" type="button">Avbryt</button><button class="btn" type="button">Lagre alle</button></span></div>
+      <table class="etable"><caption class="sr">Rediger oppgaver</caption>
+        <tr><td><label class="sr" for="b1">Oppgave</label><input id="b1" type="text" value="Leie lokale"></td><td style="width:150px"><label class="sr" for="b1d">Frist</label><input id="b1d" type="date" value="2026-12-01"></td><td style="width:120px"><label class="sr" for="b1h">Hjelper</label><select id="b1h"><option>Velg</option><option>Ola</option></select></td><td style="width:40px"><button class="btn quiet" type="button" aria-label="Slett Leie lokale">✕</button></td></tr>
+        <tr><td><input aria-label="Oppgave" type="text" value="Bestille blomster"></td><td><input aria-label="Frist" type="date" value="2026-12-10"></td><td><select aria-label="Hjelper"><option>Velg</option></select></td><td><button class="btn quiet" type="button" aria-label="Slett Bestille blomster">✕</button></td></tr>
+        <tr><td><input aria-label="Oppgave" type="text" value="Bestemme meny"></td><td><input aria-label="Frist" type="date" value="2026-11-16"></td><td><select aria-label="Hjelper"><option>Ola</option></select></td><td><button class="btn quiet" type="button" aria-label="Slett Bestemme meny">✕</button></td></tr>
+        <tr><td><input aria-label="Oppgave" type="text" value="Velge musikk"></td><td><input aria-label="Frist" type="date" value="2027-02-02"></td><td><select aria-label="Hjelper"><option>Kim</option></select></td><td><button class="btn quiet" type="button" aria-label="Slett Velge musikk">✕</button></td></tr>
+        <tr><td><input aria-label="Oppgave" type="text" value="Bestille kake"></td><td><input aria-label="Frist" type="date" value="2026-11-23"></td><td><select aria-label="Hjelper"><option>Ola</option></select></td><td><button class="btn quiet" type="button" aria-label="Slett Bestille kake">✕</button></td></tr>
+      </table>
+      <p class="lead" style="margin-top:10px">Ferdige oppgaver er skjult mens du redigerer.</p>
+      <div class="empty" style="margin-top:14px"><i>Ingen oppgaver her ennå</i>Slik ser en tom liste ut: «Legg til den første oppgaven, eller la oss lage et utkast.»</div>
+    </section>
+  </div>
+</main>
+</body>
+</html>
