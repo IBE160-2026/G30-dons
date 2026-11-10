@@ -83,7 +83,7 @@ context:
 **Execution** (fixed order; each step starts with its tests, and each step is committed before the next starts):
 
 *Steps 1–3: the design deliverable, due 12 November 2026.*
-- [ ] **1. Tokens, fonts and components.** `public/fonts/*` (WOFF2 and `OFL.txt`), `public/styles.css` -- `:root` tokens, `@font-face`, and the shared components from `DESIGN.md` (header, tabs, buttons, inputs, pills, flash, cards, framed card, empty state, plain page).
+- [x] **1. Tokens, fonts and components.** `public/fonts/*` (WOFF2 and `OFL.txt`), `public/styles.css` -- `:root` tokens, `@font-face`, and the shared components from `DESIGN.md` (header, tabs, buttons, inputs, pills, flash, cards, framed card, empty state, plain page).
 - [ ] **2. Every page uses them.** `src/views/partials/*`, `login.ejs`, `register.ejs`, `overview.ejs`, `event-new.ejs`, `event.ejs`, `helper.ejs`, `helper-invalid.ejs`, `test-inbox.ejs`, `404.ejs`, `error.ejs` -- the new classes and layout on the current content and structure; remove the old CSS. Update the tests in the Code Map whose markup changes.
 - [ ] **3. Locked with rule and test.** `tests/designTokens.test.ts` (AC 1), AD-18 in `ARCHITECTURE-SPINE.md`, and the keyboard test and 360 px check for the restyled pages recorded in `docs/traceability.md`.
 
@@ -117,6 +117,13 @@ From `CLAUDE.md`. The story is done when:
 8. Work on `story/5-1-build-the-porselen-design` in small commits, merged through a pull request that says how it was tested and which faults were found in AI-generated code; each corrected, rejected or clarified AI suggestion is in `docs/ki-logg.md`; `npm run lint` passes before each commit.
 
 ## Implementation Notes
+
+**Step 1 (2026-11-10).**
+- **Test first:** `tests/fonts.test.ts` checks that the four `@font-face` rules (Lora 400, Source Sans 3 400 and 600, Dancing Script 500) point to files served from `/fonts/` as `font/woff2`, that each family has its `OFL.txt`, and that the stylesheet loads nothing from another origin. Three of its four tests failed before the fonts existed.
+- **Fonts:** latin-subset WOFF2 files and the OFL licence from the npm packages `@fontsource/lora` 5.3.0, `@fontsource/source-sans-3` 5.3.1 and `@fontsource/dancing-script` 5.3.0, copied into `public/fonts/<family>/`. No npm dependency was added. Lora has only weight 400, because `DESIGN.md` says Lora is never bold.
+- **Stylesheet:** `public/styles.css` now starts with `@font-face`, the `:root` tokens named after `DESIGN.md` (`--color-*`, `--font-*`, `--type-*`, `--radius-*`, `--space-*`, and single-value component tokens such as `--focus-ring-*`, `--flash-*` and `--card-frame-inset`), the base styles and the shared components (header with stripe, tabs that wrap, cards, `card-framed` with ❧, `card-action`, buttons, inputs, pills, progress bar, flash, label caps, empty state, plain page). Ornaments use `content: '❧' / ''`, so screen readers skip them.
+- **Bridge to step 2:** the page rules from before the redesign are kept below the components. The old variable names (`--bg`, `--accent`, …) are temporary aliases for the new tokens, so every page already uses the Porselen colors and fonts without broken layout. Step 2 replaces those rules and removes the aliases.
+- **Verified:** `npm test` (21 files, 344 tests), `npm run typecheck` and `npm run lint` are green.
 
 ## Spec Change Log
 

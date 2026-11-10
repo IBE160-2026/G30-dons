@@ -1,12 +1,123 @@
-:root {
-  --bg: #f6f6f4;
-  --surface: #ffffff;
-  --text: #1d1d1b;
-  --muted: #5f5f5a;
-  --accent: #2f5d8a;
-  --error: #a8322d;
-  --border: #dcdcd6;
+/* MasterPlan «Porselen» (Story 5.1). The tokens mirror DESIGN.md by name; colors, font
+   families, radii and spacing below use only these custom properties. */
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/lora/lora-latin-400-normal.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/source-sans-3/source-sans-3-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/source-sans-3/source-sans-3-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Dancing Script";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/dancing-script/dancing-script-latin-500-normal.woff2") format("woff2");
+}
+
+:root {
+  /* colors */
+  --color-background: #faf6ef;
+  --color-surface: #ffffff;
+  --color-soft: #eef2f8;
+  --color-text: #2e2a26;
+  --color-muted: #6f665c;
+  --color-navy: #24365a;
+  --color-on-navy: #ffffff;
+  --color-link: #3f5f91;
+  --color-brass: #b58a3e;
+  --color-stripe: #c9d5e6;
+  --color-line: #ece4d8;
+  --color-field-border: #948876;
+  --color-progress: #8c7353;
+  --color-urgent: #a2512f;
+  --color-urgent-bg: #f7e5da;
+  --color-on-track: #55704f;
+  --color-on-track-bg: #e6eee2;
+  --color-waiting-bg: #f1ece3;
+  --color-error: #a8322d;
+
+  /* font families */
+  --font-serif: "Lora", Georgia, serif;
+  --font-sans: "Source Sans 3", system-ui, sans-serif;
+  --font-hand: "Dancing Script", cursive;
+
+  /* type roles (DESIGN.md typography) */
+  --type-greeting-size: 34px;
+  --type-greeting-mobile-size: 21px;
+  --type-display-size: 34px;
+  --type-display-mobile-size: 25px;
+  --type-headline-size: 21px;
+  --type-logo-size: 21px;
+  --type-body-size: 16px;
+  --type-task-title-size: 17px;
+  --type-meta-size: 14px;
+  --type-label-caps-size: 13px;
+  --type-label-caps-tracking: 0.06em;
+
+  /* radii */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-page-max: 1120px;
+  --space-side-column: 300px;
+  --space-margin-mobile: 16px;
+  --space-card-gap: 18px;
+  --space-plain-max: 420px;
+  --space-touch-min: 48px;
+  --space-control-min: 40px;
+
+  /* components: split into single values */
+  --border-width: 1px;
+  --border-width-strong: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-color: var(--color-navy);
+  --focus-ring-offset: 2px;
+  --card-shadow: 0 1px 0 var(--color-line), 0 8px 20px rgba(36, 54, 90, 0.05);
+  --card-frame-inset: 6px;
+  --trim-height: 8px;
+  --flash-color: var(--color-on-track);
+  --flash-bg: var(--color-on-track-bg);
+  --flash-error-color: var(--color-error);
+  --flash-error-bg: var(--color-urgent-bg);
+  --progress-height: 6px;
+  --progress-height-large: 10px;
+
+  /* Temporary aliases for the page rules that Story 5.1 step 2 replaces. */
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --text: var(--color-text);
+  --muted: var(--color-muted);
+  --accent: var(--color-navy);
+  --error: var(--color-error);
+  --border: var(--color-line);
+}
+
+/* base */
 
 * {
   box-sizing: border-box;
@@ -14,144 +125,330 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 1rem;
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
   line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--color-text);
+  background: var(--color-background);
 }
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  color: var(--color-navy);
+}
+h1 {
+  font-size: var(--type-display-size);
+  line-height: 1.2;
+  margin: 0 0 var(--space-4);
+}
+h2 {
+  font-size: var(--type-headline-size);
+  line-height: 1.3;
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size: var(--type-body-size);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+a {
+  color: var(--color-link);
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.muted {
+  color: var(--color-muted);
+}
+.pre {
+  white-space: pre-line;
+}
+.inline {
+  display: inline;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* header and page */
 
 .site-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: var(--trim-height) solid transparent;
+  border-image: repeating-linear-gradient(90deg, var(--color-background) 0 6px, var(--color-stripe) 6px 9px) 1;
 }
-
 .brand {
-  font-weight: 700;
-  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: var(--type-logo-size);
+  color: var(--color-navy);
   text-decoration: none;
 }
-.who {
-  color: var(--muted);
-  margin-right: 0.5rem;
+.brand::after {
+  content: " ❦" / "";
+  color: var(--color-brass);
+  font-size: 0.75em;
 }
-.inline {
-  display: inline;
+.who {
+  color: var(--color-muted);
+  margin-right: var(--space-2);
 }
 .header-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.25rem 1rem;
+  gap: var(--space-1) var(--space-4);
 }
 
 .page {
-  max-width: 960px;
+  max-width: var(--space-page-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: var(--space-6) var(--space-margin-mobile);
 }
+
+/* tabs: pill links that wrap onto more lines on narrow screens (D5) */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.tab {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  color: var(--color-navy);
+  text-decoration: none;
+}
+.tab.current {
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+.tab.new {
+  color: var(--color-link);
+}
+
+/* cards */
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 18px var(--space-5);
+  box-shadow: var(--card-shadow);
 }
 .card.narrow {
-  max-width: 420px;
+  max-width: var(--space-plain-max);
   margin: 0 auto;
 }
-
-h1 {
-  font-size: 1.5rem;
-  margin: 0 0 1rem;
+.card-framed {
+  position: relative;
+  outline: var(--border-width) solid var(--color-line);
+  outline-offset: calc(-1 * var(--card-frame-inset));
+}
+.card-framed::after {
+  content: "❧" / "";
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  color: var(--color-brass);
+  font-size: var(--type-meta-size);
+}
+.card-action {
+  border-left: 4px solid var(--color-urgent);
 }
 
-label {
-  display: block;
-  margin-top: 0.75rem;
-  font-weight: 600;
-}
+/* buttons */
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.6rem 0.7rem;
-  font: inherit;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-button {
-  margin-top: 1rem;
-  min-height: 44px;
-  padding: 0.6rem 1.2rem;
+button,
+.button {
+  display: inline-block;
+  min-height: var(--space-control-min);
+  padding: var(--space-2) var(--space-4);
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: var(--accent);
-  border: 0;
-  border-radius: 6px;
+  color: var(--color-on-navy);
+  background: var(--color-navy);
+  border: var(--border-width) solid var(--color-navy);
+  border-radius: var(--radius-full);
+  text-decoration: none;
   cursor: pointer;
 }
-
+button {
+  margin-top: var(--space-4);
+}
+.button-secondary {
+  color: var(--color-navy);
+  background: transparent;
+}
+.button-quiet,
 .link-button {
   margin: 0;
   min-height: auto;
   padding: 0;
-  color: var(--accent);
+  font-weight: 400;
+  color: var(--color-link);
   background: none;
+  border: 0;
   text-decoration: underline;
 }
+.button-danger {
+  color: var(--color-urgent);
+  background: transparent;
+  border-color: var(--color-urgent);
+}
 
-a {
-  color: var(--accent);
+/* forms */
+
+label {
+  display: block;
+  margin-top: var(--space-3);
+  font-weight: 600;
 }
-.muted {
-  color: var(--muted);
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  min-height: var(--space-control-min);
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-field-border);
+  border-radius: var(--radius-sm);
 }
-.flash {
-  /* A flash can hold a second line, such as the plan notice after creating an event. */
-  white-space: pre-line;
-  padding: 0.75rem 1rem;
-  background: #e8f0f7;
-  border-radius: 6px;
+select {
+  width: auto;
+  max-width: 100%;
 }
 .form-error,
 .field-error {
-  color: var(--error);
+  color: var(--color-error);
 }
 .field-error {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-meta-size);
 }
 
-h2 {
-  font-size: 1.2rem;
-  margin: 0 0 0.75rem;
-}
-h3 {
-  font-size: 1rem;
-  margin: 1.25rem 0 0.5rem;
-}
+/* status pills: always text, never color alone */
 
-.button {
+.pill {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  color: #fff;
-  background: var(--accent);
-  border-radius: 6px;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--type-label-caps-size);
   font-weight: 600;
-  text-decoration: none;
+  white-space: nowrap;
 }
+.pill-urgent {
+  color: var(--color-urgent);
+  background: var(--color-urgent-bg);
+}
+.pill-waiting {
+  color: var(--color-muted);
+  background: var(--color-waiting-bg);
+}
+.pill-in-progress {
+  color: var(--color-navy);
+  background: var(--color-soft);
+}
+.pill-on-track {
+  color: var(--color-on-track);
+  background: var(--color-on-track-bg);
+}
+
+/* progress bar: dark beige on the line track, always next to the number in text */
+
+.progress {
+  height: var(--progress-height);
+  background: var(--color-line);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progress-large {
+  height: var(--progress-height-large);
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-progress);
+}
+
+/* flash: one message at the top of the content */
+
+.flash {
+  /* A flash can hold a second line, such as the plan notice after creating an event. */
+  white-space: pre-line;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  color: var(--flash-color);
+  background: var(--flash-bg);
+  border-radius: var(--radius-md);
+}
+.flash.form-error,
+.flash-error {
+  color: var(--flash-error-color);
+  background: var(--flash-error-bg);
+}
+
+/* group labels and day names */
+
+.label-caps {
+  font-size: var(--type-label-caps-size);
+  font-weight: 600;
+  letter-spacing: var(--type-label-caps-tracking);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* empty state: a handwritten headline and one plain sentence */
+
+.empty-state {
+  text-align: center;
+  color: var(--color-muted);
+  padding: var(--space-3) 0;
+}
+.empty-state-title {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: var(--type-greeting-mobile-size);
+  color: var(--color-navy);
+}
+
+/* plain pages: not found, server error, invalid link */
+
+.plain-page {
+  max-width: var(--space-plain-max);
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Page rules from before the redesign. Story 5.1 step 2 replaces them with the components above. */
+
 .heading-row {
   display: flex;
   align-items: center;
@@ -195,42 +492,6 @@ legend {
   margin-right: 1.25rem;
   font-weight: 400;
 }
-input[type="date"],
-input[type="number"],
-textarea {
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.6rem 0.7rem;
-  font: inherit;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-.tab {
-  padding: 0.5rem 1rem;
-  color: var(--text);
-  text-decoration: none;
-  border: 1px solid transparent;
-  border-bottom: 0;
-  border-radius: 6px 6px 0 0;
-}
-.tab.current {
-  background: var(--surface);
-  border-color: var(--border);
-  font-weight: 600;
-  margin-bottom: -1px;
-}
-.tab.new {
-  color: var(--accent);
-}
-
 .event-layout {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 2fr;
@@ -253,9 +514,6 @@ textarea {
 }
 .info-box dd {
   margin: 0;
-}
-.pre {
-  white-space: pre-line;
 }
 
 .task-list {
@@ -342,15 +600,6 @@ button.secondary {
   align-items: center;
   margin-top: 0.4rem;
 }
-select {
-  min-height: 40px;
-  padding: 0.4rem 0.6rem;
-  font: inherit;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  max-width: 100%;
-}
 .status {
   font-weight: 600;
 }
@@ -359,18 +608,6 @@ select {
 }
 .status-open {
   color: var(--accent);
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* helper page: mobile first, works from 360 px wide (no fixed widths above 360 px) */
