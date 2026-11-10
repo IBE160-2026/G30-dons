@@ -7,6 +7,8 @@ created: 2026-10-24
 
 Detail for downstream documents (UX spec, architecture), not requirements.
 
+**Superseded 2026-11-10:** the two UX sections below were the input to the UX design. The UX design itself (`.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md` and `EXPERIENCE.md`) replaces them, and Story 5.1 builds it.
+
 ## UX: organizer event view (for bmad-ux)
 
 - One tab per event (for example, "Wedding", "Bachelorette party"). The organizer picks one.

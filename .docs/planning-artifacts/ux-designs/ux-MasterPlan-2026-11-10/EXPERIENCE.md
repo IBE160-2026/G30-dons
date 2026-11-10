@@ -238,7 +238,7 @@ The mocks in `mockups/` were made while the decisions were being taken. Where th
 
 ## Plan impact
 
-This redesign changes agreed behaviour. Before it is built, these must be updated in the PRD, `epics.md` and the stories, with the reason:
+This redesign changes agreed behaviour. On 2026-11-10 the PRD (UJ-2, UJ-3, Glossary, FR-20), its addendum and `epics.md` were updated with the reason, and Story 5.1 builds it. The changes:
 
 - **Helper page header:** neutral «Du er invitert til å hjelpe til med …» instead of PRD UJ-2 «Kari has invited you to organize …». Kari is still named in the greeting and in each confirmation.
 - **Helper buttons:** «Ja, jeg tar den» instead of «Ja».

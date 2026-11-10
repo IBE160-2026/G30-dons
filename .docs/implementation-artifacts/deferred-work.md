@@ -27,7 +27,7 @@ The two Story 1.1 items that belong to Story 1.7 (foreign keys on Turso, HTTPS w
   summary: Decide how to avoid a burst of old reminders when real email is switched on late (Story 3.2), for example by skipping reminders whose deadline has passed or that fell due more than a few days before the first real run.
   evidence: Decisions D4 and D5 (approved 2026-11-07) together mean that with `MAIL_TRANSPORT=disabled` no reminder is claimed, and a late run sends every due reminder, also for passed deadlines. If the app runs for weeks with email disabled and Gmail is then enabled, the first run can send many old reminders at once, some about deadlines that have already passed. In test mode the same applies to the first click on **Send påminnelser nå** (12 for the seed data, which is expected). Settle it in Story 3.2 before the friends test.
 
-The next three items come from the review of the UX design «Porselen» (2026-11-10). They belong to the coming design story that builds `DESIGN.md` and `EXPERIENCE.md`; that story is not in `epics.md` yet.
+The next three items come from the review of the UX design «Porselen» (2026-11-10). They belong to the design story that builds `DESIGN.md` and `EXPERIENCE.md`. Status 2026-11-10: all three are acceptance criteria in Story 5.1 in `epics.md`.
 
 - source_spec: `.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/review-rubric.md` (§2, medium)
   summary: Split the component tokens in `DESIGN.md` into single values (for example `border-width`, `border-color`), and add tokens for the focus ring and the flash, when the tokens become CSS variables in `public/styles.css`.
