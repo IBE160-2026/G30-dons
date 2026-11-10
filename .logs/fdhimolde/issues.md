@@ -28,3 +28,4 @@
 - [x] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Ferdigstill UX-dokumentene: `status: final` og `doc_standards` (`bmad-review` structure og prose) (løst 2026-11-10, PR #8)
 - [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Sjekk tastaturnavigasjonen i appen når designet er bygget
 - [ ] 2026-11-10 [ux-design-porselen](989-2026-11-10-15-32-32-ux-design-porselen.md) — Bygg Story 5.1 (Porselen) innen 12. november; avgjør først de to åpne beslutningene i Plan impact (vern mot dobbel innsending, rutene for redigeringsboksen)
+- [ ] 2026-11-10 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1: tastaturtest og 360 px-sjekk av sidene etter steg 1–3 (designleveransen, frist 12. november), før dem med dato i `docs/traceability.md`
