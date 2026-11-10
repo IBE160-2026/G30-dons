@@ -269,6 +269,17 @@ Done tasks keep their status and helper when the helper is removed. The helper p
   - **Links.** `APP_BASE_URL` defaults to `http://localhost:3000` in test mode, which matches the published port. The server listens on all interfaces (Express default) and must not be bound to `localhost`.
   - **Checks.** `npm test` stays Docker-free. The story that adds the image checks `docker build` and `docker run`, then `/health`, the test login and the seeded overview, and writes the steps in the README.
 
+### AD-18 — Visual tokens lock the look
+
+- **Binds:** NFR-1, NFR-9, the UX design (`.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md`)
+- **Prevents:** the look drifting away from `DESIGN.md` one hard-coded color or margin at a time; a view styling itself so the stylesheet no longer tells the whole story.
+- **Rule:**
+  - **Tokens.** `public/styles.css` starts with `:root` custom properties that mirror the `DESIGN.md` tokens by name (`--color-<name>`, `--font-*`, `--type-*`, `--radius-*`, `--space-*`), split into single values. A changed token is changed in `DESIGN.md` and in `:root` together.
+  - **Only tokens outside `:root`.** Colors, font families, radii and spacing (margin, padding, gap) use only `var(--…)`, `0` or `auto`; `@font-face` is the one place with literal font names.
+  - **Fonts.** Self-hosted WOFF2 files with their OFL licence in `public/fonts/`; nothing loads from another origin (AD-16, AD-17).
+  - **Views.** No `style` attributes. Every class a view uses has a rule in the stylesheet.
+  - **Checks.** `tests/designTokens.test.ts`, `tests/stylesheet.test.ts` and `tests/fonts.test.ts` enforce this.
+
 ## Consistency Conventions
 
 | Concern | Convention |
@@ -375,6 +386,7 @@ flowchart LR
 | FR-19 to FR-22 overview and event view | domain/status.ts, services/messages, routes/organizer | AD-3, AD-4, AD-15 |
 | FR-23 to FR-28 test mode, seed, tests, docs | config.ts, mail/outbox.ts, routes/testMode.ts, seed/, tests/, docs/ | AD-9, AD-10, AD-11, AD-14 |
 | FR-33 Docker delivery | Dockerfile, .dockerignore, container start command, README | AD-10, AD-11, AD-17 |
+| UX design «Porselen» (Story 5.1) | public/styles.css, public/fonts, src/views | AD-16, AD-18 |
 | NFR-4, NFR-8 cost and deployment (deployment optional, first to cut) | Render, Turso, cron-job.org, Anthropic | AD-7, AD-8, AD-10 |
 
 ## Deferred

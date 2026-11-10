@@ -132,6 +132,13 @@ From `CLAUDE.md`. The story is done when:
 - **Old CSS removed:** every page rule from before the redesign is rewritten with tokens; the aliases are gone; no color literal is left outside `:root`.
 - **Verified:** `npm test` (22 files, 348 tests), `npm run typecheck` and `npm run lint` are green.
 
+**Step 3 (2026-11-10).**
+- **Test first:** `tests/designTokens.test.ts` (AC 1) checks that every `DESIGN.md` color exists as `--color-<name>` in `:root` with the same value, that no color literal is used outside `:root`, that font families, radii and spacing outside `:root` and `@font-face` use only `var(--…)`, `0` or `auto`, and that no view has a `style` attribute. It failed on six spacing literals, which now use tokens (`--space-card-gap` for the card padding, `--space-1` for the pill padding and reply margins, `calc` with `--border-width` in `.visually-hidden`).
+- **Mutation check:** with `--color-navy` changed by one digit, the token test failed; with a hard-coded color added to `.muted`, the literal test failed. The file was restored afterwards.
+- **Rule:** AD-18 «Visual tokens lock the look» is added to `ARCHITECTURE-SPINE.md`, with a row in the Capability → Architecture Map.
+- **Manual checks:** the keyboard test and the 360 px check are listed in `docs/traceability.md` as not run yet; they are done by the user. Step 3 is ticked when they are recorded.
+- **Verified:** `npm test` (23 files, 352 tests), `npm run typecheck` and `npm run lint` are green.
+
 ## Spec Change Log
 
 ## Review Triage Log

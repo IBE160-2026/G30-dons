@@ -80,6 +80,18 @@ Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-3-1-reminders-a
 | 3.1 | I Docker-containeren med `--env-file .env.example`: logg inn som Kari, klikk **Send påminnelser nå**, og 12 påminnelser vises i testinnboksen uten nøkler eller nett (FR33, FR24, AD-17) | Ingen ny kode; testinnboksen følger med `TEST_MODE=true` | **manuell** | ✅ **Testet manuelt 2026-11-10** etter merge av PR #7 (før det kjørte ikke Docker Desktop): 12 påminnelser i testinnboksen, ingen nye ved nytt klikk, og påminnelseslenken med **Ferdig** virker. Ingen avvik. Fremgangsmåte: steg 1–5 i «Kjør med Docker» i `README.md`. |
 | 3.1 | Ingen test åpner en nettverksforbindelse; `npm test`, `npm run typecheck` og `npm run lint` er grønne (FR27) | `services/reminders.ts` (`send` er en parameter) | alle | ✅ |
 
+## Story → akseptansekriterier → kode → tester (Epic 5)
+
+Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-5-1-build-the-porselen-design.md`. Steg 1–3 er designleveransen med frist 12. november. Radene for steg 4–5 kommer når de er bygget.
+
+| Story | Akseptansekriterium | Kode | Tester | Dekning |
+|---|---|---|---|---|
+| 5.1 | Lora, Source Sans 3 og Dancing Script ligger selv i appen som WOFF2 med OFL-lisens, og stilarket henter ingenting fra andre domener (AD-16, AD-17, AD-18) | `public/fonts/`, `public/styles.css` (`@font-face`) | `fonts.test.ts` | ✅ |
+| 5.1 | Alle sider bruker Porselen-stilarket: hver klasse i views er stylet, de gamle aliasene og sidereglene er borte, og hver `var(--…)` er definert | `public/styles.css`, `src/views/*.ejs` | `stylesheet.test.ts` | ✅ |
+| 5.1 | AC 1: hver farge i `DESIGN.md` finnes i `:root` med samme verdi, ingen fargeverdier utenfor `:root`, skrift, hjørneavrunding og avstander bare fra tokenene, og ingen `style`-attributter i views (AD-18) | `public/styles.css`, AD-18 i `ARCHITECTURE-SPINE.md` | `designTokens.test.ts` | ✅ Testen er prøvd med mutasjoner: en endret tokenverdi og en fast farge utenfor `:root` fikk den til å feile. |
+| 5.1 | Tastaturtest (DoD 4): på oversikten, arrangementssiden, «Nytt arrangement», hjelpersiden og testinnboksen nås alle kontroller med Tab i leserekkefølge, fokus synes alltid, `<details>` åpnes med Enter/mellomrom, og alt kan gjøres uten mus | alle views | **manuell** | ❌ **Ikke kjørt ennå.** Fremgangsmåte: logg inn som Kari og gå gjennom sidene med bare tastaturet; åpne en hjelperlenke og svar på en oppgave med tastaturet. |
+| 5.1 | 360 px-sjekk (DoD 5): de samme sidene ved 360 px bredde har ingen sidelengs rulling, fanene brytes over flere linjer, og knappene er lette å trykke på | `public/styles.css` | **manuell** (`helperPage.test.ts` sjekker indirekte at hjelperstilene ikke har faste bredder over 360 px) | ❌ **Ikke kjørt ennå.** Fremgangsmåte: nettleserens mobilvisning med 360 px bredde. |
+
 ## Krav → tester
 
 ### Bygget så langt
