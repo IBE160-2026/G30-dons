@@ -209,7 +209,8 @@ Implemented 2026-11-07 on `story/3-1-reminders-and-the-test-inbox`, in the order
 - **Reminder view.** `routes/helper.ts` filters the existing `helperPage` result with `onlyAccepted`; no new service function. The view shows «fra ‹arrangør›» under the heading, as in the UX sketch.
 - **Header.** The «Testinnboks» link and the logout form share a new `.header-actions` row that wraps at narrow widths.
 - **Docs.** README (Docker step 5, «Ting å prøve» 12–14, «Kjente begrensninger», the environment table), `docs/traceability.md` (Epic 3 table and the FR rows) and `docs/fixtures.md` (reminders straight after seeding). «Ting å prøve» notes that step 6 makes «Bestille kake» Done, which lowers the count to 11.
-- **Not done yet:** the Docker check (AC 8) and the 360 px check, because Docker Desktop was not running on 2026-11-07. Both are marked «ikke kjørt ennå» in `docs/traceability.md`.
+- **360 px check: passed 2026-11-10** (manual, by the user). The test inbox and the reminder view (`?view=accepted`) have no sideways scrolling at 360 px, and the buttons are easy to tap. Recorded in `docs/traceability.md`.
+- **Docker check (AC 8): not run.** Docker Desktop was not running on 2026-11-07, and still not on 2026-11-10 (`docker info` cannot reach the daemon), so the check could not be done before the pull request. The risk is judged low: the story adds no Docker-specific code, the `Dockerfile` copies all of `src/` (so `src/mail/` and migration `0004` are included), `.env.example` sets `TEST_MODE=true`, and the same flow (seed, **Send påminnelser nå**, 12 emails in the test inbox) is covered by `tests/seedReminders.test.ts` and `tests/testInbox.test.ts` without Docker. AC 8 stays open in `docs/traceability.md` and `.logs/fdhimolde/issues.md` until it is run.
 - **Verified:** `npm test` (20 files, 335 tests), `npm run typecheck` and `npm run lint` are green.
 - **Review fixes (2026-11-07):** the six patch findings in the Review Triage Log were fixed in separate commits (`8596333`, `452b82a`, `8b61aaf`, `e7027da`, `d3dd731`, `9f5972a`), with lint, typecheck and the full test run before each. After them: 20 files, 340 tests, all green.
 
@@ -243,7 +244,7 @@ Review 1 (2026-11-07), three layers: blind hunter (BH), edge-case hunter (ECH), 
 | 12 | BH | If every send fails, the flash says «Ingen påminnelser har forfalt.», which is false | low | True: the flash counts only `sent`. In test mode a failure is a local insert error, which is unlikely; the fix adds a return value and a new text. | reject |
 | 13 | BH | A yes exactly on the 3-day point gives a reminder the same day | false | Intended: matrix row «Yes on the 3-day point → due T» (frozen) and FR-17 («after the 3-days-before point gets no reminder»). Changing it would edit the spec. | reject |
 | 14 | BH | README step 12 tells the reader to do steps 12–14 first or re-seed | low | True, and stated in the step. Moving the reminder steps before step 6 would break the counts in steps 1–2 (Ola's Ferdig changes «2 haster» and «15 av 23»). Docker step 5 runs on fresh data and is correct. | reject |
-| 15 | BH | The Docker check (AC 8) and the 360 px check are not run | false | True that they are not run, but they are already tracked in `.logs/fdhimolde/issues.md` and marked «ikke kjørt ennå» in `docs/traceability.md`, as the finding asks. They stay open until Docker Desktop runs. | reject |
+| 15 | BH | The Docker check (AC 8) and the 360 px check are not run | false | True that they are not run, but they are already tracked in `.logs/fdhimolde/issues.md` and marked «ikke kjørt ennå» in `docs/traceability.md`, as the finding asks. They stay open until Docker Desktop runs. Update 2026-11-10: the 360 px check passed; the Docker check is still not run (see Implementation Notes). | reject |
 | 16 | BH | `outbox_emails` has no index on `(organizer_id, created_at)` and no delete rule | false | Organizers are never deleted (no story deletes them), so no orphan outbox rows can occur; AD-12 lists the cascades and leaves this one out. The index matters only at volumes the test inbox never reaches. | reject |
 | 17 | ECH | AC 7 points to `tests/seed.test.ts`, but the test is in `tests/seedReminders.test.ts` | false | Recorded and explained in the Spec Change Log (2026-11-07). The fix would edit the spec. | reject |
 
@@ -274,3 +275,7 @@ Hilsen Kari, via MasterPlan
 **Manual checks:**
 - Docker: `docker build -t masterplan .` and `docker run --rm --env-file .env.example -p 3000:3000 masterplan`, log in as Kari, click **Send påminnelser nå**, see 12 emails, open one reminder link and choose **Ferdig** (AC 8).
 - At 360 px wide: the test inbox and the reminder view have no sideways scrolling, and the buttons are easy to tap.
+
+**Results:**
+- 360 px: **passed 2026-11-10.**
+- Docker (AC 8): **not run** (Docker Desktop not running on 2026-11-07 or 2026-11-10; see Implementation Notes).
