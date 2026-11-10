@@ -22,4 +22,4 @@
 - [x] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1 før pull request: README og `docs/traceability.md`, manuell Docker-sjekk (AC 8) og sjekk ved 360 px, Implementation Notes og avkrysning i specen, gjennomgang (steg 4) (løst 2026-11-10: alt unntatt Docker-sjekken, som er ført som eget punkt; PR #7)
 - [x] 2026-11-07 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Gjennomgang av 3.1: godkjenn og rett patch-funnene #1–#6 i Review Triage Log (#1 og #5 endrer tester) (løst 2026-11-07, `8596333`–`9f5972a`)
 - [ ] 2026-11-10 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1: kjør Docker-sjekken (AC 8) når Docker Desktop kjører, og før resultatet inn i specen og `docs/traceability.md`
-- [ ] 2026-11-10 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1: sett 3-1 til `done` i `sprint-status.yaml` og specen når PR #7 er merget
+- [x] 2026-11-10 [spec-story-3-1](990-2026-11-07-15-46-45-spec-story-3-1.md) — Story 3.1: sett 3-1 til `done` i `sprint-status.yaml` og specen når PR #7 er merget (løst 2026-11-10)
