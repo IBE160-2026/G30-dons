@@ -63,3 +63,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# UX inspiration images (bmad-ux imports/): may be copyrighted, so they stay local
+.docs/planning-artifacts/ux-designs/*/imports/
