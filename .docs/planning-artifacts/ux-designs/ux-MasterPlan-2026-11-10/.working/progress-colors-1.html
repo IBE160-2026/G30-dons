@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – farge på fremdriftslinjen</title>
+<style>
+/* Palette 1 Porselen. Progress candidates (WCAG 1.4.11, >= 3:1 against track #ECE4D8):
+   dusty green #6F8462 (3.23:1)   dark beige #8C7353 (3.55:1)   previous blue #4D6E9E for reference */
+body { margin: 0; background: #FAF6EF; color: #2E2A26; font-family: "Segoe UI", system-ui, sans-serif; }
+.sheet { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-family: Georgia, serif; font-weight: normal; color: #24365A; font-size: 24px; margin: 0 0 4px; }
+.lead { color: #6F665C; margin: 0 0 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+h2 { font-size: 16px; margin: 0 0 8px; }
+.ev { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 #ECE4D8, 0 8px 20px rgba(0,0,0,.05); margin-bottom: 12px; }
+.ev h4 { margin: 0; font-family: Georgia, serif; font-weight: normal; font-size: 18px; color: #24365A; }
+.date { font-size: 12px; color: #6F665C; }
+.pill { display: inline-block; margin-top: 8px; font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+.u { background: #F7E5DA; color: #A2512F; } .ok { background: #E6EEE2; color: #55704F; }
+.stats { font-size: 13px; margin-top: 8px; }
+.prog { height: 6px; background: #ECE4D8; border-radius: 3px; margin-top: 8px; }
+.prog span { display: block; height: 100%; border-radius: 3px; }
+.g span { background: #6F8462; } .b span { background: #8C7353; } .x span { background: #4D6E9E; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Fremdriftslinjen i Porselen</h1>
+  <p class="lead">Samme kort med tre farger på linjen. Den blå til høyre er den du ville bort fra, til sammenligning.</p>
+  <div class="grid">
+    <section><h2>Dus grønn #6F8462</h2>
+      <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog g"><span style="width:65%"></span></div></div>
+      <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog g"><span style="width:57%"></span></div></div>
+    </section>
+    <section><h2>Mørk beige #8C7353</h2>
+      <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog b"><span style="width:65%"></span></div></div>
+      <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog b"><span style="width:57%"></span></div></div>
+    </section>
+    <section><h2>Blå nå #4D6E9E</h2>
+      <div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog x"><span style="width:65%"></span></div></div>
+      <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog x"><span style="width:57%"></span></div></div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

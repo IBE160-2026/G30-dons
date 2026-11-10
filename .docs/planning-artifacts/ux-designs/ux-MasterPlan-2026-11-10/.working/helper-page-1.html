@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – hjelpersiden</title>
+<!-- Preview only: Google Fonts here; self-hosted in public/fonts/ in the app. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Source+Sans+3:wght@400;600&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Porselen tokens, same as event-view-1.html */
+:root { --bg:#FAF6EF; --surface:#fff; --text:#2E2A26; --muted:#6F665C; --navy:#24365A; --link:#3F5F91; --brass:#B58A3E;
+  --stripe:#C9D5E6; --soft:#EEF2F8; --line:#ECE4D8; --urgent:#A2512F; --urgent-bg:#F7E5DA; --ok:#55704F; --ok-bg:#E6EEE2; --wait-bg:#F1ECE3; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #ece8e1; font: 16px/1.5 "Source Sans 3", system-ui, sans-serif; color: var(--text); }
+.sheet { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
+.sheet > h1 { font-size: 22px; margin: 0 0 4px; } .sheet > p { color: #555; margin: 0 0 20px; max-width: 900px; }
+.phones { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.phone-wrap h2 { font-size: 15px; margin: 0 0 8px; }
+.phone { width: 360px; max-width: 100%; border: 10px solid #2E2A26; border-radius: 34px; overflow: hidden; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.screen { height: 740px; overflow-y: auto; }
+.top { background: var(--surface); padding: 14px 16px 12px; text-align: center; }
+.brand { font-family: Lora, serif; color: var(--navy); font-size: 16px; } .brand em { font-style: normal; color: var(--brass); }
+.trim { height: 6px; background: repeating-linear-gradient(90deg, var(--bg) 0 6px, var(--stripe) 6px 9px); }
+.inner { padding: 16px; }
+h1.title { font-family: Lora, serif; font-weight: 400; color: var(--navy); font-size: 25px; line-height: 1.25; margin: 0; }
+.greet { font-family: "Dancing Script", cursive; font-size: 21px; color: var(--navy); margin: 10px 0 0; line-height: 1.3; }
+.greet span { display: block; font-size: 18px; color: var(--brass); text-align: right; }
+.todo-banner { margin: 14px 0 4px; background: var(--urgent-bg); color: var(--urgent); border-radius: 10px; padding: 10px 12px; font-weight: 600; font-size: 15px; }
+.flash { margin: 14px 0 4px; background: var(--ok-bg); color: var(--ok); border-radius: 10px; padding: 10px 12px; font-weight: 600; font-size: 15px; }
+.event { margin-top: 18px; }
+.event h2 { font-family: Lora, serif; font-weight: 400; font-size: 20px; color: var(--navy); margin: 0; }
+.event .date { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.task { background: var(--surface); border-radius: 14px; padding: 14px; margin-top: 10px; box-shadow: 0 1px 0 var(--line), 0 6px 16px rgba(36,54,90,.05); }
+.task.ask { border: 2px solid var(--navy); }
+.flag { display: inline-block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: var(--navy); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
+.task .t { font-weight: 600; font-size: 17px; } .task .d { font-size: 14px; color: var(--muted); }
+.pill { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+.p-acc { background: var(--soft); color: var(--navy); } .p-ok { background: var(--ok-bg); color: var(--ok); } .p-no { background: var(--wait-bg); color: var(--muted); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.btn { font: inherit; font-weight: 600; font-size: 16px; min-height: 48px; border-radius: 999px; border: 0; background: var(--navy); color: #fff; width: 100%; }
+.btn.ghost { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
+details.msg summary { color: var(--link); font-size: 15px; cursor: pointer; margin-top: 10px; min-height: 32px; }
+textarea { width: 100%; font: inherit; border: 1px solid #CFC5B5; border-radius: 10px; padding: 8px 10px; margin-top: 6px; }
+label { font-size: 14px; font-weight: 600; }
+.small-actions { display: flex; gap: 10px; margin-top: 10px; }
+.small-actions .btn { font-size: 15px; min-height: 44px; }
+.change { font-size: 14px; color: var(--link); text-decoration: underline; margin-top: 8px; display: inline-block; }
+.done-list summary { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-top: 14px; cursor: pointer; }
+.foot { text-align: center; font-size: 13px; color: var(--muted); padding: 22px 16px 26px; }
+.empty { text-align: center; padding: 30px 10px; color: var(--muted); }
+.empty i { display: block; font-family: "Dancing Script", cursive; font-style: normal; font-size: 26px; color: var(--navy); margin-bottom: 6px; }
+.alt { margin-top: 16px; background: var(--surface); border-radius: 12px; padding: 12px 14px; font-size: 14px; max-width: 360px; }
+.alt b { color: var(--navy); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Hjelpersiden på mobil (360 px)</h1>
+  <p>Ola åpner lenken fra Messenger. Nøytral overskrift, en liten hilsen fra Kari, oppgavene gruppert etter arrangement, og oppgavene han ikke har svart på skiller seg tydelig ut. Til høyre: rett etter at han har svart, og påminnelsessiden.</p>
+  <div class="phones">
+
+    <div class="phone-wrap"><h2>1. Ola åpner lenken</h2>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="brand">MasterPlan <em>❦</em></span></div><div class="trim"></div>
+        <div class="inner">
+          <h1 class="title">Du er invitert til å hjelpe til med Bryllup og Utdrikningslag</h1>
+          <p class="greet">Så fint at du er med! <span>– Kari</span></p>
+          <div class="todo-banner">3 oppgaver venter på svaret ditt</div>
+
+          <section class="event"><h2>Bryllup</h2><div class="date">Lørdag 6. juni 2027</div>
+            <div class="task ask"><span class="flag">Svar ønskes</span><div class="t">Bestemme meny</div><div class="d">Frist søndag 16. november</div>
+              <div class="two"><button class="btn">Ja, jeg tar den</button><button class="btn ghost">Nei</button></div>
+              <details class="msg"><summary>Legg ved en melding (valgfritt)</summary><label for="m1">Melding til Kari</label><textarea id="m1" rows="2"></textarea></details></div>
+            <div class="task"><div class="t">Bestille kake</div><div class="d">Frist mandag 23. november</div><span class="pill p-acc">Du har sagt ja</span>
+              <div class="small-actions"><button class="btn">Ferdig</button><button class="btn ghost">Kan ikke gjøres</button></div></div>
+            <details class="done-list"><summary>Ferdig (2) – vis</summary></details>
+          </section>
+
+          <section class="event"><h2>Utdrikningslag</h2><div class="date">Lørdag 3. april 2027</div>
+            <div class="task ask"><span class="flag">Svar ønskes</span><div class="t">Kjøpe servietter og sugerør</div><div class="d">Frist fredag 20. november</div>
+              <div class="two"><button class="btn">Ja, jeg tar den</button><button class="btn ghost">Nei</button></div>
+              <details class="msg"><summary>Legg ved en melding (valgfritt)</summary></details></div>
+            <div class="task ask"><span class="flag">Svar ønskes</span><div class="t">Lage spilleliste</div><div class="d">Frist lørdag 6. mars</div>
+              <div class="two"><button class="btn">Ja, jeg tar den</button><button class="btn ghost">Nei</button></div>
+              <details class="msg"><summary>Legg ved en melding (valgfritt)</summary></details></div>
+          </section>
+        </div>
+        <div class="foot">Lenken er bare til deg. Del den ikke videre.</div>
+      </div></div>
+    </div>
+
+    <div class="phone-wrap"><h2>2. Rett etter «Ja, jeg tar den»</h2>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="brand">MasterPlan <em>❦</em></span></div><div class="trim"></div>
+        <div class="inner">
+          <div class="flash" role="status">Takk! Kari ser at du tar «Bestemme meny».</div>
+          <div class="todo-banner">2 oppgaver venter på svaret ditt</div>
+          <section class="event"><h2>Bryllup</h2><div class="date">Lørdag 6. juni 2027</div>
+            <div class="task"><div class="t">Bestemme meny</div><div class="d">Frist søndag 16. november</div><span class="pill p-acc">Du har sagt ja</span>
+              <div class="small-actions"><button class="btn">Ferdig</button><button class="btn ghost">Kan ikke gjøres</button></div>
+              <a class="change" href="#">Ombestemt deg? Endre svaret</a></div>
+            <div class="task"><div class="t">Bestille kake</div><div class="d">Frist mandag 23. november</div><span class="pill p-acc">Du har sagt ja</span>
+              <div class="small-actions"><button class="btn">Ferdig</button><button class="btn ghost">Kan ikke gjøres</button></div></div>
+          </section>
+        </div>
+      </div></div>
+      <div class="alt"><b>Hilsenen:</b> her er den en fast tekst med Karis navn. Alternativet er at Kari skriver sin egen hilsen når hun lager arrangementet – det krever et nytt felt.</div>
+    </div>
+
+    <div class="phone-wrap"><h2>3. Påminnelseslenken</h2>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="brand">MasterPlan <em>❦</em></span></div><div class="trim"></div>
+        <div class="inner">
+          <h1 class="title">Oppgaver du har sagt ja til</h1>
+          <p class="greet">Takk for at du holder det gående! <span>– Kari</span></p>
+          <section class="event"><h2>Bryllup</h2><div class="date">Lørdag 6. juni 2027</div>
+            <div class="task"><div class="t">Bestille kake</div><div class="d">Frist mandag 23. november</div>
+              <div class="small-actions"><button class="btn">Ferdig</button><button class="btn ghost">Kan ikke gjøres</button></div></div>
+          </section>
+          <p style="text-align:center;margin-top:20px"><a href="#" style="color:var(--link)">Se alle oppgavene dine</a></p>
+          <div class="empty"><i>Alt er gjort!</i>Slik ser siden ut når du ikke har flere oppgaver.</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

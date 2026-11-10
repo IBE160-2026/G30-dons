@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MasterPlan – pynt</title>
+<!-- Preview only: Google Fonts here; self-hosted in public/fonts/ in the app. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Source+Sans+3:wght@400;600&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Porselen tokens. All ornaments are decorative CSS/SVG (aria-hidden), no images to download. */
+:root { --bg:#FAF6EF; --surface:#fff; --text:#2E2A26; --muted:#6F665C; --navy:#24365A; --link:#3F5F91; --brass:#B58A3E;
+  --stripe:#C9D5E6; --soft:#EEF2F8; --line:#ECE4D8; --urgent:#A2512F; --urgent-bg:#F7E5DA; --ok:#55704F; --ok-bg:#E6EEE2; --progress:#8C7353;
+  /* porcelain floral motif in porcelain blue #4D6E9E at low opacity */
+  --floral: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%234D6E9E' stroke-width='1.4'%3E%3Ccircle cx='16' cy='16' r='4'/%3E%3Cpath d='M16 6c3 4 3 6 0 6-3 0-3-2 0-6zM16 26c3-4 3-6 0-6-3 0-3 2 0 6zM6 16c4-3 6-3 6 0 0 3-2 3-6 0zM26 16c-4-3-6-3-6 0 0 3 2 3 6 0z'/%3E%3Cpath d='M30 30c6 2 10 6 12 12M42 42c-4 0-6-3-6-6 3 0 6 2 6 6z'/%3E%3Ccircle cx='48' cy='48' r='3'/%3E%3Cpath d='M48 40c2 3 2 5 0 5s-2-2 0-5zM48 56c2-3 2-5 0-5s-2 2 0 5zM40 48c3-2 5-2 5 0s-2 2-5 0zM56 48c-3-2-5-2-5 0s2 2 5 0z'/%3E%3C/g%3E%3C/svg%3E");
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #ece8e1; font: 16px/1.5 "Source Sans 3", system-ui, sans-serif; color: var(--text); }
+.sheet { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
+.sheet > h1 { font-size: 22px; margin: 0 0 4px; } .sheet > p { color: #555; margin: 0 0 20px; max-width: 900px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(540px, 1fr)); gap: 28px; }
+@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+.v h2 { font-size: 17px; margin: 0 0 2px; } .v .reg { font-size: 14px; color: #555; margin: 0 0 10px; }
+.app { background: var(--bg); border-radius: 10px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fff; position: relative; }
+.logo { font-family: Lora, serif; font-size: 21px; color: var(--navy); } .logo em { font-style: normal; color: var(--brass); font-size: 15px; }
+.nav { font-size: 14px; color: var(--muted); }
+.trim { height: 8px; background: repeating-linear-gradient(90deg, var(--bg) 0 6px, var(--stripe) 6px 9px); }
+.body { padding: 18px 20px 22px; position: relative; }
+.hello { font-family: "Dancing Script", cursive; font-size: 34px; color: var(--navy); margin: 0; line-height: 1.2; }
+.sub { color: var(--muted); margin: 4px 0 14px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ev { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 0 var(--line), 0 8px 20px rgba(36,54,90,.05); position: relative; }
+.ev h4 { margin: 0; font-family: Lora, serif; font-weight: 400; font-size: 20px; color: var(--navy); }
+.date { font-size: 13px; color: var(--muted); }
+.pill { display: inline-block; margin-top: 8px; font-size: 13px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+.u { background: var(--urgent-bg); color: var(--urgent); } .ok { background: var(--ok-bg); color: var(--ok); }
+.stats { font-size: 14px; margin-top: 8px; }
+.prog { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; } .prog span { display: block; height: 100%; border-radius: 3px; background: var(--progress); }
+
+/* 1. Porcelain floral band: faint blue floral pattern behind the greeting area */
+.o1 .body::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 110px; background: var(--floral); opacity: .13; pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000, transparent); mask-image: linear-gradient(#000, transparent); }
+/* 2. Fleuron dividers between sections */
+.divider { display: flex; align-items: center; gap: 12px; color: var(--brass); margin: 16px 0 12px; font-size: 16px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--brass), transparent); opacity: .7; }
+/* 3. Card corners: fine double rule like an old print frame */
+.o3 .ev { outline: 1px solid var(--line); outline-offset: -6px; }
+.o3 .ev::after { content: "❧"; position: absolute; right: 12px; top: 8px; color: var(--brass); font-size: 14px; opacity: .8; }
+/* 4. Gingham ribbon under the header instead of the thin stripe */
+.o4 .trim { height: 10px; background-color: #fff; background-image: linear-gradient(90deg, rgba(77,110,158,.38) 50%, transparent 50%), linear-gradient(rgba(77,110,158,.38) 50%, transparent 50%); background-size: 10px 10px; }
+/* 5. Porcelain footer: plate-rim border pattern along the bottom */
+.rim { height: 22px; background: var(--floral) repeat-x center / 22px 22px; opacity: .35; border-top: 1px solid var(--stripe); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Litt mer pynt – fem elementer</h1>
+  <p>Hvert kort viser oversikten med ett eller flere pyntelementer lagt til. Alt er tegnet med CSS og små SVG-mønstre, så det trengs ingen bilder, og skjermlesere hopper over det. Velg de nummerne du liker – de kan kombineres.</p>
+  <div class="grid">
+
+    <section class="v"><h2>1. Porselensmønster bak hilsenen</h2><p class="reg">Et svakt blått blomstermønster, som på tallerkenene, som toner ut nedover.</p>
+      <div class="app o1"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols"><div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+          <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div></div></div></div></section>
+
+    <section class="v"><h2>2. Skillelinje med ornament</h2><p class="reg">En tynn messinglinje med et lite blomsterornament mellom delene av siden.</p>
+      <div class="app"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="divider" aria-hidden="true">❦</div>
+          <div class="cols"><div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+          <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div></div></div></div></section>
+
+    <section class="v"><h2>3. Kort med ramme som et gammelt trykk</h2><p class="reg">En fin innvendig linje og et lite ornament i hjørnet av hvert arrangementskort.</p>
+      <div class="app o3"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols"><div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+          <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div></div></div></div></section>
+
+    <section class="v"><h2>4. Rutete bånd under toppen</h2><p class="reg">Blå og hvite ruter, som kjøkkenhåndkleet og putene, i stedet for den tynne stripen.</p>
+      <div class="app o4"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols"><div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+          <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div></div></div></div></section>
+
+    <section class="v"><h2>5. Tallerkenkant nederst</h2><p class="reg">Et smalt porselensmønster langs bunnen av siden, som kanten på en tallerken.</p>
+      <div class="app"><div class="hd"><span class="logo">MasterPlan <em>❦</em></span><span class="nav">Kari · Testinnboks · Logg ut</span></div><div class="trim"></div>
+        <div class="body"><p class="hello">God kveld, Kari</p><p class="sub">To arrangementer er i gang. Ett trenger deg litt nå.</p>
+          <div class="cols"><div class="ev"><h4>Bryllup</h4><div class="date">6. juni 2027 · om 208 dager</div><span class="pill u">2 haster · 1 trenger hjelper</span><div class="stats">15 av 23 ferdig</div><div class="prog"><span style="width:65%"></span></div></div>
+          <div class="ev"><h4>Utdrikningslag</h4><div class="date">3. april 2027 · om 144 dager</div><span class="pill ok">I rute</span><div class="stats">8 av 14 ferdig</div><div class="prog"><span style="width:57%"></span></div></div></div></div>
+        <div class="rim" aria-hidden="true"></div></div></section>
+
+  </div>
+</div>
+</body>
+</html>
