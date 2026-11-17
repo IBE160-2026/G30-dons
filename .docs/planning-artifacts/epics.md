@@ -40,7 +40,7 @@ FR16 (Must): The organizer can mark any task Done.
 FR17 (Must, moved from Should by the user on 2026-10-24, brief must-work item 6): A reminder is sent at whichever comes first: 14 days after the latest yes, or 3 days before the deadline. No reminder if the yes came after the 3-day point. At most one per yes, one email per task. Late runs catch up without duplicates. The check runs at least daily.
 FR18 (Must, moved from Should by the user on 2026-10-24): The reminder has a fixed respectful text and names one task, with a reminder link that shows only Accepted tasks. The sender is "MasterPlan på vegne av ‹organizer›", with Reply-To set to the organizer.
 FR19 (Must, moved from Should by the user on 2026-10-24): The overview shows one summary per event: On track, or the counts of Urgent tasks and tasks in Needs a helper.
-FR20 (Must): The event view shows the name, date, guest count, general information, Done "N of M", To do (Urgent and Needs a helper with the tasks listed), Timeline (days to the event and the next deadline) and Messages (New replies).
+FR20 (Must): The event view shows the name, date, days to the event, place and guest count, with the other fields one click away, plus three summaries: Needs you now (Needs a helper, then Urgent, each with its action; hidden when empty), Progress ("N of M done", the count per status, and the tasks due this week and next week, Monday to Sunday) and Messages (New replies and a preview of the newest; the full list on request). Changed with the PRD on 2026-11-10 (UX design, Story 5.1): the week groups replace "next deadline".
 FR21 (Must): Statuses are derived per the Glossary, recalculated on every page load:
   - Open tasks need a helper after 7 days, or when the deadline is within 3 days or past.
   - Unassigned tasks always need a helper.
@@ -580,6 +580,7 @@ So that a change of plans is visible to Kari instead of a task silently stalling
 **Given** the helper page
 **When** a task is Accepted or Declined
 **Then** the button for the other answer is shown with a label that makes clear it changes an earlier answer, and it is easy to tap at 360 px (NFR1, NFR9)
+**And** it follows the Porselen design from Story 5.1: a disclosure «Ombestemt deg? Endre svaret» on the card (`EXPERIENCE.md` → Helper task card) holds the other answer («Nei» on an Accepted task, «Ja, jeg tar den» on a Declined one) and the optional message. Story 5.1 left it out, because the move does not exist before this story (decided 2026-11-17)
 **And** tapping the same answer again with no message changes nothing, as in Story 1.4
 
 **Given** Kari's overview and event view
