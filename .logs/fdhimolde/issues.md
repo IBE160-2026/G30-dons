@@ -37,3 +37,4 @@
 - [x] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Hjelpersiden: bekreftelsen «Takk! Kari ser at du tar «‹oppgave›».» er ikke bygget (avvik i spec 5.1) (løst 2026-11-17: ført som mulig punkt i story 3.3 i `epics.md`, `612e277`)
 - [ ] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1 steg 5: D1, vern mot dobbel innsending på «Nytt arrangement», med `createOnce.test.ts` først
 - [x] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1 steg 4: se gjennom arrangementssiden og hjelpersiden i appen etter ny seed (løst 2026-11-17: brukeren fant dem riktige; tastaturtest og 360 px-sjekk gjenstår etter steg 5)
+- [ ] 2026-11-17 [brainstorming-og-research](986-2026-11-17-21-50-08-brainstorming-og-research.md) — Avgjør om brainstorming og research skal forklares der sensor ser dem (lenke fra README eller ki-loggen til addendumet og memloggen til brief-en), eller la det være
