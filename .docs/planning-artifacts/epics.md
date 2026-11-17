@@ -153,7 +153,7 @@ Build order: 3.1, 3.3, 3.2. Story 3.3 lets a helper change an answer (Should, bu
 **FRs covered:** FR17, FR18, FR24, FR26 (Send due reminders now), FR15 (reminder link), FR33 (test inbox in the container), FR14 (Story 3.3). NFR7, NFR8.
 
 ### Epic 5: A calm, warm MasterPlan (UX design «Porselen»)
-Kari and Ola get the redesigned pages from the UX design: a calm, warm look with a clear overview, a tidy event view where Kari sees at once what needs her, and a helper page that is quick to answer on a phone. Built first among the remaining stories, before Story 3.3, because the design part is due 12 November 2026.
+Kari and Ola get the redesigned pages from the UX design: a calm, warm look with a clear overview, a tidy event view where Kari sees at once what needs her, and a helper page that is quick to answer on a phone. Built first among the remaining stories, before Story 3.3. It was started under the earlier design-part deadline (12 November 2026), which was removed on 2026-11-17. The application now has an internal deadline of 1 December 2026, and the delivery is assumed to be 15 December 2026 at the latest.
 **FRs covered:** no new FRs. It changes how FR12, FR13, FR15, FR16, FR19, FR20 and FR26 are shown, and changes FR20's summaries. NFR1, NFR9.
 
 ### Epic 4: More control for Kari (Should, cut from the end)

@@ -4,7 +4,7 @@
 
 ## Goal
 
-Deliver the core loop without AI or email: an organizer logs in, creates events from the Wedding and Bachelorette party templates (using each template's default plan), edits tasks, adds up to five helpers per event, assigns tasks and copies each helper's link into a chat. Helpers answer on their phones with no login. The overview and event view show what is done, Urgent and in Needs a helper. The examiner runs it with Docker in test mode (source code plus a `Dockerfile` is the course delivery), with seed data and `npm test`. The epic ends deployed on free hosting with email disabled, so the friends test can start; hosting is not a course requirement, so deployment is cut first if it causes problems. Solo course project, due 14 November 2026.
+Deliver the core loop without AI or email: an organizer logs in, creates events from the Wedding and Bachelorette party templates (using each template's default plan), edits tasks, adds up to five helpers per event, assigns tasks and copies each helper's link into a chat. Helpers answer on their phones with no login. The overview and event view show what is done, Urgent and in Needs a helper. The examiner runs it with Docker in test mode (source code plus a `Dockerfile` is the course delivery), with seed data and `npm test`. The epic ends deployed on free hosting with email disabled, so the friends test can start; hosting is not a course requirement, so deployment is cut first if it causes problems. Solo course project, internal deadline 1 December 2026, delivered by 15 December 2026 at the latest.
 
 ## Stories
 
