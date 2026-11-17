@@ -153,6 +153,7 @@ From `CLAUDE.md`. The story is done when:
 - **Helper page:** the texts and order from AC 7; the banner counts Open tasks on the full page only. `<progress>` is styled as an element, because the tests lock `<progress value=…>`.
 - **Deviation:** the confirmation after a helper answers is still «Takk! Svaret ditt er lagret.», not «Takk! Kari ser at du tar «‹oppgave›».» (EXPERIENCE.md → State Patterns). It needs the task in the redirect query and changes the notice routes that AC 7 does not name. It is listed as a possible item in Story 3.3 in `epics.md` (user, 2026-11-17), because 3.3 changes the same answer flow.
 - **Verified:** `npm test` (25 files, 414 tests), `npm run typecheck` and `npm run lint` are green. Two more older tests had to follow the new cards, with the user's approval (`087715e`): `helpers.test.ts` read «Hjelpere (5 av 5)» as one text, and a `summaries.test.ts` test read the reply order across the whole page, while «Trenger deg nå» now shows the helper's message higher up.
+- **Reviewed by the user (2026-11-17):** after a fresh `npm run seed`, the user looked through the event view and the helper page in the running app and found them correct. This is a visual review of step 4, not the keyboard test or the 360 px check in Definition of Done 4–5, which are still done after step 5.
 
 ## Spec Change Log
 
