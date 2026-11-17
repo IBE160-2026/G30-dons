@@ -10,13 +10,14 @@ import { applyAsHelper } from '../services/tasks.ts';
 import { paths } from './paths.ts';
 
 // FR-12 to FR-16, AD-6: the helper page. Requests are scoped only by the link token, never the
-// session, and GET never writes. No requireLogin here.
+// session, and GET never writes. No requireLogin here. Story 5.1: the neutral header, the greeting,
+// the «venter på svaret ditt» banner, and Done tasks last in each event (D9).
 
 export const MAX_MESSAGE_LENGTH = 500;
 
 const HELPER_STATUS_TEXTS = {
   unassigned: '',
-  open: 'Venter på svaret ditt',
+  open: 'Svar ønskes',
   accepted: 'Du har sagt ja',
   declined: 'Du har sagt nei',
   done: 'Ferdig',
@@ -24,7 +25,7 @@ const HELPER_STATUS_TEXTS = {
 } as const satisfies Record<TaskStatus, string>;
 
 const ACTION_LABELS = {
-  yes: 'Ja',
+  yes: 'Ja, jeg tar den',
   no: 'Nei',
   done: 'Ferdig',
   cantDo: 'Kan ikke gjøres',
@@ -63,6 +64,21 @@ function noticeOf(query: Record<string, unknown>): { text: string; error: boolea
   return undefined;
 }
 
+/** Story 5.1: «N oppgaver venter på svaret ditt», singular for one; null when nothing waits. */
+export function waitingText(open: number): string | null {
+  if (open === 0) return null;
+  return `${open} ${open === 1 ? 'oppgave' : 'oppgaver'} venter på svaret ditt`;
+}
+
+/** D9: Done tasks last in each event, the rest still in deadline order. */
+function doneLast(page: HelperPage): HelperPage {
+  const events = page.events.map((event) => ({
+    ...event,
+    tasks: [...event.tasks.filter((t) => t.status !== 'done'), ...event.tasks.filter((t) => t.status === 'done')],
+  }));
+  return { ...page, events };
+}
+
 /** FR-18: the reminder link's view, with only the Accepted tasks and no empty event groups. */
 function onlyAccepted(page: HelperPage): HelperPage {
   const events = page.events
@@ -93,14 +109,19 @@ export function helperRoutes(db: Db, clock: Clock): Router {
     if (!fullPage) return renderInvalid(res);
     // Any other view value shows the full page.
     const reminderView = req.query.view === 'accepted';
-    const page = reminderView ? onlyAccepted(fullPage) : fullPage;
+    const page = reminderView ? onlyAccepted(fullPage) : doneLast(fullPage);
+    const openCount = page.events.flatMap((e) => e.tasks).filter((t) => t.status === 'open').length;
     res.render('helper', {
       page,
       reminderView,
       header:
         page.eventNames.length > 0
-          ? `${page.organizerName} har invitert deg til å organisere ${joinNames(page.eventNames)}`
-          : `${page.organizerName} har invitert deg som hjelper`,
+          ? `Du er invitert til å hjelpe til med ${joinNames(page.eventNames)}`
+          : 'Du er invitert til å hjelpe til',
+      greeting: reminderView
+        ? `Takk for at du hjelper til! – ${page.organizerName}`
+        : `Så fint at du er med! – ${page.organizerName}`,
+      waiting: reminderView ? null : waitingText(openCount),
       notice: noticeOf(req.query as Record<string, unknown>),
       statusTexts: HELPER_STATUS_TEXTS,
       actionLabels: ACTION_LABELS,

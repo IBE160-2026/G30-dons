@@ -1,12 +1,8 @@
 <%- include('partials/helper-top') %>
 <header class="helper-header">
   <p class="helper-brand">MasterPlan</p>
-  <% if (reminderView) { %>
-    <h1>Oppgaver du har sagt ja til</h1>
-    <p class="muted">fra <%= page.organizerName %></p>
-  <% } else { %>
-    <h1><%= header %></h1>
-  <% } %>
+  <h1><%= reminderView ? 'Oppgaver du har sagt ja til' : header %></h1>
+  <p class="helper-greeting"><%= greeting %></p>
 </header>
 <% if (notice) { %>
   <% if (notice.error) { %>
@@ -15,32 +11,57 @@
     <p class="flash" role="status"><%= notice.text %></p>
   <% } %>
 <% } %>
+<% if (waiting) { %>
+  <p class="answer-banner"><%= waiting %></p>
+<% } %>
 <% if (page.events.length === 0) { %>
-  <p class="muted"><%= reminderView ? 'Du har ingen oppgaver som venter på deg nå.' : 'Du har ingen oppgaver ennå.' %></p>
+  <% if (reminderView) { %>
+    <p class="empty-state"><span class="empty-state-title">Alt er gjort!</span>Du har ingen oppgaver som venter på deg nå.</p>
+  <% } else { %>
+    <p class="empty-state">Du har ingen oppgaver ennå.</p>
+  <% } %>
 <% } %>
 <% for (const event of page.events) { %>
   <section class="helper-event">
     <h2><%= event.name %> <span class="muted helper-event-date"><%= formatDate(event.eventDate) %></span></h2>
     <ul class="helper-tasks">
       <% for (const task of event.tasks) { %>
-        <li class="helper-card">
-          <p class="helper-task-text"><%= page.organizerName %> vil at du skal <strong><%= task.title %></strong> innen <%= formatDate(task.deadline) %></p>
-          <% if (task.changedSinceAnswer) { %>
-            <p class="helper-changed">Endret etter at du svarte</p>
-          <% } %>
-          <p class="helper-status status-<%= task.status %>"><%= statusTexts[task.status] %></p>
-          <% if (task.actions.length > 0) { %>
-            <form method="post" action="<%= paths.helperTask(page.token, task.id) %>" class="helper-form">
-              <label for="message-<%= task.id %>">Melding (valgfritt)</label>
-              <textarea id="message-<%= task.id %>" name="message" rows="2" maxlength="<%= maxMessageLength %>"></textarea>
-              <div class="helper-actions">
-                <% for (const action of task.actions) { %>
-                  <button type="submit" name="action" value="<%= action %>" class="helper-button helper-button-<%= action %>"><%= actionLabels[action] %></button>
-                <% } %>
-              </div>
-            </form>
-          <% } %>
-        </li>
+        <% if (task.status === 'done') { %>
+          <li class="helper-card-done">
+            <p class="helper-task-title"><%= task.title %></p>
+            <span class="pill helper-status status-done"><%= statusTexts.done %></span>
+            <span class="helper-deadline">Frist <%= formatDate(task.deadline) %></span>
+          </li>
+        <% } else { %>
+          <% const unanswered = task.status === 'open'; %>
+          <li class="helper-card<%= unanswered ? ' helper-card-open' : '' %>">
+            <% if (unanswered) { %>
+              <p class="answer-label"><%= statusTexts.open %></p>
+            <% } %>
+            <% if (task.changedSinceAnswer) { %>
+              <p class="helper-changed">Endret etter at du svarte</p>
+            <% } %>
+            <p class="helper-task-title"><%= task.title %></p>
+            <p class="helper-deadline">Frist <%= formatDate(task.deadline) %></p>
+            <% if (!unanswered) { %>
+              <span class="pill helper-status status-<%= task.status %>"><%= statusTexts[task.status] %></span>
+            <% } %>
+            <% if (task.actions.length > 0) { %>
+              <form method="post" action="<%= paths.helperTask(page.token, task.id) %>" class="helper-form">
+                <details class="message-box">
+                  <summary>Legg ved en melding (valgfritt)</summary>
+                  <label for="message-<%= task.id %>">Melding</label>
+                  <textarea id="message-<%= task.id %>" name="message" rows="2" maxlength="<%= maxMessageLength %>"></textarea>
+                </details>
+                <div class="helper-actions">
+                  <% for (const action of task.actions) { %>
+                    <button type="submit" class="helper-button helper-button-<%= action %>" name="action" value="<%= action %>"><%= actionLabels[action] %></button>
+                  <% } %>
+                </div>
+              </form>
+            <% } %>
+          </li>
+        <% } %>
       <% } %>
     </ul>
   </section>
