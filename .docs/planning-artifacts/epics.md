@@ -581,6 +581,8 @@ So that a change of plans is visible to Kari instead of a task silently stalling
 **When** a task is Accepted or Declined
 **Then** the button for the other answer is shown with a label that makes clear it changes an earlier answer, and it is easy to tap at 360 px (NFR1, NFR9)
 **And** it follows the Porselen design from Story 5.1: a disclosure «Ombestemt deg? Endre svaret» on the card (`EXPERIENCE.md` → Helper task card) holds the other answer («Nei» on an Accepted task, «Ja, jeg tar den» on a Declined one) and the optional message. Story 5.1 left it out, because the move does not exist before this story (decided 2026-11-17)
+
+*Possible item (from Story 5.1, 2026-11-17, not yet an acceptance criterion):* the confirmation after an answer names the organizer and the task, as in `EXPERIENCE.md` → State Patterns: «Takk! Kari ser at du tar «‹oppgave›».» for yes, with matching texts for no, Done and Can't be done, instead of today's «Takk! Svaret ditt er lagret.». It needs the task in the redirect after the answer, and the helper page tests that check the notice must follow. Decide in the spec for this story whether it is included.
 **And** tapping the same answer again with no message changes nothing, as in Story 1.4
 
 **Given** Kari's overview and event view
