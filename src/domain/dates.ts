@@ -61,3 +61,32 @@ export function formatDateTimeNb(timestamp: string): string {
 export function addDays(date: string, n: number): string {
   return new Date((toDayNumber(date) + n) * DAY_MS).toISOString().slice(0, 10);
 }
+
+const osloHourFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Oslo',
+  hour: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** The Oslo hour (0–23) of a UTC ISO timestamp, summer time included. */
+export function osloHour(timestamp: string): number {
+  return Number(osloHourFormatter.format(Date.parse(timestamp)));
+}
+
+const nbDayFormatter = new Intl.DateTimeFormat('nb-NO', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+});
+
+/** A calendar date as weekday and day in Norwegian, for example "fredag 6. november". */
+export function formatDayNb(date: string): string {
+  return nbDayFormatter.format(toDayNumber(date) * DAY_MS);
+}
+
+/** ISO weekday of a calendar date: 1 for Monday to 7 for Sunday. */
+export function isoWeekday(date: string): number {
+  // Day 0 (1970-01-01) was a Thursday, ISO weekday 4.
+  return ((((toDayNumber(date) + 3) % 7) + 7) % 7) + 1;
+}

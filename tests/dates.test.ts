@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fixedClock } from '../src/clock.ts';
-import { addDays, daysBetween, isDate, osloDate } from '../src/domain/dates.ts';
+import { addDays, daysBetween, formatDayNb, isDate, isoWeekday, osloDate } from '../src/domain/dates.ts';
 
 describe('osloDate', () => {
   it('rolls over at Oslo midnight, not UTC midnight (winter, UTC+1)', () => {
@@ -34,5 +34,18 @@ describe('fixedClock', () => {
     const clock = fixedClock('2026-11-01T23:30:00Z');
     expect(clock.now()).toBe('2026-11-01T23:30:00.000Z');
     expect(clock.today()).toBe('2026-11-02');
+  });
+});
+
+describe('isoWeekday and formatDayNb (story 5.1)', () => {
+  it('gives Monday 1 to Sunday 7, also before 1970 and across a year boundary', () => {
+    expect(['2026-11-09', '2026-11-10', '2026-11-15', '2027-01-03', '1969-12-29'].map(isoWeekday)).toEqual([
+      1, 2, 7, 7, 1,
+    ]);
+  });
+
+  it('names the weekday and day in Norwegian', () => {
+    expect(formatDayNb('2026-11-06')).toBe('fredag 6. november');
+    expect(formatDayNb('2026-11-08')).toBe('søndag 8. november');
   });
 });
