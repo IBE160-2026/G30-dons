@@ -532,10 +532,9 @@ legend {
   }
 }
 
-/* status words on organizer pages, shown as pills */
+/* the reply count badge, and the colors of the status words (shown with .pill) */
 
-.badge,
-.status {
+.badge {
   display: inline-block;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
