@@ -117,7 +117,9 @@ describe('adding helpers', () => {
     expect(await linksOf(eventId)).toHaveLength(5);
     const full = await agent.get(`/events/${eventId}`);
     expect(full.text).not.toContain(`action="/events/${eventId}/helpers"`);
-    expect(full.text).toContain('Hjelpere (5 av 5)');
+    // Story 5.1 (D8): the count is in the summary of the Hjelpere card.
+    expect(full.text).toContain('<span class="collapsible-title" id="helpers-title">Hjelpere</span>');
+    expect(full.text).toContain('<span class="collapsible-meta">5 av 5</span>');
 
     const sixth = await addHelper(agent, eventId, { email: 'h6@example.no', name: 'Seks' });
     expect(await followFlash(agent, sixth)).toContain('Et arrangement kan ha maks fem hjelpere.');

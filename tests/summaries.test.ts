@@ -382,18 +382,20 @@ describe('Messages panel and seen replies (AD-15)', () => {
     const headStart = html.indexOf('id="messages-title"');
     const header = html.slice(headStart, html.indexOf('</div>', headStart));
     expect(header).toContain('3 nye svar');
-    const fourth = html.indexOf('Fjerde svar');
-    const third = html.indexOf('Tredje svar');
+    // The order is read in the Meldinger card: «Trenger deg nå» also shows the helper's message.
+    const list = card(html, 'messages');
+    const fourth = list.indexOf('Fjerde svar');
+    const third = list.indexOf('Tredje svar');
     expect(fourth).toBeGreaterThan(-1);
     expect(fourth).toBeLessThan(third);
-    const second = html.indexOf('Andre svar');
-    const first = html.indexOf('Første svar');
+    const second = list.indexOf('Andre svar');
+    const first = list.indexOf('Første svar');
     expect(third).toBeGreaterThan(-1);
     expect(third).toBeLessThan(second);
     expect(second).toBeLessThan(first);
     expect(html.match(/class="badge">Ny</g)).toHaveLength(3);
     // The badges sit on the two newest replies.
-    const lastBadge = html.lastIndexOf('class="badge">Ny<');
+    const lastBadge = list.lastIndexOf('class="badge">Ny<');
     expect(lastBadge).toBeLessThan(first);
     expect(lastBadge).toBeGreaterThan(third);
     const actions = [...html.matchAll(/<span class="reply-action">([^<]*)<\/span>/g)].map((m) => m[1]);
