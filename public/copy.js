@@ -1,8 +1,22 @@
-// AD-16: the "Kopier lenke" buttons. No inline JS; the read-only field is the fallback.
+// AD-16, story 5.1 (D6): the "Kopier lenke" buttons. No inline JS. Copies the helper link and says
+// «Lenken er kopiert» in the role="status" line; without clipboard access it opens «Vis lenken»
+// and selects the read-only field, which is also the fallback without JavaScript.
 (() => {
   'use strict';
 
+  function announce(text) {
+    var status = document.getElementById('copy-status');
+    if (!status) return;
+    // Clear first, so a second copy is announced again.
+    status.textContent = '';
+    setTimeout(() => {
+      status.textContent = text;
+    }, 50);
+  }
+
   function fallback(input) {
+    var details = input.closest ? input.closest('details') : null;
+    if (details) details.open = true;
     input.focus();
     input.select();
   }
@@ -20,14 +34,7 @@
     }
     navigator.clipboard.writeText(input.value).then(
       () => {
-        if (!button.dataset.label) button.dataset.label = button.textContent;
-        button.textContent = 'Kopiert!';
-        clearTimeout(Number(button.dataset.timer));
-        button.dataset.timer = String(
-          setTimeout(() => {
-            button.textContent = button.dataset.label;
-          }, 2000),
-        );
+        announce('Lenken er kopiert');
       },
       () => {
         fallback(input);
