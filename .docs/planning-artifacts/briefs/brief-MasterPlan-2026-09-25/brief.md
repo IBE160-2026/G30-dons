@@ -2,7 +2,7 @@
 title: "Product Brief: MasterPlan"
 status: final
 created: 2026-09-25
-updated: 2026-10-24
+updated: 2026-11-17
 ---
 
 # Product Brief: MasterPlan
@@ -18,7 +18,7 @@ Today these events are coordinated through group chats, notes and people's memor
 
 The organizer sees, across all her events, what's confirmed, declined or overdue. Later, evaluations will be summarized by AI and stored in an anonymized experience bank, so each event improves the next plan.
 
-Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI. The design part is due 12 November 2026 and the application 14 November 2026. The design part means Story 5.1 built: the CSS from the UX design in use across the whole app, and locked with a written rule and an automated test. The UX documents are its basis.
+Version 1 is a solo project for IBE160 Programmering med KI. It is built with AI. The reflection assignment is due 15 December 2026. The examiner has not given a delivery date for the application, so it is assumed to be 15 December 2026 at the latest. The internal deadline for the application is 1 December 2026. These dates replace the earlier ones (design part 12 November, application 14 November), changed 2026-11-17.
 
 ## Who This Serves
 

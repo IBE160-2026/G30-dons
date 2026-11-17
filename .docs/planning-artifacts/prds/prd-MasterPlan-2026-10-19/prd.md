@@ -2,14 +2,14 @@
 title: "PRD: MasterPlan"
 status: final
 created: 2026-10-19
-updated: 2026-11-10
+updated: 2026-11-17
 ---
 
 # PRD: MasterPlan
 
 ## 0. Document Purpose
 
-This PRD defines version 1 of MasterPlan for the IBE160 course project (solo; the design part is due 12 November 2026 and the application 14 November 2026). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-33), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Technology detail is in `addendum.md`. The visual design and the page behaviour are in the UX design (`.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md` and `EXPERIENCE.md`, 2026-11-10), which wins over the UX notes in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
+This PRD defines version 1 of MasterPlan for the IBE160 course project (solo; deadlines in §8). It builds on the product brief (`.docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md`) and the teacher's feedback. Four user journeys (UJ-1 to UJ-4) describe the product. The Glossary fixes the vocabulary. Features carry functional requirements (FR-1 to FR-33), each with testable consequences and a priority: **Must** (the core loop the friends test needs) or **Should** (built if time allows, cut in the order given in §8). Technology detail is in `addendum.md`. The visual design and the page behaviour are in the UX design (`.docs/planning-artifacts/ux-designs/ux-MasterPlan-2026-11-10/DESIGN.md` and `EXPERIENCE.md`, 2026-11-10), which wins over the UX notes in `addendum.md`. `[ASSUMPTION: …]` marks points not yet confirmed.
 
 ## 1. Vision
 
@@ -343,7 +343,7 @@ The delivery is the source code plus a `Dockerfile`. The examiner can build and 
 
 ## 8. Scope
 
-**Deadlines:** the design part 12 November 2026, the application 14 November 2026. The design part means Story 5.1 built: the CSS from the UX design in use across the whole app, and locked with a written rule and an automated test. The UX documents are its basis.
+**Deadlines:** The reflection assignment is due 15 December 2026. The examiner has not given a delivery date for the application, so it is assumed to be 15 December 2026 at the latest. The internal deadline for the application is 1 December 2026. Changed 2026-11-17: these replace the earlier deadlines (design part 12 November, application 14 November 2026), so the design part no longer has a deadline of its own (see `docs/ki-logg.md`).
 
 **Must (the core loop for the friends test):** FR-1 to FR-9, FR-10 (copy link), FR-11 to FR-13, FR-15 to FR-25, FR-26 (Send due reminders now), FR-27, FR-28, FR-33. With these, Kari can plan an event with the AI, assign tasks and paste links into a chat. Helpers get fixed-text email reminders. Kari sees answers, Done, Can't be done and Needs a helper on her event view. The examiner can run everything without keys from the Docker container, including reminders through the test inbox. The AI plan draft and the reminder are must-work items 3 and 6 in the brief, and are never cut.
 
