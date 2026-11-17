@@ -323,10 +323,12 @@ describe('editing the plan', () => {
       `id="title-${first!.id}" name="title" type="text" maxlength="120" value="${sent.title}"`,
     );
     expect(res.text).toContain(`id="deadline-${first!.id}" name="deadline" type="date" value="${sent.deadline}"`);
-    // The error sits in the edited row, before the next task's row.
+    // The error sits in the edit box of the edited row (story 5.1, D2), and no other row has a box.
+    const fieldAt = res.text.indexOf(`id="title-${first!.id}"`);
     const errorAt = res.text.indexOf(message);
-    expect(errorAt).toBeGreaterThan(res.text.indexOf(`id="title-${first!.id}"`));
-    expect(errorAt).toBeLessThan(res.text.indexOf(`id="title-${second!.id}"`));
+    expect(errorAt).toBeGreaterThan(fieldAt);
+    expect(errorAt).toBeLessThan(res.text.indexOf('</li>', fieldAt));
+    expect(res.text).not.toContain(`id="title-${second!.id}"`);
     const [stored] = await ctx.db.select().from(tasks).where(eq(tasks.id, first!.id));
     expect(stored).toEqual(first);
   });

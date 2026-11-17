@@ -88,6 +88,13 @@ function overviewRow(html: string, eventId: number): string {
 
 const unseen = () => ctx.db.select().from(messages).where(isNull(messages.seenAt));
 
+/** One card of the event view (story 5.1): from its aria-labelledby to the end of its <section>. */
+function card(html: string, name: string): string {
+  const start = html.indexOf(`aria-labelledby="${name}-title"`);
+  expect(start, name).toBeGreaterThan(-1);
+  return html.slice(start, html.indexOf('</section>', start));
+}
+
 describe('overview', () => {
   it('shows "I rute" for a clean event and "1 haster · N trenger hjelper" for one with an Urgent task', async () => {
     const kari = await loggedIn();
@@ -127,19 +134,20 @@ describe('overview', () => {
     expect(row).not.toContain('haster');
   });
 
-  it('shows "Arrangementet er over" for a past event, with no Urgent or Needs a helper', async () => {
+  it('shows «Var ‹dato›» and no pill for a past event, with no Urgent or Needs a helper (D4)', async () => {
     const kari = await loggedIn();
     const eventId = await createEvent(kari, 'wedding', '2027-03-01');
     await setTasks(eventId, [{ title: 'A', status: 'unassigned', deadline: '2026-10-20' }]);
     await ctx.db.update(events).set({ eventDate: '2026-10-31' }).where(eq(events.id, eventId));
     const row = overviewRow((await kari.get('/')).text, eventId);
-    expect(row).toContain('Arrangementet er over');
+    expect(row).toContain('Var 31. oktober 2026');
+    expect(row).not.toContain('class="pill');
     expect(row).not.toContain('trenger hjelper');
     expect(row).not.toContain('I rute');
 
     const view = await kari.get(`/events/${eventId}`);
     expect(view.text).toContain('Var for 1 dag siden');
-    expect(view.text).not.toContain('Trenger hjelper (');
+    expect(view.text).not.toContain('aria-labelledby="needs-you-title"');
   });
 
   it('shows New replies and only the organizer’s own events', async () => {
@@ -155,6 +163,59 @@ describe('overview', () => {
     const other = await berit.get('/');
     expect(other.text).not.toContain('Karis fest');
     expect(await unseen()).toHaveLength(1);
+  });
+});
+
+describe('overview greeting and framed cards (story 5.1, AC 3, D4)', () => {
+  it('greets by the Oslo time of day and sums up the events in one sentence', async () => {
+    const kari = await loggedIn();
+    const clean = await createEvent(kari, 'wedding', '2027-03-01');
+    const busy = await createEvent(kari, 'bachelorette', '2027-05-01');
+    await setTasks(clean, [{ title: 'A', status: 'done', deadline: '2026-11-20' }]);
+    await setTasks(busy, [{ title: 'B', status: 'unassigned', deadline: '2027-01-01' }]);
+    const html = (await kari.get('/')).text;
+    // The fixed clock is 10:00Z, 11:00 in Oslo.
+    expect(html).toContain('God dag, Kari');
+    expect(html).toContain('To arrangementer er i gang. Ett trenger deg litt nå.');
+  });
+
+  it('makes each card one link with name, date, days left, pill, «N av M ferdig» and a bar', async () => {
+    const kari = await loggedIn();
+    const eventId = await createEvent(kari, 'wedding', '2027-03-01', 'Rolig fest');
+    await setTasks(eventId, [
+      { title: 'A', status: 'done', deadline: '2026-11-20' },
+      { title: 'B', status: 'accepted', deadline: '2027-01-01' },
+    ]);
+    const html = (await kari.get('/')).text;
+    expect(html).toContain(`<a class="event-card card card-framed" href="/events/${eventId}">`);
+    const row = overviewRow(html, eventId);
+    for (const text of ['Rolig fest', '1. mars 2027', 'Om 120 dager', 'I rute', '1 av 2 ferdig'])
+      expect(row).toContain(text);
+    expect(row).toContain('<progress value="1" max="2"');
+    // The link holds no other link or form.
+    expect(row.slice(1)).not.toMatch(/<a |<form/);
+  });
+
+  it('shows «I dag» on the day, and «Ingen oppgaver ennå» without a bar for an event with no tasks', async () => {
+    const kari = await loggedIn();
+    const today = await createEvent(kari, 'wedding', '2026-11-01');
+    const empty = await createEvent(kari, 'wedding', '2027-03-01');
+    await setTasks(empty, []);
+    const html = (await kari.get('/')).text;
+    expect(overviewRow(html, today)).toContain('I dag');
+    const emptyRow = overviewRow(html, empty);
+    expect(emptyRow).toContain('Ingen oppgaver ennå');
+    expect(emptyRow).not.toContain('0 av 0');
+    expect(emptyRow).not.toContain('<progress');
+  });
+
+  it('shows the empty state with the create button when there are no events', async () => {
+    const kari = await loggedIn();
+    const html = (await kari.get('/')).text;
+    expect(html).toContain('Her begynner det');
+    expect(html).toContain('Lag ditt første arrangement');
+    expect(html).toContain('Ingen arrangementer er i gang.');
+    expect(html).toContain('href="/events/new"');
   });
 });
 
@@ -200,8 +261,8 @@ describe('overview order and reply counts', () => {
   });
 });
 
-describe('event view panels', () => {
-  it('shows Done, To do, Timeline and Messages summaries for tasks in every status', async () => {
+describe('event view summaries (story 5.1: «Trenger deg nå», Fremdrift, Meldinger)', () => {
+  it('shows the counts and lists what needs Kari, for tasks in every status', async () => {
     const kari = await loggedIn();
     const eventId = await createEvent(kari, 'wedding', '2027-03-01');
     await addHelper(kari, eventId, { email: 'ola@example.no', name: 'Ola' });
@@ -220,41 +281,37 @@ describe('event view panels', () => {
     const res = await kari.get(`/events/${eventId}`);
     expect(res.status).toBe(200);
     const html = res.text;
-    expect(html).toContain('1 av 8 ferdig');
-    expect(html).toContain('<progress value="1" max="8" aria-label="1 av 8 oppgaver ferdig">');
-    expect(html).toContain('1 haster · 4 trenger hjelper');
-    // To do is open because it has tasks; the urgent and needs-a-helper lists name them.
-    expect(html).toMatch(/<details class="panel panel-todo" open>/);
-    const todo = html.slice(html.indexOf('panel-todo'), html.indexOf('panel-timeline'));
-    expect(todo).toContain('Haster (1)');
-    expect(todo).toContain('Akseptert snart');
-    expect(todo).toContain('Trenger hjelper (4)');
-    for (const title of ['Ikke tildelt oppgave', 'Åpen nær frist', 'Avslått oppgave', 'Umulig oppgave'])
-      expect(todo).toContain(title);
-    for (const title of ['Åpen langt unna', 'Akseptert senere', 'Ferdig oppgave']) expect(todo).not.toContain(title);
-    expect(todo).toContain('Ola');
+    const progress = card(html, 'progress');
+    expect(progress).toContain('1 av 8 ferdig');
+    expect(progress).toContain('<progress value="1" max="8" aria-label="1 av 8 oppgaver ferdig">');
+    const needs = card(html, 'needs-you');
+    expect(needs).toContain('1 haster · 4 trenger hjelper');
+    for (const title of [
+      'Akseptert snart',
+      'Ikke tildelt oppgave',
+      'Åpen nær frist',
+      'Avslått oppgave',
+      'Umulig oppgave',
+    ])
+      expect(needs).toContain(title);
+    for (const title of ['Åpen langt unna', 'Akseptert senere', 'Ferdig oppgave']) expect(needs).not.toContain(title);
+    expect(needs).toContain('Ola');
     expect(html).toContain('Om 120 dager');
-    expect(html).toContain('Neste frist: 2. november 2026');
-    expect(html).toContain('0 nye svar');
-    expect(html).toContain(`href="/events/${eventId}?panel=messages"`);
-    expect(html).toContain('<span class="panel-action">Vis svar</span>');
-    expect(html).not.toContain('Vis svar (0 nye)');
-    // The other panels start closed, and the full task list is still there.
-    expect(html).toMatch(/<details class="panel panel-done">/);
-    expect(html).toMatch(/<details class="panel panel-timeline">/);
-    expect(html).toContain('Oppgaver (8)');
+    const box = card(html, 'messages');
+    expect(box).toContain('0 nye svar');
+    expect(box).toContain(`href="/events/${eventId}?panel=messages"`);
+    expect(card(html, 'tasks')).toContain('8 oppgaver · 1 ferdig');
     // No inline scripts.
     expect(html).not.toMatch(/<script(?![^>]*src=)/i);
   });
 
-  it('shows "Ingenting haster" and "Ingen flere frister" when nothing needs attention', async () => {
+  it('hides «Trenger deg nå» and says «Ingenting trenger deg akkurat nå.» when nothing needs attention', async () => {
     const kari = await loggedIn();
     const eventId = await createEvent(kari, 'wedding', '2027-03-01');
     await setTasks(eventId, [{ title: 'A', status: 'done', deadline: '2026-11-20' }]);
     const html = (await kari.get(`/events/${eventId}`)).text;
-    expect(html).toContain('Ingenting haster');
-    expect(html).toContain('Ingen flere frister');
-    expect(html).toMatch(/<details class="panel panel-todo">/);
+    expect(html).not.toContain('aria-labelledby="needs-you-title"');
+    expect(card(html, 'progress')).toContain('Ingenting trenger deg akkurat nå.');
   });
 
   it('shows "I dag" on the day of the event', async () => {
@@ -273,20 +330,22 @@ describe('event view panels', () => {
       { title: 'B', status: 'accepted', deadline: '2027-01-01', helperId: ola.id },
     ]);
     let html = (await kari.get(`/events/${eventId}`)).text;
-    expect(html).toContain('0 haster · 1 trenger hjelper');
+    expect(card(html, 'needs-you')).toContain('1 trenger hjelper');
+    expect(card(html, 'needs-you')).not.toContain('haster');
     expect(overviewRow((await kari.get('/')).text, eventId)).toContain('1 trenger hjelper');
 
     await helperPost(ola.linkToken, ids.A!, { action: 'yes' });
     html = (await kari.get(`/events/${eventId}`)).text;
-    expect(html).toContain('1 haster · 0 trenger hjelper');
-    expect(html).toContain('1 nytt svar');
+    expect(card(html, 'needs-you')).toContain('1 haster');
+    expect(card(html, 'needs-you')).not.toContain('trenger hjelper');
+    expect(card(html, 'messages')).toContain('1 nytt svar');
     expect(overviewRow((await kari.get('/')).text, eventId)).toContain('1 haster');
 
     await helperPost(ola.linkToken, ids.A!, { action: 'done' });
     await helperPost(ola.linkToken, ids.B!, { action: 'done' });
     html = (await kari.get(`/events/${eventId}`)).text;
-    expect(html).toContain('2 av 2 ferdig');
-    expect(html).toContain('Ingenting haster');
+    expect(card(html, 'progress')).toContain('2 av 2 ferdig');
+    expect(card(html, 'progress')).toContain('Ingenting trenger deg akkurat nå.');
     expect(overviewRow((await kari.get('/')).text, eventId)).toContain('I rute');
   });
 });
@@ -313,15 +372,15 @@ describe('Messages panel and seen replies (AD-15)', () => {
 
   it('lists all replies newest first, marks the 3 unseen "Ny", and afterwards all are seen with count 0', async () => {
     const { kari, eventId } = await withReplies();
-    expect((await kari.get(`/events/${eventId}`)).text).toContain('Vis svar (3 nye)');
+    expect(card((await kari.get(`/events/${eventId}`)).text, 'messages')).toContain('3 nye svar');
 
     const res = await kari.get(`/events/${eventId}?panel=messages`);
     expect(res.status).toBe(200);
     const html = res.text;
-    expect(html).toMatch(/<details class="panel panel-messages" open>/);
+    expect(card(html, 'messages')).toContain('Skjul svar');
     // The header counts the replies that were new when listed.
-    const panelStart = html.indexOf('panel-messages');
-    const header = html.slice(panelStart, html.indexOf('</summary>', panelStart));
+    const headStart = html.indexOf('id="messages-title"');
+    const header = html.slice(headStart, html.indexOf('</div>', headStart));
     expect(header).toContain('3 nye svar');
     const fourth = html.indexOf('Fjerde svar');
     const third = html.indexOf('Tredje svar');
@@ -350,8 +409,8 @@ describe('Messages panel and seen replies (AD-15)', () => {
     expect(rows.filter((m) => m.seenAt === '2026-11-01T09:00:00.000Z')).toHaveLength(1);
 
     const after = await kari.get(`/events/${eventId}`);
-    expect(after.text).toContain('0 nye svar');
-    expect(after.text).toContain('<span class="panel-action">Vis svar</span>');
+    expect(card(after.text, 'messages')).toContain('0 nye svar');
+    expect(card(after.text, 'messages')).toContain('Vis alle svar');
     const reopened = await kari.get(`/events/${eventId}?panel=messages`);
     expect(reopened.text).not.toContain('class="badge">Ny<');
     expect(reopened.text).toContain('Tredje svar');
@@ -398,15 +457,15 @@ describe('Messages panel and seen replies (AD-15)', () => {
     expect(res.text.match(/class="reply"/g)).toHaveLength(50);
     expect(res.text.match(/class="badge">Ny</g)).toHaveLength(50);
     expect(await unseen()).toHaveLength(2);
-    expect((await kari.get(`/events/${eventId}`)).text).toContain('Vis svar (2 nye)');
+    expect(card((await kari.get(`/events/${eventId}`)).text, 'messages')).toContain('2 nye svar');
 
     // The second opening lists the 2 older unseen replies first and marks them.
     const again = await kari.get(`/events/${eventId}?panel=messages`);
     expect(again.text.match(/class="reply"/g)).toHaveLength(50);
     expect(again.text.match(/class="badge">Ny</g)).toHaveLength(2);
     expect(await unseen()).toHaveLength(0);
-    const after = (await kari.get(`/events/${eventId}`)).text;
+    const after = card((await kari.get(`/events/${eventId}`)).text, 'messages');
     expect(after).toContain('0 nye svar');
-    expect(after).toContain('<span class="panel-action">Vis svar</span>');
+    expect(after).toContain('Vis alle svar');
   });
 });

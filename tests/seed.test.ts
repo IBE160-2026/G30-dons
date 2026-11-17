@@ -116,7 +116,9 @@ describe('seed counts', () => {
       expect(view.status).toBe(200);
       expect(view.text).toContain(`${c.done} av ${c.total} ferdig`);
       expect(view.text).toContain(
-        c.urgent + c.needsHelper === 0 ? 'Ingenting haster' : `${c.urgent} haster · ${c.needsHelper} trenger hjelper`,
+        c.urgent + c.needsHelper === 0
+          ? 'Ingenting trenger deg akkurat nå.'
+          : `${c.urgent} haster · ${c.needsHelper} trenger hjelper`,
       );
     }
   });
@@ -234,7 +236,8 @@ describe('seeded helper links', () => {
     for (const h of SEED_HELPERS) {
       const res = await request(ctx.app).get(`/h/${h.token}`);
       expect(res.status, h.key).toBe(200);
-      expect(res.text).toContain('Kari har invitert deg');
+      expect(res.text).toContain('Du er invitert til å hjelpe til med');
+      expect(res.text).toContain('Så fint at du er med! – Kari');
       const own = await ctx.db.select().from(tasks).where(eq(tasks.helperId, seeded.helpers[h.key].id));
       expect(own.length).toBeGreaterThan(0);
       for (const t of own) expect(res.text).toContain(t.title);

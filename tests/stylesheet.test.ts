@@ -50,17 +50,11 @@ function cssClasses(): Set<string> {
   return new Set([...stripped.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1] ?? ''));
 }
 
-// Classes that only mark a panel for tests/summaries.test.ts. The panels are replaced in step 4,
-// and these hooks go with them.
-const TEST_HOOKS = new Set(['panel-done', 'panel-todo', 'panel-timeline', 'panel-messages']);
-
 describe('the Porselen stylesheet on every page', () => {
   it('styles every class that a view uses', () => {
     const defined = cssClasses();
     const missing = views.flatMap(({ name, source }) =>
-      [...viewClasses(source).classes]
-        .filter((c) => !defined.has(c) && !TEST_HOOKS.has(c))
-        .map((c) => `${name}: .${c}`),
+      [...viewClasses(source).classes].filter((c) => !defined.has(c)).map((c) => `${name}: .${c}`),
     );
     expect(missing).toEqual([]);
   });

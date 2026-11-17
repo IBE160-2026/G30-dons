@@ -186,9 +186,9 @@ describe('showing helpers', () => {
     expect(page).toContain(
       `<input id="link-${ola.id}" type="text" class="link-field" value="https://masterplan.example.no/h/${ola.linkToken}" readonly>`,
     );
-    expect(page).toContain(
-      `<button type="button" class="small" data-copy="link-${ola.id}" aria-live="polite">Kopier lenke</button>`,
-    );
+    // Story 5.1 (D6): the link field is behind «Vis lenken», and the button announces in a status line.
+    expect(page).toContain(`data-copy="link-${ola.id}">Kopier lenke</button>`);
+    expect(page).toContain('<summary>Vis lenken</summary>');
   });
 
   it('loads copy.js, serves it, and has no inline script body', async () => {
@@ -207,7 +207,7 @@ describe('showing helpers', () => {
     expect(js.status).toBe(200);
     expect(js.headers['content-type']).toMatch(/javascript/);
     expect(js.text).toContain('navigator.clipboard');
-    expect(js.text).toContain('Kopiert!');
+    expect(js.text).toContain('Lenken er kopiert');
   });
 
   it('shows a "Velg hjelper" placeholder on an Unassigned task, not a preselected helper', async () => {
@@ -215,10 +215,11 @@ describe('showing helpers', () => {
     const eventId = await createEvent(agent);
     await addHelper(agent, eventId, { email: 'ola@example.no', name: 'Ola' });
     const [task] = await eventTasks(eventId);
-    const page = (await agent.get(`/events/${eventId}`)).text;
+    // Story 5.1 (D2): the select is in the edit box. Without «required», an empty choice reaches D7.
+    const page = (await agent.get(`/events/${eventId}?endre=${task!.id}`)).text;
     expect(page).toMatch(
       new RegExp(
-        `<select id="assign-${task!.id}" name="helperId" required>\\s*<option value="" selected disabled>Velg hjelper</option>`,
+        `<select id="assign-${task!.id}" name="helperId">\\s*<option value="" selected disabled>Velg hjelper</option>`,
       ),
     );
     expect(page).not.toMatch(/<option value="\d+" selected>/);
@@ -238,8 +239,9 @@ describe('showing helpers', () => {
     const agent = await loggedIn();
     const eventId = await createEvent(agent);
     const page = (await agent.get(`/events/${eventId}`)).text;
-    expect(page).not.toContain('Tildel</button>');
-    expect(page).toContain('Ikke tildelt');
+    expect(page).not.toContain('Gi oppgaven</button>');
+    expect(page).toContain('Ingen hjelper');
+    expect(page).toContain('Legg til en hjelper først');
   });
 });
 
@@ -272,8 +274,9 @@ describe('assigning tasks', () => {
       assignedAt: FIXED_NOW,
       acceptedAt: null,
     });
-    expect(page).toContain('<span class="status status-open">Venter på svar</span> · Anne');
-    expect(page).toContain(`<option value="${a.id}" selected>Anne</option>`);
+    expect(page).toContain('Venter på svar · Anne');
+    const box = (await agent.get(`/events/${eventId}?endre=${task.id}`)).text;
+    expect(box).toContain(`<option value="${a.id}" selected>Anne</option>`);
     expect((await listForHelper(ctx.db, a.id)).map((t) => t.id)).toEqual([task.id]);
   });
 
@@ -333,7 +336,8 @@ describe('assigning tasks', () => {
     expect(listed.map((t) => t.deadline)).toEqual(['2026-11-15', '2027-02-01']);
   });
 
-  it.each(['', 'abc', '0', '01', '1e0', '999999'])('gives 404 for the helper id "%s"', async (helperId) => {
+  // An empty helper id is «Velg en hjelper.» with 422 (story 5.1, D7, tests/eventView.test.ts).
+  it.each(['abc', '0', '01', '1e0', '999999'])('gives 404 for the helper id "%s"', async (helperId) => {
     const { agent, eventId, task } = await withHelpers();
     const res = await assign(agent, eventId, task.id, helperId);
     expect(res.status).toBe(404);
