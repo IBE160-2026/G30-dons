@@ -32,4 +32,6 @@
 - [ ] 2026-11-17 [nye-frister](987-2026-11-17-19-20-01-nye-frister.md) — Bygg Story 5.1 ferdig; appen har intern frist 1. desember og leveres senest 15. desember
 - [x] 2026-11-17 [nye-frister](987-2026-11-17-19-20-01-nye-frister.md) — Rett «frist 12. november» i spec 5.1 og `docs/traceability.md` på story 5.1-branchen (løst 2026-11-17, `622943b`)
 - [ ] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1: tastaturtest og 360 px-sjekk etter steg 4–5, når sidene er ferdige; før dem med dato i `docs/traceability.md`
-- [ ] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1 steg 4: bygg D3–D9 (inkludert kortene som kan lukkes og de kompakte ferdige oppgavene), med testene skrevet først
+- [x] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1 steg 4: bygg D3–D9 (inkludert kortene som kan lukkes og de kompakte ferdige oppgavene), med testene skrevet først (løst 2026-11-17: `06ecc7f`–`67d69fe`, unntatt de to testene under)
+- [ ] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Story 5.1: godkjenn endringen i to eldre tester (`helpers.test.ts` «Hjelpere (5 av 5)», `summaries.test.ts` rekkefølgen på svarene), og kryss deretter av steg 4 i specen
+- [ ] 2026-11-17 [spec-story-5-1](988-2026-11-10-16-08-44-spec-story-5-1.md) — Hjelpersiden: bekreftelsen «Takk! Kari ser at du tar «‹oppgave›».» er ikke bygget (avvik i spec 5.1)
