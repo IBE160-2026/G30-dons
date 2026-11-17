@@ -3,7 +3,7 @@ name: MasterPlan · Porselen
 description: Calm, warm and slightly old-fashioned visual identity for MasterPlan — ivory, navy and porcelain blue with brass details, like a cosy home with blue-and-white china.
 status: final
 created: 2026-11-10
-updated: 2026-11-10
+updated: 2026-11-17
 sources:
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/addendum.md
@@ -279,6 +279,8 @@ Organizer pages:
 - **Cards:** `{components.card}`. Event and summary cards on the overview and the event view use `{components.card-framed}`: a fine inner rule like an old print frame, and a small brass ❧ in the top-right corner. The «Trenger deg nå» card uses `{components.card-action}` with a terracotta left edge.
 - **Progress bar:** dark beige fill on a `{colors.line}` track, always next to the same number in text («15 av 23 ferdig»).
 - **Helper card:** a round `{components.avatar}` with the first letter in Lora, the name, a one-line summary («5 oppgaver · 1 haster») and a secondary «Kopier lenke» button. The raw URL is not shown, except in the no-JavaScript fallback described in `EXPERIENCE.md` → Component Patterns.
+- **Collapsible card:** `{components.card}` whose summary row is the card heading: the title in Lora, the counts in `{typography.meta}` and `{colors.muted}`, and a navy ▸ on the right that turns down when open. The ▸ is decorative and hidden from screen readers. The whole summary row is the target, at least 40 px high, with the same focus ring as inputs.
+- **Done row:** one line in `{typography.meta}`: the title in `{colors.muted}`, a `{components.pill-on-track}` pill «Ferdig · ‹hjelper›», «Frist ‹dato›» and a quiet «Endre».
 - **Edit box:** an inline panel in `{colors.soft}` that opens under one task row with title, deadline, helper, «Lagre», «Avbryt», «Marker som ferdig» (secondary) and «Slett oppgaven» (danger).
 
 Helper pages:
@@ -288,6 +290,7 @@ Helper pages:
   - *Title and deadline:* the title in `{typography.task-title}`, the deadline in `{typography.meta}` and `{colors.muted}`.
   - *Answer buttons:* «Ja, jeg tar den» is `{components.button-primary}` and «Nei» `{components.button-secondary}`, side by side at full width and `{spacing.touch-min}` high.
   - *Accepted:* no frame, an in-progress pill «Du har sagt ja», and «Ferdig» / «Kan ikke gjøres» in the same two button styles.
+  - *Done:* a small card at the end of the event, without frame or buttons: the title in `{typography.meta}` and `{colors.muted}`, a `{components.pill-on-track}` pill «Ferdig» and «Frist ‹dato›».
 - **Answer banner:** «N oppgaver venter på svaret ditt» in `{colors.urgent}` on `{colors.urgent-bg}`, `{typography.body-strong}`, `{rounded.md}`, full width under the greeting.
 - **Changed marker:** «Endret etter at du svarte» on a helper task card, as a `{components.pill-waiting}` pill above the title.
 

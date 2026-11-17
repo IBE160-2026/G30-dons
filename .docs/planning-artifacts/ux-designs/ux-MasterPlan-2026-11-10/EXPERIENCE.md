@@ -3,7 +3,7 @@ title: MasterPlan · Experience Spine
 description: How MasterPlan works for Kari (organizer, desktop) and Ola (helper, phone) in the Porselen redesign — structure, behavior, states, accessibility and key flows.
 status: final
 created: 2026-11-10
-updated: 2026-11-10
+updated: 2026-11-17
 sources:
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/brief.md
   - .docs/planning-artifacts/briefs/brief-MasterPlan-2026-09-25/addendum.md
@@ -34,7 +34,7 @@ This file and `DESIGN.md` are the two *spines* of the UX design: the source of t
 | Registrering | `/registrer` | Link on Innlogging | Create an organizer account |
 | Oversikt (Overview) | `/` | Logo, tab «Oversikt», after login | Greeting and one framed card per event: status, counts, progress, days left |
 | Nytt arrangement | `/events/new` | Tab «+ Nytt arrangement», empty Oversikt | Pick a template, fill in fields, get an AI draft (FR-3, FR-5) |
-| Arrangement (Event view) | `/events/:id` | Event tab, event card on Oversikt | Act now, progress, this and next week, helpers, messages, all tasks |
+| Arrangement (Event view) | `/events/:id` | Event tab, event card on Oversikt | Act now, progress, this and next week, helpers, messages, all tasks, add a task |
 | Arrangement, one task open | `/events/:id?endre=<taskId>` | «Endre» on a task row | The same page with the edit box open under that task |
 | Meldinger | `/events/:id?panel=messages` | «Vis alle svar» in the Meldinger card | All replies from helpers, newest first; opening it marks them seen (AD-15) |
 | Hjelperside (Helper page) | `/h/:token` | Link shared by the organizer | The helper's tasks, grouped by event, with answers |
@@ -76,12 +76,13 @@ Behavioral. Visual specs are in `DESIGN.md` → Components.
 | Event card (framed) | Oversikt | The whole card is one link to the event. It shows the name, date, «om N dager», one status pill (On track, or «N haster · N trenger hjelper»), «N av M ferdig» and a progress bar. New replies are shown as a small count. |
 | «Trenger deg nå» card | Arrangement, top of main column | Lists, in this order: tasks in **Needs a helper** (PRD Glossary, FR-21), then **Urgent** tasks. Delegation rows have an inline helper select with «Gi oppgaven», and a quiet «Marker som ferdig» so Kari can do the task herself. Urgent rows have «Marker som ferdig». A declined row shows the helper's message. When the card is empty, it is hidden and the Fremdrift card shows one line instead: «Ingenting trenger deg akkurat nå.» |
 | Fremdrift card | Arrangement | Progress bar with «N av M ferdig», one pill per status with its count, then two groups: «Denne uka» (rest of the current Monday–Sunday week) and «Neste uke» (next Monday–Sunday), tasks grouped by day. A group with no tasks says «Ingen frister». |
-| Helpers card and helper rows | Arrangement, side column | The card heading shows «N av 5». Each helper row has the initial, name and a one-line summary. «Kopier lenke» copies the helper link (via `copy.js`) and shows «Lenken er kopiert» in a `role="status"` line. Without JavaScript the button reveals the link in a read-only field to copy by hand. «+ Legg til hjelper» is a disclosure with email and optional name. |
+| Helpers card and helper rows | Arrangement, side column | A collapsible card like «Alle oppgaver»: closed when the page loads, with «Hjelpere» and «N av 5» in the summary. It is open when there are no helpers and when the add form has a validation error. Each helper row has the initial, name and a one-line summary. «Kopier lenke» copies the helper link (via `copy.js`) and shows «Lenken er kopiert» in a `role="status"` line. Without JavaScript the button reveals the link in a read-only field to copy by hand. «+ Legg til hjelper» is a disclosure with email and optional name. |
 | Meldinger card | Arrangement, side column | On `/events/:id`: the count of new replies («2 nye») and a preview of the newest one or two. The preview does not mark anything seen, so the count stays until Kari opens the list. «Vis alle svar» is a link to `/events/:id?panel=messages`, which renders the same page with the full list in the card and marks the listed replies seen (AD-15, FR-20). «Skjul svar» links back to `/events/:id`. |
-| Task list «Alle oppgaver» | Arrangement, below | Read-only rows grouped by status: «Trenger hjelper», «Venter på svar», «I gang», «Ferdig» (collapsed by default). Each row: title, short date, status pill with helper name, «Endre». «+ Ny oppgave» opens an empty edit box at the top of the list. |
+| Task list «Alle oppgaver» | Arrangement, below | A collapsible card, closed when the page loads. The summary shows «Alle oppgaver», the number of tasks and how many are done. The card is open when `?endre=<taskId>` names a task in this event, when the edit box has a validation error, and when the event has no tasks. After any other action it is closed again, because the app keeps no client-side state. Read-only rows grouped by status: «Trenger hjelper», «Venter på svar», «I gang», and «Ferdig» last. Each row: title, short date, status pill with helper name, «Endre». A Done row is compact, on one line: title, «Ferdig» pill with helper name, «Frist ‹dato›» and a quiet «Endre», so the task can still be edited, deleted and later reopened (FR-31). It shows the deadline, because the app does not store when a task was done. |
+| «Ny oppgave» card | Arrangement, under «Alle oppgaver» | A separate card that is always open: title, date and «Legg til». On a validation error the input is kept, the error is under the field, and the first invalid field gets focus. |
 | Edit box (variant A) | Task list | «Endre» opens an edit box under that one row only; the button becomes «Lukk». Fields: title, deadline, helper. Actions: «Lagre», «Avbryt», «Marker som ferdig» (on every task that is not Done, FR-16) and «Slett oppgaven». Only one edit box is open at a time. On a validation error the page reloads with that box open and the error under the field. |
 | Event details | Arrangement, under the title | Date, «om N dager», place and guest count are always visible. The rest («Hva», «Hva må gjøres», «Annen informasjon») is behind «Vis alle detaljer». «Endre detaljer» appears there when FR-29 (edit event fields, Should) is built. |
-| Helper task card | Hjelperside | Each card shows the task title and «Frist ‹dato›». Unanswered: framed, «Svar ønskes» label, two large buttons «Ja, jeg tar den» and «Nei», and «Legg ved en melding (valgfritt)» as a disclosure. Accepted: «Du har sagt ja», buttons «Ferdig» and «Kan ikke gjøres», and «Ombestemt deg? Endre svaret». Done tasks are collapsed per event. |
+| Helper task card | Hjelperside | Each card shows the task title and «Frist ‹dato›». Unanswered: framed, «Svar ønskes» label, two large buttons «Ja, jeg tar den» and «Nei», and «Legg ved en melding (valgfritt)» as a disclosure. Accepted: «Du har sagt ja», buttons «Ferdig» and «Kan ikke gjøres», and «Ombestemt deg? Endre svaret». Done tasks come last within each event, as a small card without frame or buttons: the title, «Ferdig» and «Frist ‹dato›». |
 | «Venter på svaret ditt» banner | Hjelperside | Shown while there are unanswered tasks: «N oppgaver venter på svaret ditt». |
 | Flash | Every page after a form POST | One message at the top of the content, set by the redirect after the action. It is shown once and is gone on the next page load. Focus is not moved to it. |
 | «Endret etter at du svarte» marker | Hjelperside | When Kari changes a task after Ola answered it, the card shows this small marker until Ola answers again (kept from today's helper page). |
@@ -109,8 +110,8 @@ The PRD glossary terms and the words on screen. Pill styles are in `DESIGN.md` �
 |---|---|---|
 | No events | Oversikt | Greeting, then empty state: «Her begynner det» and «Lag ditt første arrangement», with the primary button. |
 | Nothing needs Kari | Arrangement | The «Trenger deg nå» card is hidden; Fremdrift starts with «Ingenting trenger deg akkurat nå.» |
-| No tasks | Arrangement | Empty state in the task list: «Ingen oppgaver her ennå» and «Legg til den første oppgaven.» |
-| No helpers | Arrangement | The Helpers card in the side column says «Ingen hjelpere ennå.» and shows the add form open. Delegation selects show «Legg til en hjelper først». |
+| No tasks | Arrangement | «Alle oppgaver» is open with the empty state «Ingen oppgaver her ennå» and «Legg til den første oppgaven.»; the «Ny oppgave» card is right below. |
+| No helpers | Arrangement | The Helpers card in the side column is open, says «Ingen hjelpere ennå.» and shows the add form open. Delegation selects show «Legg til en hjelper først». |
 | Five helpers | Arrangement | «+ Legg til hjelper» is hidden; the Helpers card heading shows «5 av 5». |
 | No replies | Arrangement | Meldinger card: «Ingen nye svar ennå» (handwritten) and «Svar fra hjelperne dukker opp her.» |
 | Drafting | Nytt arrangement | The form says next to the button: «Det kan ta opptil et halvt minutt å lage utkastet.» (NFR-6). A second small external script, built the same way as `copy.js`, disables the button after the first press and changes its text to «Lager utkast …». Without JavaScript the hint still applies, and the server must not create two events from a double submit (see Plan impact → Open decisions). |
@@ -129,7 +130,8 @@ The PRD glossary terms and the words on screen. Pill styles are in `DESIGN.md` �
 ## Interaction Primitives
 
 - **Forms and links only.** Every action is a link or a form POST, followed by a redirect back to the same place with a flash. No client-side state.
-- **Disclosures** use `<details>`/`<summary>` (event details, add helper, message box, done groups), so they work without JavaScript and by keyboard.
+- **Disclosures** use `<details>`/`<summary>` (event details, add helper, message box, the «Alle oppgaver» and «Hjelpere» cards), so they work without JavaScript and by keyboard. The server decides whether a card is rendered open; nothing remembers it between page loads.
+- **Collapsible cards** are a `<section>` labelled by the summary text (`aria-labelledby`). The summary holds no heading element, because some screen readers drop a heading inside `<summary>`.
 - **One edit box at a time** in the task list, opened through a link with the task id (so it survives reload and works without JavaScript).
 - **Scripts:** only two small external scripts. `copy.js` copies a helper link, and a second script disables the create button while the AI drafts. Both have a no-JavaScript fallback.
 - **Banned:** modal dialogs, drag and drop, hover-only actions, permanently open edit forms on every row (the clutter this redesign removes), infinite scroll.
@@ -253,4 +255,5 @@ This redesign changes agreed behavior. On 2026-11-10 the PRD (UJ-2, UJ-3, Glossa
 - **FR-16 kept:** «Marker som ferdig» moves into the edit box and the «Trenger deg nå» rows; see Component Patterns.
 - **Meldinger:** the preview no longer marks replies seen; see Component Patterns → Meldinger card (AD-15 unchanged).
 - **Task list:** read-only rows with one edit box at a time (`?endre=<taskId>`), instead of a form on every row.
+- **Changes after testing (2026-11-17, decided by the product owner):** «Alle oppgaver» and «Hjelpere» can be collapsed and are closed when the page loads; adding a task is its own card «Ny oppgave»; Done tasks come last and compact on both the event view and the helper page, showing the deadline instead of the date they were done, so no new data is needed. See Component Patterns and spec 5.1 (D8, D9).
 - **Fonts and scripts:** three self-hosted font families in `public/fonts/`, and a second external script; see `DESIGN.md` → Typography and Interaction Primitives.

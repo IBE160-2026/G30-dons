@@ -28,6 +28,8 @@ context:
 - **D5 Narrow screens (deferred finding §3).** The tab row wraps onto more lines; nothing is hidden or scrolled. At 360 px a task row has two lines: title and pill, then date and «Endre».
 - **D6 Helper link without JavaScript.** Each helper row has «Kopier lenke» and a `<details>` «Vis lenken» with the read-only field. `copy.js` copies and announces «Lenken er kopiert» in a `role="status"` line; without clipboard access it opens the details and selects the field.
 - **D7 «Gi oppgaven» without a helper** re-renders the event view (422) with «Velg en hjelper.» under that select and focus on it, instead of today's 404. It has its own test.
+- **D8 Collapsible cards (user, 2026-11-17).** «Alle oppgaver» and «Hjelpere» are `<details>` cards, closed when the page loads. «Alle oppgaver» is rendered open when `?endre` names a task in this event (D2), when the edit box has a validation error (D7), or when the event has no tasks. «Hjelpere» is open when there are no helpers or the add form has an error. No query parameter or script keeps a card open after other actions; the flash says what happened. Adding a task is its own card «Ny oppgave» under the list, always open, on the existing route. Each card is a `<section>` labelled by its summary text, with no heading inside `<summary>`.
+- **D9 Done tasks last and compact (user, 2026-11-17).** In «Alle oppgaver» the «Ferdig» group comes last, sorted by deadline, and is not collapsed on its own. A done row is one line: title, «Ferdig · ‹helper›», «Frist ‹dato›» and a quiet «Endre», so the task can still be edited or deleted, and reopened when Story 4.4 is built. On the helper page done tasks come last in each event as a small card without frame or buttons: title, «Ferdig» and «Frist ‹dato›». The deadline is shown instead of the date the task was done: the app does not store that date, and adding it would need a migration, which this story does not allow.
 - **Order and cut rule (user, 2026-11-10).** The spec stays whole, and the work follows a fixed order: (1) tokens, fonts and components; (2) every page uses them; (3) locked with the rule and the test; (4) the restructure of the event view and the helper page, with D3–D7; (5) D1 last. Steps 1–3 are the design deliverable. If time runs short before the internal deadline of 1 December 2026, steps 4–5 move to a new story, with the reason recorded in Spec Change Log, `epics.md` and `docs/ki-logg.md`.
 
 ## Boundaries & Constraints
@@ -61,6 +63,10 @@ context:
 | Edit box | `?endre=<id>` of this event / another event / not a number | Box open under that task / full page without a box / full page without a box |
 | Assign | «Gi oppgaven» with no helper | 422, «Velg en hjelper.» under the select |
 | Messages | `GET /events/:id` with 2 new replies | Preview shown, still «2 nye» after reload; only `?panel=messages` marks them seen |
+| Task list card | `/events/:id` / `?endre=<id>` of this event / edit box error / no tasks | Closed / open with the box / open with the error / open with the empty state |
+| Helpers card | 2 helpers / 0 helpers / add form error | Closed / open with the form / open with the error |
+| Done tasks | Event with done and not-done tasks | «Ferdig» group last; each done row one line with «Frist ‹dato›» and «Endre» |
+| Helper page, done | Ola has 1 done and 2 open tasks in one event | The done task last, compact, no buttons |
 | Helper banner | 1 / 3 / 0 unanswered | «1 oppgave venter …» / «3 oppgaver venter …» / no banner |
 
 </frozen-after-approval>
@@ -88,7 +94,7 @@ context:
 - [ ] **3. Locked with rule and test.** `tests/designTokens.test.ts` (AC 1), AD-18 in `ARCHITECTURE-SPINE.md`, and the keyboard test and 360 px check for the restyled pages recorded in `docs/traceability.md`.
 
 *Steps 4–5: moved to a new story if time runs short before 1 December 2026.*
-- [ ] **4. Restructure and D3–D7.** `src/domain/dates.ts`, new `src/domain/overviewText.ts` (`osloHour`, `greeting`, `weekGroups`), `src/routes/organizer/overview.ts`, `summaryText.ts`, `events.ts`, `src/routes/helper.ts`, `overview.ejs`, `event.ejs`, `helper.ejs`, `public/copy.js` -- greeting, framed event cards with D4, «Trenger deg nå», Fremdrift with week groups (D3), helper rows (D6), Meldinger preview, read-only rows with `?endre` (D2, D5), the assign error (D7), the helper page and reminder view. Tests: `tests/overviewText.test.ts`, `tests/eventView.test.ts` (with the D7 test), and the updates in the Code Map.
+- [ ] **4. Restructure and D3–D7.** `src/domain/dates.ts`, new `src/domain/overviewText.ts` (`osloHour`, `greeting`, `weekGroups`), `src/routes/organizer/overview.ts`, `summaryText.ts`, `events.ts`, `src/routes/helper.ts`, `overview.ejs`, `event.ejs`, `helper.ejs`, `public/copy.js` -- greeting, framed event cards with D4, «Trenger deg nå», Fremdrift with week groups (D3), helper rows (D6), Meldinger preview, read-only rows with `?endre` (D2, D5), the assign error (D7), the collapsible cards and the «Ny oppgave» card (D8), done tasks last and compact (D9), the helper page and reminder view. Tests: `tests/overviewText.test.ts`, `tests/eventView.test.ts` (with the D7 test), and the updates in the Code Map.
 - [ ] **5. D1 last.** `src/routes/organizer/events.ts`, `event-new.ejs`, `public/submit-once.js` -- the one-time token and the waiting state. Test: `tests/createOnce.test.ts`.
 
 *After the steps:* README screenshots and «Ting å prøve», `docs/traceability.md`, `sprint-status.yaml`.
@@ -97,10 +103,10 @@ context:
 1. Given `DESIGN.md` and `public/styles.css`, then every color token exists in `:root` with the same value, no color literal appears outside `:root`, and no view has a `style` attribute. *Test:* `designTokens.test.ts`.
 2. Given the matrix rows for greeting and week groups, then `greeting(osloHour(t))` and `weekGroups` return them. *Test:* `overviewText.test.ts`.
 3. Given the seed data, then the overview shows the greeting and framed cards, and the D4 texts hold for past, today and empty events. *Test:* `summaries.test.ts`.
-4. Given the event view, then «Trenger deg nå», Fremdrift with week groups, helper rows with «Kopier lenke» and no visible URL, the Meldinger preview, and read-only task rows are shown; `?endre` opens one box with «Marker som ferdig» for any task not Done; the preview marks nothing seen. *Test:* `eventView.test.ts`, `summaries.test.ts`.
+4. Given the event view, then «Trenger deg nå», Fremdrift with week groups, helper rows with «Kopier lenke» and no visible URL, the Meldinger preview, and read-only task rows are shown; `?endre` opens the «Alle oppgaver» card and one box with «Marker som ferdig» for any task not Done; «Alle oppgaver» and «Hjelpere» open and close as in D8, «Ny oppgave» is its own card, and done rows follow D9; the preview marks nothing seen. *Test:* `eventView.test.ts`, `summaries.test.ts`.
 5. Given «Gi oppgaven» posted with no helper chosen, then the response is 422, «Velg en hjelper.» is shown under that task's select, and the task is unchanged (D7). *Test:* `eventView.test.ts`.
 6. Given two concurrent `POST /events` with one token, then one event is created and both redirect to it. *Test:* `createOnce.test.ts`.
-7. Given Ola's link, then the neutral header, greeting, banner with singular, grouping, «Svar ønskes», «Ja, jeg tar den» and the stale-answer message are shown; the helper styles keep no width above 360 px and buttons at least 48 px. *Test:* `helperPage.test.ts`.
+7. Given Ola's link, then the neutral header, greeting, banner with singular, grouping, «Svar ønskes», «Ja, jeg tar den» and the stale-answer message are shown, and done tasks come last and compact (D9); the helper styles keep no width above 360 px and buttons at least 48 px. *Test:* `helperPage.test.ts`.
 8. Given `npm test`, `npm run typecheck` and `npm run lint`, then all are green and no test uses the network.
 
 ## Definition of Done
@@ -142,6 +148,7 @@ From `CLAUDE.md`. The story is done when:
 ## Spec Change Log
 
 - **2026-11-17, new deadlines (user).** The design deadline of 12 November 2026 and the app deadline of 14 November 2026 are gone. The app has an internal deadline of 1 December 2026 and is delivered by 15 December 2026 at the latest (assumed; the examiner has given no date); the reflection task is due 15 December 2026. The design part no longer has its own deadline. Changed in Intent, the order and cut rule, and the step headings under Tasks & Acceptance; the scope and the order of the steps are unchanged. See `docs/ki-logg.md` (Nye frister).
+- **2026-11-17, changes after testing (user).** After trying steps 1–3, the user asked for collapsible «Alle oppgaver» and «Hjelpere» cards, a separate «Ny oppgave» card, and done tasks last and compact on the event view and the helper page. Added as D8 and D9 in step 4, with matrix rows and AC 4 and 7 extended. The user chose to show the deadline on done tasks instead of the date they were done, so no migration is needed and Boundaries are unchanged; done rows keep «Endre» (user). FR-16 is unchanged: «Marker som ferdig» stays in the edit box and on the «Trenger deg nå» rows. The keyboard test and the 360 px check are done after steps 4–5, when the pages are final (user). `EXPERIENCE.md` and `DESIGN.md` are updated first.
 
 ## Review Triage Log
 
