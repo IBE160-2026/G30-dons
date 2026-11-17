@@ -1,24 +1,35 @@
 <%- include('partials/top', { title: 'Oversikt' }) %>
-<section>
+<section aria-labelledby="overview-title">
   <div class="heading-row">
-    <h1>Oversikt</h1>
+    <h1 id="overview-title" class="greeting"><%= greeting %></h1>
     <a class="button" href="<%= paths.newEvent() %>">Nytt arrangement</a>
   </div>
-  <p>Hei, <%= organizer.name %>!</p>
+  <p class="greeting-sentence"><%= sentence %></p>
   <% if (events.length === 0) { %>
-    <p class="muted">Du har ingen arrangementer ennå.</p>
+    <div class="card empty-state">
+      <p><span class="empty-state-title">Her begynner det</span>Lag ditt første arrangement.</p>
+      <a class="button" href="<%= paths.newEvent() %>">Nytt arrangement</a>
+    </div>
   <% } else { %>
     <ul class="event-list">
       <% for (const event of events) { %>
-        <li class="overview-row card card-framed">
-          <div class="overview-event">
-            <a href="<%= paths.event(event.id) %>"><%= event.name %></a>
-            <span class="muted"><%= formatDate(event.eventDate) %></span>
-          </div>
-          <div class="overview-status">
-            <span class="attention attention-<%= event.state %>"><%= event.statusText %></span>
-            <% if (event.newRepliesText) { %><span class="badge"><%= event.newRepliesText %></span><% } %>
-          </div>
+        <li>
+          <a class="event-card card card-framed" href="<%= paths.event(event.id) %>">
+            <span class="event-card-name"><%= event.name %></span>
+            <span class="event-card-date muted">
+              <% if (event.past) { %>Var <%= formatDate(event.eventDate) %><% } else { %><%= formatDate(event.eventDate) %> · <%= event.daysText %><% } %>
+            </span>
+            <span class="event-card-status">
+              <% if (event.statusText) { %><span class="pill <%= event.pill %>"><%= event.statusText %></span><% } %>
+              <% if (event.newRepliesText) { %><span class="badge"><%= event.newRepliesText %></span><% } %>
+            </span>
+            <% if (event.total === 0) { %>
+              <span class="event-card-count muted">Ingen oppgaver ennå</span>
+            <% } else { %>
+              <span class="event-card-count"><%= event.done %> av <%= event.total %> ferdig</span>
+              <progress value="<%= event.done %>" max="<%= event.total %>" class="progress" aria-hidden="true"><%= event.done %> av <%= event.total %></progress>
+            <% } %>
+          </a>
         </li>
       <% } %>
     </ul>

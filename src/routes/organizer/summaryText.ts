@@ -11,9 +11,8 @@ export function attentionText(summary: EventSummary<StatusTask>): string {
   return parts.join(' · ');
 }
 
-/** The overview line for an event: over, on track, or what needs attention. */
+/** The pill on an upcoming event's card: on track, or what needs attention. A past event has no pill (D4). */
 export function overviewStatusText(summary: EventSummary<StatusTask>): string {
-  if (summary.past) return 'Arrangementet er over';
   if (summary.onTrack) return 'I rute';
   return attentionText(summary);
 }

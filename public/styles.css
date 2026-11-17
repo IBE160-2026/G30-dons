@@ -374,17 +374,25 @@ select {
 /* progress bar: dark beige on the line track, always next to the number in text */
 
 .progress {
+  display: block;
+  width: 100%;
   height: var(--progress-height);
-  background: var(--color-line);
+  appearance: none;
+  border: 0;
   border-radius: var(--radius-full);
   overflow: hidden;
+  background: var(--color-line);
 }
 .progress-large {
   height: var(--progress-height-large);
 }
-.progress > span {
-  display: block;
-  height: 100%;
+.progress::-webkit-progress-bar {
+  background: var(--color-line);
+}
+.progress::-webkit-progress-value {
+  background: var(--color-progress);
+}
+.progress::-moz-progress-bar {
   background: var(--color-progress);
 }
 
@@ -478,8 +486,15 @@ legend {
   margin: 0;
 }
 
-/* overview: one framed card per event */
+/* overview: the greeting and one framed card per event, each one link */
 
+.greeting {
+  font-family: var(--font-hand);
+  font-size: var(--type-greeting-size);
+}
+.greeting-sentence {
+  margin: 0 0 var(--space-5);
+}
 .event-list {
   list-style: none;
   padding: 0;
@@ -488,32 +503,39 @@ legend {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
   gap: var(--space-card-gap);
 }
-.overview-row {
+.event-card {
   display: grid;
   gap: var(--space-2);
+  height: 100%;
+  color: var(--color-text);
+  text-decoration: none;
 }
-.overview-event {
-  display: flex;
-  gap: var(--space-1) var(--space-3);
-  flex-wrap: wrap;
-  align-items: baseline;
-}
-.overview-event a {
+.event-card-name {
   font-family: var(--font-serif);
   font-size: var(--type-headline-size);
   color: var(--color-navy);
-  text-decoration: none;
 }
-.overview-status {
+.event-card:hover .event-card-name {
+  text-decoration: underline;
+}
+.event-card-status {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
   align-items: center;
 }
+.event-card-count {
+  font-size: var(--type-meta-size);
+}
+
+@media (max-width: 860px) {
+  .greeting {
+    font-size: var(--type-greeting-mobile-size);
+  }
+}
 
 /* status words on organizer pages, shown as pills */
 
-.attention,
 .badge,
 .status {
   display: inline-block;
@@ -523,19 +545,16 @@ legend {
   font-weight: 600;
   white-space: nowrap;
 }
-.attention-attention,
 .status-unassigned,
 .status-declined,
 .status-cant_do {
   color: var(--color-urgent);
   background: var(--color-urgent-bg);
 }
-.attention-on-track,
 .status-done {
   color: var(--color-on-track);
   background: var(--color-on-track-bg);
 }
-.attention-past,
 .status-open {
   color: var(--color-muted);
   background: var(--color-waiting-bg);
