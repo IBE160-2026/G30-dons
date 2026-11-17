@@ -111,7 +111,7 @@ describe('opening the helper page', () => {
     expect(res.status).toBe(200);
     expectHelperHeaders(res);
     expectGenericHead(res.text);
-    expect(res.text).toContain('Kari har invitert deg til å organisere Bryllup og Utdrikningslag');
+    expect(res.text).toContain('Du er invitert til å hjelpe til med Bryllup og Utdrikningslag');
     expect(res.text).not.toContain('Logg ut');
     expect(res.text).not.toContain('site-header');
 
@@ -120,11 +120,15 @@ describe('opening the helper page', () => {
     expect(res.text.indexOf('<h2>Bryllup')).toBeLessThan(res.text.indexOf('<h2>Utdrikningslag'));
     expect(res.text).not.toContain(b2.title);
     const unassignedTitle = (await eventTasks(bryllup)).find((t) => t.status === 'unassigned')!.title;
-    expect(res.text).not.toContain(`<strong>${unassignedTitle}</strong>`);
-    expect(res.text).toContain(`Kari vil at du skal <strong>${task.title}</strong> innen`);
-    expect(res.text).toContain('Venter på svaret ditt');
-    expect(res.text).toContain('value="yes"');
-    expect(res.text).toContain('value="no"');
+    expect(res.text).not.toContain(`<p class="helper-task-title">${unassignedTitle}</p>`);
+    // Story 5.1: the title and «Frist ‹dato›» instead of «Kari vil at du skal … innen …».
+    expect(res.text).toContain(`<p class="helper-task-title">${task.title}</p>`);
+    expect(res.text).toContain('Frist 1. februar 2027');
+    expect(res.text).not.toContain('vil at du skal');
+    expect(res.text).toContain('Svar ønskes');
+    expect(res.text).toContain('value="yes">Ja, jeg tar den</button>');
+    expect(res.text).toContain('value="no">Nei</button>');
+    expect(res.text).toContain('<summary>Legg ved en melding (valgfritt)</summary>');
     expect(res.text).toContain('maxlength="500"');
   });
 
@@ -146,9 +150,11 @@ describe('opening the helper page', () => {
     for (const m of helperCss.matchAll(/flex\s*:\s*\d+\s+\d+\s+([\d.]+)(px|rem|em)/g)) {
       expect(Number(m[1]) * (m[2] === 'px' ? 1 : 16)).toBeLessThanOrEqual(360);
     }
-    // Buttons are at least 44 px high.
-    const button = /\.helper-button\s*\{[^}]*min-height:\s*(\d+)px/.exec(helperCss);
-    expect(Number(button?.[1])).toBeGreaterThanOrEqual(44);
+    // Buttons are at least 48 px high (AC 7), through the touch-min token.
+    const button = /\.helper-button\s*\{[^}]*min-height:\s*var\(--space-touch-min\)/.exec(helperCss);
+    expect(button).not.toBeNull();
+    const touchMin = /--space-touch-min:\s*(\d+)px/.exec(css);
+    expect(Number(touchMin?.[1])).toBeGreaterThanOrEqual(48);
   });
 
   it('never writes on GET, whatever the query', async () => {
@@ -184,7 +190,7 @@ describe('the header', () => {
     const ola = await helperByEmail('ola@example.no');
     const res = await request(ctx.app).get(`/h/${ola.linkToken}`);
     expect(res.status).toBe(200);
-    expect(res.text).toContain('Kari har invitert deg til å organisere Bryllup og Utdrikningslag');
+    expect(res.text).toContain('Du er invitert til å hjelpe til med Bryllup og Utdrikningslag');
     expect(res.text).toContain('Du har ingen oppgaver ennå.');
   });
 
@@ -198,7 +204,7 @@ describe('the header', () => {
     const [u1] = await eventTasks(utdrikning);
     await assign(kari, utdrikning, u1!.id, ola.id);
     const res = await request(ctx.app).get(`/h/${ola.linkToken}`);
-    expect(res.text).toContain('Kari har invitert deg til å organisere Bryllup og Utdrikningslag');
+    expect(res.text).toContain('Du er invitert til å hjelpe til med Bryllup og Utdrikningslag');
     expect(res.text).not.toContain('<h2>Bryllup');
     expect(res.text).toContain('<h2>Utdrikningslag');
   });
@@ -327,7 +333,7 @@ describe('answering', () => {
     expect(rows).toHaveLength(2);
     expect(rows[1]).toMatchObject({ action, statusAfter: status, body: 'Ordnet' });
     const page = (await request(ctx.app).get(`/h/${ola.linkToken}`)).text;
-    expect(page).toContain(`<p class="helper-status status-${status}">${text}</p>`);
+    expect(page).toContain(`status-${status}">${text}</span>`);
     expect(page).not.toContain(`/tasks/${task.id}"`);
   });
 
@@ -422,7 +428,8 @@ describe('organizer marks Done', () => {
 
   it('shows the button on tasks that are not Done, marks them Done and writes no message', async () => {
     const { kari, bryllup, ola, task, b2 } = await scenario();
-    const page = (await kari.get(`/events/${bryllup}`)).text;
+    // Story 5.1 (D2): the button is in the edit box, opened with ?endre.
+    const page = (await kari.get(`/events/${bryllup}?endre=${task.id}`)).text;
     expect(page).toContain(`action="/events/${bryllup}/tasks/${task.id}/done"`);
     expect(page).toContain('Marker som ferdig');
 
@@ -435,7 +442,7 @@ describe('organizer marks Done', () => {
       expect((await taskById(id)).status).toBe('done');
     }
     expect(await allMessages()).toEqual(messagesBefore);
-    expect((await kari.get(`/events/${bryllup}`)).text).not.toContain(
+    expect((await kari.get(`/events/${bryllup}?endre=${task.id}`)).text).not.toContain(
       `action="/events/${bryllup}/tasks/${task.id}/done"`,
     );
 
@@ -498,7 +505,7 @@ describe('editing an Accepted task (AD-13)', () => {
     await assign(kari, bryllup, task.id, kim.id);
     expect(await taskById(task.id)).toMatchObject({ status: 'open', helperId: kim.id, changedSinceAnswer: false });
     const page = (await request(ctx.app).get(`/h/${kim.linkToken}`)).text;
-    expect(page).toContain('<strong>Ny tittel</strong>');
+    expect(page).toContain('<p class="helper-task-title">Ny tittel</p>');
     expect(page).not.toContain('Endret etter at du svarte');
   });
 
@@ -599,5 +606,82 @@ describe('the reminder view (story 3.1, FR-15, FR-18)', () => {
     expect(post.headers.location).toBe(`/h/${ola.linkToken}?lagret=1`);
     const page = await request(ctx.app).get(post.headers.location);
     expect(page.text).toContain(SAVED);
+  });
+});
+
+describe('the Porselen helper page (story 5.1, AC 7)', () => {
+  it('greets with Kari’s name and counts unanswered tasks in the banner, singular for one', async () => {
+    const { ola, task, otherTask } = await scenario();
+    const page = async () => (await request(ctx.app).get(`/h/${ola.linkToken}`)).text;
+    let html = await page();
+    expect(html).toContain('Så fint at du er med! – Kari');
+    expect(html).toContain('<p class="answer-banner">2 oppgaver venter på svaret ditt</p>');
+    // The banner comes before the first event.
+    expect(html.indexOf('answer-banner')).toBeLessThan(html.indexOf('<h2>Bryllup'));
+
+    await helperPost(ola.linkToken, task.id, { action: 'yes' });
+    html = await page();
+    expect(html).toContain('<p class="answer-banner">1 oppgave venter på svaret ditt</p>');
+
+    await helperPost(ola.linkToken, otherTask.id, { action: 'no' });
+    html = await page();
+    expect(html).not.toContain('answer-banner');
+    expect(html).not.toContain('venter på svaret ditt');
+  });
+
+  it('frames an unanswered task with «Svar ønskes», and an Accepted one has «Du har sagt ja» without the label', async () => {
+    const { ola, task, otherTask } = await scenario();
+    await helperPost(ola.linkToken, task.id, { action: 'yes' });
+    const html = (await request(ctx.app).get(`/h/${ola.linkToken}`)).text;
+    const card = (id: number) => {
+      const start = html.lastIndexOf('<li', html.indexOf(`/tasks/${id}"`));
+      return html.slice(start, html.indexOf('</li>', start));
+    };
+    expect(card(otherTask.id)).toContain('class="helper-card helper-card-open"');
+    expect(card(otherTask.id)).toContain('Svar ønskes');
+    expect(card(task.id)).not.toContain('helper-card-open');
+    expect(card(task.id)).not.toContain('Svar ønskes');
+    expect(card(task.id)).toContain('status-accepted">Du har sagt ja</span>');
+    expect(card(task.id)).toContain('value="done">Ferdig</button>');
+    expect(card(task.id)).toContain('value="cantDo">Kan ikke gjøres</button>');
+  });
+
+  it('puts Done tasks last in each event as a small card with no buttons (D9)', async () => {
+    const { kari, bryllup, ola, task, b2, b3 } = await scenario();
+    // b2 gets the earliest deadline and is Done, so deadline order alone would put it first.
+    await ctx.db.update(tasks).set({ deadline: '2026-11-10' }).where(eq(tasks.id, b2.id));
+    await ctx.db.update(tasks).set({ deadline: '2026-12-01' }).where(eq(tasks.id, b3.id));
+    await ctx.db.update(tasks).set({ deadline: '2027-01-15' }).where(eq(tasks.id, task.id));
+    await assign(kari, bryllup, b2.id, ola.id);
+    await assign(kari, bryllup, b3.id, ola.id);
+    await helperPost(ola.linkToken, b2.id, { action: 'yes' });
+    await helperPost(ola.linkToken, b2.id, { action: 'done' });
+
+    const html = (await request(ctx.app).get(`/h/${ola.linkToken}`)).text;
+    const bryllupSection = html.slice(html.indexOf('<h2>Bryllup'), html.indexOf('<h2>Utdrikningslag'));
+    const ids = [...bryllupSection.matchAll(/action="\/h\/[^/]+\/tasks\/(\d+)"/g)].map((m) => Number(m[1]));
+    expect(ids).toEqual([b3.id, task.id]);
+
+    const doneStart = bryllupSection.indexOf('<li class="helper-card-done">');
+    expect(doneStart).toBeGreaterThan(bryllupSection.indexOf(`/tasks/${task.id}"`));
+    const done = bryllupSection.slice(doneStart, bryllupSection.indexOf('</li>', doneStart));
+    expect(done).toContain(`<p class="helper-task-title">${b2.title}</p>`);
+    expect(done).toContain('status-done">Ferdig</span>');
+    expect(done).toContain('Frist 10. november 2026');
+    expect(done).not.toContain('<form');
+    expect(done).not.toContain('<button');
+  });
+
+  it('thanks him in the reminder view and shows «Alt er gjort!» when nothing is left', async () => {
+    const { ola, task } = await scenario();
+    await helperPost(ola.linkToken, task.id, { action: 'yes' });
+    const view = (await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`)).text;
+    expect(view).toContain('Takk for at du hjelper til! – Kari');
+    expect(view).not.toContain('answer-banner');
+
+    await helperPost(ola.linkToken, task.id, { action: 'done' });
+    const empty = (await request(ctx.app).get(`/h/${ola.linkToken}?view=accepted`)).text;
+    expect(empty).toContain('Alt er gjort!');
+    expect(empty).toContain('Du har ingen oppgaver som venter på deg nå.');
   });
 });
