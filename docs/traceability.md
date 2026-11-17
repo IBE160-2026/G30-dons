@@ -82,7 +82,7 @@ Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-3-1-reminders-a
 
 ## Story → akseptansekriterier → kode → tester (Epic 5)
 
-Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-5-1-build-the-porselen-design.md`. Steg 1–3 er designleveransen med frist 12. november. Radene for steg 4–5 kommer når de er bygget.
+Kriteriene er forkortet fra `.docs/implementation-artifacts/spec-5-1-build-the-porselen-design.md`. Steg 1–3 er designleveransen. Den hadde frist 12. november, men fra 2026-11-17 har den ingen egen frist: appen har intern frist 1. desember og leveres senest 15. desember. Radene for steg 4–5 kommer når de er bygget.
 
 | Story | Akseptansekriterium | Kode | Tester | Dekning |
 |---|---|---|---|---|

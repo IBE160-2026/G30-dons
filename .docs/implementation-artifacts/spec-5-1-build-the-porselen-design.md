@@ -16,7 +16,7 @@ context:
 
 ## Intent
 
-**Problem:** The app works end to end but looks cold, impersonal and cluttered: every task row is an open form, tasks repeat between panels and the list, and helper links are raw URLs. This story is the course's design part, due 12 November 2026.
+**Problem:** The app works end to end but looks cold, impersonal and cluttered: every task row is an open form, tasks repeat between panels and the list, and helper links are raw URLs. This story is the course's design part. The app has an internal deadline of 1 December 2026 and is delivered by 15 December 2026 at the latest (changed 2026-11-17, see Spec Change Log).
 
 **Approach:** Build the UX design «Porselen» (`DESIGN.md` for the look, `EXPERIENCE.md` for behavior and copy) across every page, with no new features: the same routes, rules and data. Lock the result with a new architecture rule and an automated test, so the look cannot drift.
 
@@ -28,7 +28,7 @@ context:
 - **D5 Narrow screens (deferred finding §3).** The tab row wraps onto more lines; nothing is hidden or scrolled. At 360 px a task row has two lines: title and pill, then date and «Endre».
 - **D6 Helper link without JavaScript.** Each helper row has «Kopier lenke» and a `<details>` «Vis lenken» with the read-only field. `copy.js` copies and announces «Lenken er kopiert» in a `role="status"` line; without clipboard access it opens the details and selects the field.
 - **D7 «Gi oppgaven» without a helper** re-renders the event view (422) with «Velg en hjelper.» under that select and focus on it, instead of today's 404. It has its own test.
-- **Order and cut rule (user, 2026-11-10).** The spec stays whole, and the work follows a fixed order: (1) tokens, fonts and components; (2) every page uses them; (3) locked with the rule and the test; (4) the restructure of the event view and the helper page, with D3–D7; (5) D1 last. Steps 1–3 are the design deliverable due 12 November 2026. If time runs short, steps 4–5 move to a new story, with the reason recorded in Spec Change Log, `epics.md` and `docs/ki-logg.md`.
+- **Order and cut rule (user, 2026-11-10).** The spec stays whole, and the work follows a fixed order: (1) tokens, fonts and components; (2) every page uses them; (3) locked with the rule and the test; (4) the restructure of the event view and the helper page, with D3–D7; (5) D1 last. Steps 1–3 are the design deliverable. If time runs short before the internal deadline of 1 December 2026, steps 4–5 move to a new story, with the reason recorded in Spec Change Log, `epics.md` and `docs/ki-logg.md`.
 
 ## Boundaries & Constraints
 
@@ -82,12 +82,12 @@ context:
 
 **Execution** (fixed order; each step starts with its tests, and each step is committed before the next starts):
 
-*Steps 1–3: the design deliverable, due 12 November 2026.*
+*Steps 1–3: the design deliverable.*
 - [x] **1. Tokens, fonts and components.** `public/fonts/*` (WOFF2 and `OFL.txt`), `public/styles.css` -- `:root` tokens, `@font-face`, and the shared components from `DESIGN.md` (header, tabs, buttons, inputs, pills, flash, cards, framed card, empty state, plain page).
 - [x] **2. Every page uses them.** `src/views/partials/*`, `login.ejs`, `register.ejs`, `overview.ejs`, `event-new.ejs`, `event.ejs`, `helper.ejs`, `helper-invalid.ejs`, `test-inbox.ejs`, `404.ejs`, `error.ejs` -- the new classes and layout on the current content and structure; remove the old CSS. Update the tests in the Code Map whose markup changes.
 - [ ] **3. Locked with rule and test.** `tests/designTokens.test.ts` (AC 1), AD-18 in `ARCHITECTURE-SPINE.md`, and the keyboard test and 360 px check for the restyled pages recorded in `docs/traceability.md`.
 
-*Steps 4–5: moved to a new story if time runs short.*
+*Steps 4–5: moved to a new story if time runs short before 1 December 2026.*
 - [ ] **4. Restructure and D3–D7.** `src/domain/dates.ts`, new `src/domain/overviewText.ts` (`osloHour`, `greeting`, `weekGroups`), `src/routes/organizer/overview.ts`, `summaryText.ts`, `events.ts`, `src/routes/helper.ts`, `overview.ejs`, `event.ejs`, `helper.ejs`, `public/copy.js` -- greeting, framed event cards with D4, «Trenger deg nå», Fremdrift with week groups (D3), helper rows (D6), Meldinger preview, read-only rows with `?endre` (D2, D5), the assign error (D7), the helper page and reminder view. Tests: `tests/overviewText.test.ts`, `tests/eventView.test.ts` (with the D7 test), and the updates in the Code Map.
 - [ ] **5. D1 last.** `src/routes/organizer/events.ts`, `event-new.ejs`, `public/submit-once.js` -- the one-time token and the waiting state. Test: `tests/createOnce.test.ts`.
 
@@ -140,6 +140,8 @@ From `CLAUDE.md`. The story is done when:
 - **Verified:** `npm test` (23 files, 352 tests), `npm run typecheck` and `npm run lint` are green.
 
 ## Spec Change Log
+
+- **2026-11-17, new deadlines (user).** The design deadline of 12 November 2026 and the app deadline of 14 November 2026 are gone. The app has an internal deadline of 1 December 2026 and is delivered by 15 December 2026 at the latest (assumed; the examiner has given no date); the reflection task is due 15 December 2026. The design part no longer has its own deadline. Changed in Intent, the order and cut rule, and the step headings under Tasks & Acceptance; the scope and the order of the steps are unchanged. See `docs/ki-logg.md` (Nye frister).
 
 ## Review Triage Log
 
