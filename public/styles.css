@@ -373,7 +373,7 @@ select {
 
 /* progress bar: dark beige on the line track, always next to the number in text */
 
-.progress {
+progress {
   display: block;
   width: 100%;
   height: var(--progress-height);
@@ -383,16 +383,13 @@ select {
   overflow: hidden;
   background: var(--color-line);
 }
-.progress-large {
-  height: var(--progress-height-large);
-}
-.progress::-webkit-progress-bar {
+progress::-webkit-progress-bar {
   background: var(--color-line);
 }
-.progress::-webkit-progress-value {
+progress::-webkit-progress-value {
   background: var(--color-progress);
 }
-.progress::-moz-progress-bar {
+progress::-moz-progress-bar {
   background: var(--color-progress);
 }
 
@@ -524,6 +521,7 @@ legend {
   flex-wrap: wrap;
   align-items: center;
 }
+.event-card-date,
 .event-card-count {
   font-size: var(--type-meta-size);
 }
@@ -565,74 +563,303 @@ legend {
   background: var(--color-soft);
 }
 
-/* event view: details and helpers beside the panels and tasks */
+/* event view (story 5.1): main column and side column, with «Alle oppgaver» below the main column.
+   Below 860 px everything is one column: «Trenger deg nå» and Fremdrift, then helpers and messages,
+   then the task list. */
 
-.event-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  gap: var(--space-card-gap);
-  align-items: start;
+.event-head {
+  margin-bottom: var(--space-card-gap);
 }
-@media (max-width: 860px) {
-  .event-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.side,
-.main-col {
-  display: grid;
-  gap: var(--space-card-gap);
-  min-width: 0;
-}
-.info-box dl {
+.event-facts {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-1) var(--space-4);
   margin: 0;
 }
-.info-box dt {
+.event-facts dt {
   color: var(--color-muted);
 }
-.info-box dd {
+.event-facts dd {
   margin: 0;
 }
+.event-details {
+  margin-top: var(--space-3);
+}
+.event-details > summary,
+.link-details > summary,
+.add-helper > summary {
+  color: var(--color-link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.event-details .event-facts {
+  margin-top: var(--space-2);
+}
 
-.helper-list,
-.task-list,
-.attention-list,
-.reply-list {
+.event-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--space-side-column);
+  grid-template-areas:
+    "main side"
+    "tasks side";
+  gap: var(--space-card-gap);
+  align-items: start;
+}
+.event-main,
+.event-side,
+.event-tasks {
+  display: grid;
+  gap: var(--space-card-gap);
+  min-width: 0;
+}
+.event-main {
+  grid-area: main;
+}
+.event-side {
+  grid-area: side;
+}
+.event-tasks {
+  grid-area: tasks;
+}
+@media (max-width: 860px) {
+  .event-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "main"
+      "side"
+      "tasks";
+  }
+}
+
+/* card heading with a count on the right, and rows separated by a line */
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.card-head h2 {
+  margin: 0;
+}
+.card-meta,
+.collapsible-meta,
+.row-meta {
+  font-size: var(--type-meta-size);
+  color: var(--color-muted);
+}
+.row-meta {
+  margin: 0;
+}
+.row-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.helper,
-.task,
-.reply {
+.needs-row,
+.week-row,
+.helper-row,
+.reply,
+.task-row {
   padding: var(--space-3) 0;
   border-top: var(--border-width) solid var(--color-line);
 }
-.helper-name {
-  display: block;
+.row-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+.task-title {
+  font-size: var(--type-task-title-size);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.copy-row {
+.row-line .task-title {
+  flex: 1 1 12rem;
+}
+.row-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-2);
+}
+.row-actions button,
+.row-actions .field-error {
+  margin: 0;
+}
+.needs-message {
+  margin: var(--space-1) 0 0;
+  font-style: italic;
+  color: var(--color-muted);
+}
+.assign-form {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
-  margin-top: var(--space-1);
 }
-.copy-row .link-field {
-  flex: 1 1 auto;
-  min-width: 0;
+.assign-form select {
   margin: 0;
+}
+button.small {
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+}
+
+/* Fremdrift: progress, one pill per group, and the week groups (D3) */
+
+.fremdrift progress {
+  height: var(--progress-height-large);
+  margin: var(--space-2) 0;
+}
+.calm-line {
+  margin: 0 0 var(--space-2);
+}
+.count-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+}
+.week-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+}
+.week h3 {
+  margin-top: 0;
+}
+.day-label {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--type-meta-size);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+.week-row .task-title {
+  font-size: var(--type-body-size);
+}
+
+/* collapsible cards (D8): the summary row is the card heading, with a navy ▸ that turns down when open */
+
+.card-collapsible {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.collapsible > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--space-control-min);
+  list-style: none;
+  cursor: pointer;
+}
+.collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+.collapsible > summary::after {
+  content: "▸" / "";
+  margin-left: auto;
+  color: var(--color-navy);
+}
+.collapsible[open] > summary::after {
+  content: "▾" / "";
+}
+.collapsible-title {
+  font-family: var(--font-serif);
+  font-size: var(--type-headline-size);
+  color: var(--color-navy);
+}
+
+/* helper rows (D6): avatar, name and summary, «Kopier lenke», and the link behind «Vis lenken» */
+
+.helper-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+}
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: var(--space-control-min);
+  height: var(--space-control-min);
+  border-radius: var(--radius-full);
+  font-family: var(--font-serif);
+  color: var(--color-navy);
+  background: var(--color-soft);
+}
+.helper-info {
+  display: grid;
+  min-width: 0;
+}
+.helper-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.link-details {
+  grid-column: 1 / -1;
+  font-size: var(--type-meta-size);
+}
+.link-field {
+  margin: var(--space-1) 0 0;
   font-size: var(--type-meta-size);
   color: var(--color-muted);
 }
-.helper-form button {
+.copy-status {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-meta-size);
+  color: var(--color-on-track);
+}
+.copy-status:empty {
+  display: none;
+}
+.add-helper {
+  margin-top: var(--space-3);
+}
+.stacked-form button {
   margin-top: var(--space-3);
 }
 
+/* replies */
+
+.reply-head,
+.reply-body {
+  margin: 0 0 var(--space-1);
+}
+.reply-action {
+  color: var(--color-muted);
+}
+
+/* «Alle oppgaver»: read-only rows, done rows on one quiet line (D9), and the edit box (D2) */
+
+.event-tasks .label-caps {
+  margin: var(--space-4) 0 var(--space-1);
+}
+.task-row-done .task-title {
+  font-size: var(--type-meta-size);
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.edit-box {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-soft);
+  border-radius: var(--radius-md);
+}
+.edit-box .stacked-form + .stacked-form {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-width) solid var(--color-line);
+}
 .task-form {
   display: flex;
   gap: var(--space-2);
@@ -648,100 +875,6 @@ legend {
   flex: 0 0 11rem;
   width: auto;
   margin: 0;
-}
-.task .inline {
-  margin-left: var(--space-1);
-}
-.task-meta {
-  margin: var(--space-1) 0 0;
-  font-size: var(--type-meta-size);
-}
-.assign-form {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  margin-top: var(--space-2);
-}
-.assign-form select {
-  margin: 0;
-}
-button.small {
-  margin: 0;
-  padding: var(--space-1) var(--space-4);
-}
-
-/* summary panels */
-
-.panels {
-  padding-top: var(--space-1);
-  padding-bottom: var(--space-1);
-}
-
-.panel {
-  border-top: var(--border-width) solid var(--color-line);
-  padding: var(--space-3) 0;
-}
-.panel:first-child {
-  border-top: 0;
-}
-.panel > summary,
-.panel-link {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-3);
-  cursor: pointer;
-}
-.panel-link {
-  color: var(--color-text);
-  text-decoration: none;
-}
-.panel-title {
-  font-family: var(--font-serif);
-  font-size: var(--type-headline-size);
-  color: var(--color-navy);
-  min-width: 6.5rem;
-}
-.panel-line {
-  color: var(--color-muted);
-}
-.panel-action {
-  margin-left: auto;
-  color: var(--color-link);
-  text-decoration: underline;
-}
-.panel progress {
-  flex: 1 1 8rem;
-  max-width: 14rem;
-  height: var(--progress-height-large);
-  appearance: none;
-  border: 0;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  background: var(--color-line);
-}
-.panel progress::-webkit-progress-bar {
-  background: var(--color-line);
-}
-.panel progress::-webkit-progress-value {
-  background: var(--color-progress);
-}
-.panel progress::-moz-progress-bar {
-  background: var(--color-progress);
-}
-.attention-list li {
-  padding: var(--space-1) 0;
-}
-.reply-head,
-.reply-body,
-.reply-time {
-  margin: 0 0 var(--space-1);
-}
-.reply-action {
-  font-weight: 600;
-}
-.reply-time {
-  font-size: var(--type-meta-size);
 }
 
 /* helper page: mobile first, works from 360 px wide (no fixed widths above 360 px) */

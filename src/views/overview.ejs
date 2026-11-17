@@ -27,7 +27,7 @@
               <span class="event-card-count muted">Ingen oppgaver ennå</span>
             <% } else { %>
               <span class="event-card-count"><%= event.done %> av <%= event.total %> ferdig</span>
-              <progress value="<%= event.done %>" max="<%= event.total %>" class="progress" aria-hidden="true"><%= event.done %> av <%= event.total %></progress>
+              <progress value="<%= event.done %>" max="<%= event.total %>" aria-hidden="true"><%= event.done %> av <%= event.total %></progress>
             <% } %>
           </a>
         </li>

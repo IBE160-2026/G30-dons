@@ -17,13 +17,6 @@ export function overviewStatusText(summary: EventSummary<StatusTask>): string {
   return attentionText(summary);
 }
 
-/** The To do panel line: "N haster · M trenger hjelper", or "Ingenting haster". */
-export function todoText(summary: EventSummary<StatusTask>): string {
-  if (summary.past) return 'Arrangementet er over';
-  if (summary.onTrack) return 'Ingenting haster';
-  return `${summary.urgent.length} haster · ${summary.needsHelper.length} trenger hjelper`;
-}
-
 const days = (n: number) => (n === 1 ? '1 dag' : `${n} dager`);
 
 /** "Om N dager", "I dag" or "Var for N dager siden". */

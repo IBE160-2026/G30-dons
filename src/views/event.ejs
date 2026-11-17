@@ -2,194 +2,255 @@
 <%- include('partials/event-tabs') %>
 <%
   const blank = (v) => (v === null || v === undefined || v === '' ? '–' : v);
-  const add = typeof locals.add !== 'undefined' ? locals.add : { values: {}, errors: {} };
-  const edit = typeof locals.edit !== 'undefined' ? locals.edit : undefined;
-  const helperForm = typeof locals.helperForm !== 'undefined' ? locals.helperForm : { values: {}, errors: {} };
+  const errorAttrs = (id, error, focus) =>
+    error ? ` aria-describedby="${id}-error"${focus ? ' autofocus' : ''}` : '';
 %>
-<div class="event-layout">
-  <div class="side">
-  <section class="card card-framed info-box">
-    <h1><%= event.name %></h1>
-    <dl>
-      <dt>Når</dt><dd><%= formatDate(event.eventDate) %></dd>
+<div class="event-head">
+  <h1><%= event.name %></h1>
+  <dl class="event-facts">
+    <dt>Når</dt><dd><%= formatDate(event.eventDate) %> · <%= daysText %></dd>
+    <dt>Hvor</dt><dd><%= blank(event.location) %></dd>
+    <dt>Antall gjester</dt><dd><%= blank(event.guestCount) %></dd>
+  </dl>
+  <details class="event-details">
+    <summary>Vis alle detaljer</summary>
+    <dl class="event-facts">
       <dt>Hva</dt><dd><%= blank(event.occasion) %></dd>
-      <dt>Hvor</dt><dd><%= blank(event.location) %></dd>
-      <dt>Antall gjester</dt><dd><%= blank(event.guestCount) %></dd>
       <dt>Hva må gjøres</dt><dd class="pre"><%= blank(event.todo) %></dd>
       <dt>Annen informasjon</dt><dd class="pre"><%= blank(event.otherInfo) %></dd>
     </dl>
-  </section>
+  </details>
+</div>
 
-  <section class="card">
-    <h2>Hjelpere (<%= helpers.length %> av <%= maxHelpers %>)</h2>
-    <% if (helpers.length === 0) { %>
-      <p class="muted">Ingen hjelpere ennå.</p>
-    <% } %>
-    <ul class="helper-list">
-      <% for (const helper of helpers) { %>
-        <li class="helper">
-          <span class="helper-name"><%= helper.name %></span>
-          <div class="copy-row">
-            <label class="visually-hidden" for="link-<%= helper.id %>">Lenke til <%= helper.name %></label>
-            <input id="link-<%= helper.id %>" type="text" class="link-field" value="<%= helper.link %>" readonly>
-            <button type="button" class="small" data-copy="link-<%= helper.id %>" aria-live="polite">Kopier lenke</button>
-          </div>
-        </li>
-      <% } %>
-    </ul>
-
-    <% if (helpers.length < maxHelpers || Object.keys(helperForm.errors).length > 0) { %>
-      <h3>Legg til hjelper</h3>
-      <form method="post" action="<%= paths.helpers(event.id) %>" class="helper-form" novalidate>
-        <label for="helper-email">E-post</label>
-        <input id="helper-email" name="email" type="email" maxlength="254" value="<%= helperForm.values.email || '' %>" required>
-        <% if (helperForm.errors.email) { %><p class="field-error"><%= helperForm.errors.email %></p><% } %>
-        <label for="helper-name">Navn (valgfritt)</label>
-        <input id="helper-name" name="name" type="text" maxlength="100" value="<%= helperForm.values.name || '' %>">
-        <% if (helperForm.errors.name) { %><p class="field-error"><%= helperForm.errors.name %></p><% } %>
-        <button type="submit" class="small">Legg til hjelper</button>
-      </form>
-    <% } %>
-  </section>
-  </div>
-
-  <div class="main-col">
-  <section class="card card-framed panels" aria-label="Status">
-    <details class="panel panel-done">
-      <summary>
-        <span class="panel-title">Ferdig</span>
-        <span class="panel-line"><%= panels.done %> av <%= panels.total %> ferdig</span>
-        <progress value="<%= panels.done %>" max="<%= panels.total || 1 %>" aria-label="<%= panels.done %> av <%= panels.total %> oppgaver ferdig"><%= panels.done %> av <%= panels.total %></progress>
-      </summary>
-      <p class="muted">Oppgaver merket som ferdige av hjelpere eller deg.</p>
-    </details>
-
-    <details class="panel panel-todo"<%= panels.todoOpen ? ' open' : '' %>>
-      <summary>
-        <span class="panel-title">Å gjøre</span>
-        <span class="panel-line"><%= panels.todoText %></span>
-      </summary>
-      <% if (!panels.todoOpen) { %>
-        <p class="muted">Ingen oppgaver trenger oppmerksomhet nå.</p>
-      <% } %>
-      <% if (panels.urgent.length > 0) { %>
-        <h3 class="label-caps">Haster (<%= panels.urgent.length %>)</h3>
-        <ul class="attention-list">
-          <% for (const t of panels.urgent) { %>
-            <li><strong><%= t.title %></strong> <span class="muted">· Frist <%= formatDate(t.deadline) %><% if (t.helperName) { %> · <%= t.helperName %><% } %></span></li>
-          <% } %>
-        </ul>
-      <% } %>
-      <% if (panels.needsHelper.length > 0) { %>
-        <h3 class="label-caps">Trenger hjelper (<%= panels.needsHelper.length %>)</h3>
-        <ul class="attention-list">
-          <% for (const t of panels.needsHelper) { %>
-            <li><strong><%= t.title %></strong> <span class="muted">· Frist <%= formatDate(t.deadline) %> · <%= t.statusLabel %><% if (t.helperName) { %> · <%= t.helperName %><% } %></span></li>
-          <% } %>
-        </ul>
-      <% } %>
-    </details>
-
-    <details class="panel panel-timeline">
-      <summary>
-        <span class="panel-title">Tidslinje</span>
-        <span class="panel-line"><%= panels.timelineText %> · <% if (panels.nextDeadline) { %>Neste frist: <%= formatDate(panels.nextDeadline) %><% } else { %>Ingen flere frister<% } %></span>
-      </summary>
-      <p class="muted">Arrangementet er <%= formatDate(event.eventDate) %>.</p>
-    </details>
-
-    <% if (panels.replies) { %>
-      <details class="panel panel-messages" open>
-        <summary>
-          <span class="panel-title">Meldinger</span>
-          <span class="panel-line"><%= panels.newRepliesText %></span>
-        </summary>
-        <% if (panels.replies.length === 0) { %>
-          <p class="muted">Ingen svar ennå.</p>
-        <% } %>
-        <ul class="reply-list">
-          <% for (const r of panels.replies) { %>
-            <li class="reply">
-              <p class="reply-head">
-                <% if (r.isNew) { %><span class="badge">Ny</span><% } %>
-                <strong><%= r.helperName %></strong> · <%= r.taskTitle %> · <span class="reply-action"><%= r.actionLabel %></span>
+<div class="event-layout">
+  <div class="event-main">
+    <% if (needsYou.length > 0) { %>
+      <section class="card card-action" aria-labelledby="needs-you-title">
+        <div class="card-head">
+          <h2 id="needs-you-title">Trenger deg nå</h2>
+          <span class="card-meta"><%= attentionText %></span>
+        </div>
+        <ul class="row-list">
+          <% for (const t of needsYou) { %>
+            <li class="needs-row">
+              <p class="row-line">
+                <span class="task-title"><%= t.title %></span>
+                <span class="pill <%= t.pill.className %>"><%= t.pill.text %></span>
+                <span class="row-meta">Frist <%= formatDate(t.deadline) %></span>
               </p>
-              <% if (r.body) { %><p class="reply-body pre"><%= r.body %></p><% } %>
-              <p class="reply-time muted"><%= r.time %></p>
+              <% if (t.message) { %><p class="needs-message">«<%= t.message %>»</p><% } %>
+              <div class="row-actions">
+                <% if (t.delegate) { %>
+                  <% if (helperOptions.length === 0) { %>
+                    <p class="row-meta">Legg til en hjelper først</p>
+                  <% } else { %>
+                    <form method="post" action="<%= paths.assignTask(event.id, t.id) %>" class="assign-form">
+                      <input type="hidden" name="fra" value="trenger">
+                      <label class="visually-hidden" for="needs-assign-<%= t.id %>">Hjelper for <%= t.title %></label>
+                      <select id="needs-assign-<%= t.id %>" name="helperId"<%- errorAttrs(`needs-assign-${t.id}`, t.error, true) %>>
+                        <option value="" selected disabled>Velg hjelper</option>
+                        <% for (const h of helperOptions) { %><option value="<%= h.id %>"><%= h.name %></option><% } %>
+                      </select>
+                      <button type="submit" class="small">Gi oppgaven</button>
+                    </form>
+                    <% if (t.error) { %><p class="field-error" id="needs-assign-<%= t.id %>-error"><%= t.error %></p><% } %>
+                  <% } %>
+                <% } %>
+                <form method="post" action="<%= paths.markDone(event.id, t.id) %>" class="inline">
+                  <button type="submit" class="<%= t.delegate ? 'button-quiet' : 'button-secondary small' %>">Marker som ferdig</button>
+                </form>
+              </div>
             </li>
           <% } %>
         </ul>
-        <p><a href="<%= paths.event(event.id) %>">Skjul svar</a></p>
-      </details>
-    <% } else { %>
-      <div class="panel panel-messages">
-        <a class="panel-link" href="<%= paths.eventMessages(event.id) %>">
-          <span class="panel-title">Meldinger</span>
-          <span class="panel-line"><%= panels.newRepliesText %></span>
-          <span class="panel-action"><%= panels.newReplies > 0 ? `Vis svar (${panels.newReplies} nye)` : 'Vis svar' %></span>
-        </a>
+      </section>
+    <% } %>
+
+    <section class="card card-framed fremdrift" aria-labelledby="progress-title">
+      <div class="card-head">
+        <h2 id="progress-title">Fremdrift</h2>
+        <span class="card-meta"><%= progress.done %> av <%= progress.total %> ferdig</span>
       </div>
-    <% } %>
-  </section>
-
-  <section class="card">
-    <h2>Oppgaver (<%= tasks.length %>)</h2>
-    <% if (tasks.length === 0) { %>
-      <p class="muted">Ingen oppgaver ennå.</p>
-    <% } %>
-    <ul class="task-list">
-      <% for (const task of tasks) {
-           const editing = edit && edit.taskId === task.id;
-           const v = editing ? edit.values : { title: task.title, deadline: task.deadline };
-           const errs = editing ? edit.errors : {}; %>
-        <li class="task">
-          <form method="post" action="<%= paths.task(event.id, task.id) %>" class="task-form" novalidate>
-            <label class="visually-hidden" for="title-<%= task.id %>">Oppgave</label>
-            <input id="title-<%= task.id %>" name="title" type="text" maxlength="120" value="<%= v.title %>" required>
-            <label class="visually-hidden" for="deadline-<%= task.id %>">Frist</label>
-            <input id="deadline-<%= task.id %>" name="deadline" type="date" value="<%= v.deadline %>" required>
-            <button type="submit" class="small">Lagre</button>
-          </form>
-          <form method="post" action="<%= paths.deleteTask(event.id, task.id) %>" class="inline">
-            <button type="submit" class="small button-danger">Slett</button>
-          </form>
-          <% if (task.status !== 'done') { %>
-            <form method="post" action="<%= paths.markDone(event.id, task.id) %>" class="inline">
-              <button type="submit" class="small button-secondary">Marker som ferdig</button>
-            </form>
-          <% } %>
-          <p class="task-meta muted">
-            Frist <%= formatDate(task.deadline) %> · <span class="status status-<%= task.status %>"><%= statusLabels[task.status] %></span><% if (task.helperId !== null && helperNames[task.helperId]) { %> · <%= helperNames[task.helperId] %><% } %>
-          </p>
-          <% if (helpers.length > 0) { %>
-            <form method="post" action="<%= paths.assignTask(event.id, task.id) %>" class="assign-form">
-              <label class="visually-hidden" for="assign-<%= task.id %>">Hjelper</label>
-              <select id="assign-<%= task.id %>" name="helperId" required>
-                <% if (task.helperId === null) { %><option value="" selected disabled>Velg hjelper</option><% } %>
-                <% for (const helper of helpers) { %>
-                  <option value="<%= helper.id %>"<%= task.helperId === helper.id ? ' selected' : '' %>><%= helper.name %></option>
-                <% } %>
-              </select>
-              <button type="submit" class="small button-secondary">Tildel</button>
-            </form>
-          <% } %>
-          <% if (errs.title) { %><p class="field-error"><%= errs.title %></p><% } %>
-          <% if (errs.deadline) { %><p class="field-error"><%= errs.deadline %></p><% } %>
-        </li>
+      <% if (needsYou.length === 0) { %><p class="calm-line">Ingenting trenger deg akkurat nå.</p><% } %>
+      <progress value="<%= progress.done %>" max="<%= progress.total || 1 %>" aria-label="<%= progress.done %> av <%= progress.total %> oppgaver ferdig"><%= progress.done %> av <%= progress.total %></progress>
+      <% if (progress.groupCounts.length > 0) { %>
+        <ul class="count-pills">
+          <% for (const g of progress.groupCounts) { %><li class="pill <%= g.className %>"><%= g.count %> <%= g.label %></li><% } %>
+        </ul>
       <% } %>
-    </ul>
+      <div class="week-groups">
+        <% for (const [label, week] of [['Denne uka', progress.thisWeek], ['Neste uke', progress.nextWeek]]) { %>
+          <div class="week">
+            <h3 class="label-caps"><%= label %></h3>
+            <% if (week.length === 0) { %>
+              <p class="row-meta">Ingen frister</p>
+            <% } %>
+            <% for (const day of week) { %>
+              <p class="day-label"><%= day.label %></p>
+              <ul class="row-list">
+                <% for (const t of day.tasks) { %>
+                  <li class="week-row"><span class="task-title"><%= t.title %></span> <span class="pill <%= t.pill.className %>"><%= t.pill.text %></span></li>
+                <% } %>
+              </ul>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </div>
 
-    <h3>Ny oppgave</h3>
-    <form method="post" action="<%= paths.tasks(event.id) %>" class="task-form" novalidate>
-      <label class="visually-hidden" for="new-title">Oppgave</label>
-      <input id="new-title" name="title" type="text" maxlength="120" placeholder="Hva skal gjøres?" value="<%= add.values.title || '' %>" required>
-      <label class="visually-hidden" for="new-deadline">Frist</label>
-      <input id="new-deadline" name="deadline" type="date" min="<%= today %>" value="<%= add.values.deadline || '' %>" required>
-      <button type="submit" class="small">Legg til</button>
-    </form>
-    <% if (add.errors.title) { %><p class="field-error"><%= add.errors.title %></p><% } %>
-    <% if (add.errors.deadline) { %><p class="field-error"><%= add.errors.deadline %></p><% } %>
-  </section>
+  <div class="event-side">
+    <section class="card card-collapsible" aria-labelledby="helpers-title">
+      <details class="collapsible" id="helpers-card"<%= helpersOpen ? ' open' : '' %>>
+        <summary><span class="collapsible-title" id="helpers-title">Hjelpere</span> <span class="collapsible-meta"><%= helpers.length %> av <%= maxHelpers %></span></summary>
+        <% if (helpers.length === 0) { %>
+          <p class="row-meta">Ingen hjelpere ennå.</p>
+        <% } %>
+        <ul class="row-list">
+          <% for (const h of helpers) { %>
+            <li class="helper-row">
+              <span class="avatar" aria-hidden="true"><%= h.initial %></span>
+              <span class="helper-info">
+                <span class="helper-name"><%= h.name %></span>
+                <span class="row-meta"><%= h.summary %></span>
+              </span>
+              <button type="button" class="button-secondary small" data-copy="link-<%= h.id %>">Kopier lenke</button>
+              <details class="link-details">
+                <summary>Vis lenken</summary>
+                <label class="visually-hidden" for="link-<%= h.id %>">Lenke til <%= h.name %></label>
+                <input id="link-<%= h.id %>" type="text" class="link-field" value="<%= h.link %>" readonly>
+              </details>
+            </li>
+          <% } %>
+        </ul>
+        <p class="copy-status" id="copy-status" role="status"></p>
+        <% if (helpers.length < maxHelpers || Object.keys(helperForm.errors).length > 0) { %>
+          <details class="add-helper"<%= helpers.length === 0 || Object.keys(helperForm.errors).length > 0 ? ' open' : '' %>>
+            <summary>+ Legg til hjelper</summary>
+            <form method="post" action="<%= paths.helpers(event.id) %>" class="stacked-form" novalidate>
+              <label for="helper-email">E-post</label>
+              <input id="helper-email" name="email" type="email" maxlength="254" value="<%= helperForm.values.email || '' %>" required<%- errorAttrs('helper-email', helperForm.errors.email, true) %>>
+              <% if (helperForm.errors.email) { %><p class="field-error" id="helper-email-error"><%= helperForm.errors.email %></p><% } %>
+              <label for="helper-name">Navn (valgfritt)</label>
+              <input id="helper-name" name="name" type="text" maxlength="100" value="<%= helperForm.values.name || '' %>"<%- errorAttrs('helper-name', helperForm.errors.name, !helperForm.errors.email) %>>
+              <% if (helperForm.errors.name) { %><p class="field-error" id="helper-name-error"><%= helperForm.errors.name %></p><% } %>
+              <button type="submit" class="small">Legg til hjelper</button>
+            </form>
+          </details>
+        <% } %>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="messages-title">
+      <div class="card-head">
+        <h2 id="messages-title">Meldinger</h2>
+        <span class="card-meta"><%= messages.newRepliesText %></span>
+      </div>
+      <% const listed = messages.all ?? messages.preview; %>
+      <% if (listed.length === 0) { %>
+        <p class="empty-state"><span class="empty-state-title"><%= messages.all ? 'Ingen svar ennå' : 'Ingen nye svar ennå' %></span>Svar fra hjelperne dukker opp her.</p>
+      <% } %>
+      <ul class="row-list">
+        <% for (const r of listed) { %>
+          <li class="reply">
+            <p class="reply-head">
+              <% if (r.isNew) { %><span class="badge">Ny</span><% } %>
+              <strong><%= r.helperName %></strong> · <%= r.taskTitle %> · <span class="reply-action"><%= r.actionLabel %></span>
+            </p>
+            <% if (r.body) { %><p class="reply-body pre"><%= r.body %></p><% } %>
+            <p class="row-meta"><%= r.time %></p>
+          </li>
+        <% } %>
+      </ul>
+      <% if (messages.all) { %>
+        <a href="<%= paths.event(event.id) %>">Skjul svar</a>
+      <% } else { %>
+        <a href="<%= paths.eventMessages(event.id) %>">Vis alle svar</a>
+      <% } %>
+    </section>
+  </div>
+
+  <div class="event-tasks">
+    <section class="card card-collapsible" aria-labelledby="tasks-title">
+      <details class="collapsible" id="tasks-card"<%= tasksOpen ? ' open' : '' %>>
+        <summary><span class="collapsible-title" id="tasks-title">Alle oppgaver</span> <span class="collapsible-meta"><%= taskCount %> · <%= doneCount %> ferdig</span></summary>
+        <% if (taskGroups.length === 0) { %>
+          <p class="empty-state"><span class="empty-state-title">Ingen oppgaver her ennå</span>Legg til den første oppgaven.</p>
+        <% } %>
+        <% for (const group of taskGroups) { %>
+          <h3 class="label-caps"><%= group.label %></h3>
+          <ul class="row-list">
+            <% for (const t of group.tasks) {
+                 const box = editBox && editBox.taskId === t.id ? editBox : null; %>
+              <li class="task-row<%= t.done ? ' task-row-done' : '' %>" id="task-<%= t.id %>">
+                <p class="row-line">
+                  <span class="task-title"><%= t.title %></span>
+                  <span class="pill <%= t.pill.className %>"><%= t.pill.text %></span>
+                  <span class="row-meta">Frist <%= formatDate(t.deadline) %></span>
+                  <% if (box) { %>
+                    <a class="button-quiet" href="<%= paths.event(event.id) %>#task-<%= t.id %>">Lukk</a>
+                  <% } else { %>
+                    <a class="button-quiet" href="<%= paths.event(event.id) %>?endre=<%= t.id %>#task-<%= t.id %>">Endre</a>
+                  <% } %>
+                </p>
+                <% if (box) { %>
+                  <div class="edit-box" id="edit-<%= t.id %>">
+                    <form method="post" action="<%= paths.task(event.id, t.id) %>" class="stacked-form" novalidate>
+                      <label for="title-<%= t.id %>">Oppgave</label>
+                      <input id="title-<%= t.id %>" name="title" type="text" maxlength="120" value="<%= box.values.title %>" required<%- errorAttrs(`title-${t.id}`, box.errors.title, true) %>>
+                      <% if (box.errors.title) { %><p class="field-error" id="title-<%= t.id %>-error"><%= box.errors.title %></p><% } %>
+                      <label for="deadline-<%= t.id %>">Frist</label>
+                      <input id="deadline-<%= t.id %>" name="deadline" type="date" value="<%= box.values.deadline %>" required<%- errorAttrs(`deadline-${t.id}`, box.errors.deadline, !box.errors.title) %>>
+                      <% if (box.errors.deadline) { %><p class="field-error" id="deadline-<%= t.id %>-error"><%= box.errors.deadline %></p><% } %>
+                      <button type="submit" class="small">Lagre</button>
+                    </form>
+                    <form method="post" action="<%= paths.assignTask(event.id, t.id) %>" class="stacked-form">
+                      <label for="assign-<%= t.id %>">Hjelper</label>
+                      <% if (helperOptions.length === 0) { %>
+                        <p class="row-meta">Legg til en hjelper først</p>
+                      <% } else { %>
+                        <select id="assign-<%= t.id %>" name="helperId"<%- errorAttrs(`assign-${t.id}`, box.errors.helperId, true) %>>
+                          <% if (t.helperId === null) { %><option value="" selected disabled>Velg hjelper</option><% } %>
+                          <% for (const h of helperOptions) { %>
+                            <option value="<%= h.id %>"<%= t.helperId === h.id ? ' selected' : '' %>><%= h.name %></option>
+                          <% } %>
+                        </select>
+                        <% if (box.errors.helperId) { %><p class="field-error" id="assign-<%= t.id %>-error"><%= box.errors.helperId %></p><% } %>
+                        <button type="submit" class="button-secondary small">Gi oppgaven</button>
+                      <% } %>
+                    </form>
+                    <div class="row-actions">
+                      <% if (!t.done) { %>
+                        <form method="post" action="<%= paths.markDone(event.id, t.id) %>" class="inline">
+                          <button type="submit" class="button-secondary small">Marker som ferdig</button>
+                        </form>
+                      <% } %>
+                      <form method="post" action="<%= paths.deleteTask(event.id, t.id) %>" class="inline">
+                        <button type="submit" class="button-danger small">Slett oppgaven</button>
+                      </form>
+                      <a href="<%= paths.event(event.id) %>#task-<%= t.id %>">Avbryt</a>
+                    </div>
+                  </div>
+                <% } %>
+              </li>
+            <% } %>
+          </ul>
+        <% } %>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="new-task-title">
+      <h2 id="new-task-title">Ny oppgave</h2>
+      <form method="post" action="<%= paths.tasks(event.id) %>" class="task-form" novalidate>
+        <label class="visually-hidden" for="new-title">Oppgave</label>
+        <input id="new-title" name="title" type="text" maxlength="120" placeholder="Hva skal gjøres?" value="<%= add.values.title || '' %>" required<%- errorAttrs('new-title', add.errors.title, true) %>>
+        <label class="visually-hidden" for="new-deadline">Frist</label>
+        <input id="new-deadline" name="deadline" type="date" min="<%= today %>" value="<%= add.values.deadline || '' %>" required<%- errorAttrs('new-deadline', add.errors.deadline, !add.errors.title) %>>
+        <button type="submit" class="small">Legg til</button>
+      </form>
+      <% if (add.errors.title) { %><p class="field-error" id="new-title-error"><%= add.errors.title %></p><% } %>
+      <% if (add.errors.deadline) { %><p class="field-error" id="new-deadline-error"><%= add.errors.deadline %></p><% } %>
+    </section>
   </div>
 </div>
 <script src="/copy.js" defer></script>

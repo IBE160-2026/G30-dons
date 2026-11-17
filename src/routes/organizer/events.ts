@@ -4,8 +4,9 @@ import type { Clock } from '../../clock.ts';
 import type { Config } from '../../config.ts';
 import type { Db } from '../../db/client.ts';
 import type { MessageAction, Task, TaskStatus } from '../../db/schema.ts';
-import { formatDateTimeNb } from '../../domain/dates.ts';
+import { formatDateTimeNb, formatDayNb } from '../../domain/dates.ts';
 import { DomainError, type ErrorCode, errorText } from '../../domain/errors.ts';
+import { byDay, weekGroups } from '../../domain/overviewText.ts';
 import { MAX_TITLE_LENGTH } from '../../domain/plan.ts';
 import { createEvent, getEvent, listEvents } from '../../services/events.ts';
 import {
@@ -15,26 +16,50 @@ import {
   listForEvent as listHelpersForEvent,
   MAX_HELPERS_PER_EVENT,
 } from '../../services/helpers.ts';
-import { listAndMarkSeen, type Reply } from '../../services/messages.ts';
+import { listAndMarkSeen, type Reply, recentReplies } from '../../services/messages.ts';
 import { loadEventSummary } from '../../services/summaries.ts';
 import { addTask, apply, deleteTask, getTask, listForEvent, updateTask } from '../../services/tasks.ts';
 import type { Templates } from '../../templates/index.ts';
 import { organizerOf, requireLogin, setFlash } from '../middleware.ts';
 import { absoluteUrl, paths } from '../paths.ts';
-import { daysToEventText, newRepliesText, todoText } from './summaryText.ts';
+import { attentionText, daysToEventText, newRepliesText } from './summaryText.ts';
 
 // FR-3, FR-4, FR-7: create events from templates and edit their tasks.
 // FR-8 to FR-11: add helpers, assign tasks and show each helper's link.
-// FR-20: the four panels (Done, To do, Timeline, Messages); AD-15: ?panel=messages marks the listed replies seen.
+// FR-20 (story 5.1): «Trenger deg nå», Fremdrift with the week groups (D3), Hjelpere, Meldinger and
+// «Alle oppgaver» with one edit box at a time (D2, D8, D9). AD-15: only ?panel=messages marks replies seen.
 
+/** The status words on organizer pages (EXPERIENCE.md → Status vocabulary), shown with the helper's name. */
 const STATUS_LABELS = {
-  unassigned: 'Ikke tildelt',
+  unassigned: 'Ingen hjelper',
   open: 'Venter på svar',
-  accepted: 'Akseptert',
+  accepted: 'I gang',
   declined: 'Avslått',
   done: 'Ferdig',
   cant_do: 'Kan ikke gjøres',
 } as const satisfies Record<TaskStatus, string>;
+
+const PILL_CLASSES = {
+  unassigned: 'pill-urgent',
+  open: 'pill-waiting',
+  accepted: 'pill-in-progress',
+  declined: 'pill-urgent',
+  done: 'pill-on-track',
+  cant_do: 'pill-urgent',
+} as const satisfies Record<TaskStatus, string>;
+
+/** The groups of «Alle oppgaver», in order; «Ferdig» comes last (D9). */
+const TASK_GROUPS = [
+  { key: 'needsHelper', label: 'Trenger hjelper', pill: 'pill-urgent' },
+  { key: 'waiting', label: 'Venter på svar', pill: 'pill-waiting' },
+  { key: 'inProgress', label: 'I gang', pill: 'pill-in-progress' },
+  { key: 'done', label: 'Ferdig', pill: 'pill-on-track' },
+] as const;
+type TaskGroup = (typeof TASK_GROUPS)[number]['key'];
+
+const CHOOSE_HELPER = 'Velg en hjelper.';
+
+const countText = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 const ACTION_LABELS = {
   yes: 'Sa ja',
@@ -131,6 +156,10 @@ interface TaskFormState {
   add?: { values: Record<string, string>; errors: Errors };
   edit?: { taskId: number; values: Record<string, string>; errors: Errors };
   helperForm?: { values: Record<string, string>; errors: Errors };
+  /** D7: «Gi oppgaven» without a helper, from the edit box or from a «Trenger deg nå» row. */
+  assignError?: { taskId: number; from: 'edit' | 'needs' };
+  /** D2: the task named by ?endre, already checked to be a positive id. */
+  editTaskId?: number;
   /** The replies listed by GET /events/:id?panel=messages (already marked seen). */
   replies?: Reply[];
 }
@@ -145,59 +174,131 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
     const organizer = organizerOf(res);
     const event = await getEvent(db, organizer.id, eventId);
     const today = clock.today();
-    const [allEvents, eventTasks, eventHelpers, { summary, newReplies }] = await Promise.all([
+    const [allEvents, eventTasks, eventHelpers, { summary, newReplies }, recent] = await Promise.all([
       listEvents(db, organizer.id),
       listForEvent(db, organizer.id, eventId),
       listHelpersForEvent(db, organizer.id, eventId),
       loadEventSummary(db, organizer.id, eventId, today),
+      recentReplies(db, organizer.id, eventId),
     ]);
-    const helpers = eventHelpers.map((h) => ({
-      id: h.id,
-      name: displayName(h),
-      link: absoluteUrl(config.appBaseUrl, paths.helperPage(h.linkToken)),
-    }));
-    const helperNames: Record<number, string> = Object.fromEntries(helpers.map((h) => [h.id, h.name]));
-    const listed = (t: Task) => ({
+    const { replies, assignError, add, helperForm } = state;
+    const helperNames = new Map(eventHelpers.map((h) => [h.id, displayName(h)]));
+    const urgentIds = new Set(summary.urgent.map((t) => t.id));
+    const needsHelperIds = new Set(summary.needsHelper.map((t) => t.id));
+    const needsYouIds = new Set([...needsHelperIds, ...urgentIds]);
+
+    const pill = (t: Task) => {
+      const helperName = t.helperId !== null ? helperNames.get(t.helperId) : undefined;
+      const label = urgentIds.has(t.id) ? 'Haster' : STATUS_LABELS[t.status];
+      return {
+        text: helperName ? `${label} · ${helperName}` : label,
+        className: urgentIds.has(t.id) ? 'pill-urgent' : PILL_CLASSES[t.status],
+      };
+    };
+    const groupOf = (t: Task): TaskGroup => {
+      if (t.status === 'done') return 'done';
+      if (t.status === 'accepted') return 'inProgress';
+      if (t.status === 'open' && !needsHelperIds.has(t.id)) return 'waiting';
+      return 'needsHelper';
+    };
+
+    // D2: the edit box is open for ?endre of a task in this event, a validation error, or D7 from the box.
+    const needsAssignError = assignError?.from === 'needs' && needsYouIds.has(assignError.taskId);
+    const openTaskId =
+      state.edit?.taskId ?? (assignError && !needsAssignError ? assignError.taskId : undefined) ?? state.editTaskId;
+    const editTask = eventTasks.find((t) => t.id === openTaskId);
+    const editBox = editTask && {
+      taskId: editTask.id,
+      values: state.edit?.values ?? { title: editTask.title, deadline: editTask.deadline },
+      errors: {
+        ...state.edit?.errors,
+        ...(assignError && !needsAssignError ? { helperId: CHOOSE_HELPER } : {}),
+      } as Errors,
+    };
+
+    const row = (t: Task) => ({
       id: t.id,
       title: t.title,
       deadline: t.deadline,
-      statusLabel: STATUS_LABELS[t.status],
-      helperName: t.helperId !== null ? (helperNames[t.helperId] ?? null) : null,
+      done: t.status === 'done',
+      helperId: t.helperId,
+      pill: pill(t),
     });
-    const { replies, ...formState } = state;
-    const panels = {
-      done: summary.done,
-      total: summary.total,
-      todoText: todoText(summary),
-      todoOpen: summary.urgent.length + summary.needsHelper.length > 0,
-      urgent: summary.urgent.map(listed),
-      needsHelper: summary.needsHelper.map(listed),
-      timelineText: daysToEventText(summary.daysToEvent),
-      nextDeadline: summary.nextDeadline,
-      newReplies,
-      // On the panel page the header counts the replies that were new when listed (they are now marked seen).
-      newRepliesText: newRepliesText(replies ? replies.filter((r) => r.isNew).length : newReplies),
-      replies:
-        replies?.map((r) => ({
-          helperName: r.helperName,
-          taskTitle: r.taskTitle,
-          actionLabel: ACTION_LABELS[r.action],
-          body: r.body,
-          time: formatDateTimeNb(r.createdAt),
-          isNew: r.isNew,
-        })) ?? null,
-    };
+    const needsYou = [...summary.needsHelper, ...summary.urgent].map((t) => ({
+      ...row(t),
+      delegate: needsHelperIds.has(t.id),
+      message: t.status === 'declined' || t.status === 'cant_do' ? (recent.lastBodyByTask.get(t.id) ?? null) : null,
+      error: needsAssignError && assignError?.taskId === t.id ? CHOOSE_HELPER : null,
+    }));
+
+    const weeks = weekGroups(eventTasks, today, needsYouIds);
+    const days = (list: Task[]) => byDay(list).map((d) => ({ label: formatDayNb(d.date), tasks: d.tasks.map(row) }));
+    const groupCounts = TASK_GROUPS.map((g) => ({
+      label: g.label.toLowerCase(),
+      count: eventTasks.filter((t) => groupOf(t) === g.key).length,
+      className: g.pill,
+    })).filter((g) => g.count > 0);
+
+    const helperErrors = Object.keys(helperForm?.errors ?? {}).length > 0;
+    const helpers = eventHelpers.map((h) => {
+      const own = eventTasks.filter((t) => t.helperId === h.id && t.status !== 'done');
+      const urgentCount = own.filter((t) => urgentIds.has(t.id)).length;
+      const name = displayName(h);
+      return {
+        id: h.id,
+        name,
+        initial: name.charAt(0).toUpperCase(),
+        summary: [
+          own.length === 0 ? 'Ingen oppgaver nå' : countText(own.length, 'oppgave', 'oppgaver'),
+          ...(urgentCount > 0 ? [`${urgentCount} haster`] : []),
+        ].join(' · '),
+        link: absoluteUrl(config.appBaseUrl, paths.helperPage(h.linkToken)),
+      };
+    });
+
+    const reply = (r: Reply) => ({
+      helperName: r.helperName,
+      taskTitle: r.taskTitle,
+      actionLabel: ACTION_LABELS[r.action],
+      body: r.body,
+      time: formatDateTimeNb(r.createdAt),
+      isNew: r.isNew,
+    });
+
     res.status(status).render('event', {
       event,
       allEvents,
-      tasks: eventTasks,
-      helpers,
-      helperNames,
-      maxHelpers: MAX_HELPERS_PER_EVENT,
-      statusLabels: STATUS_LABELS,
       today,
-      panels,
-      ...formState,
+      daysText: daysToEventText(summary.daysToEvent),
+      needsYou,
+      attentionText: attentionText(summary),
+      progress: {
+        done: summary.done,
+        total: summary.total,
+        groupCounts,
+        thisWeek: days(weeks.thisWeek),
+        nextWeek: days(weeks.nextWeek),
+      },
+      helpers,
+      helperOptions: eventHelpers.map((h) => ({ id: h.id, name: displayName(h) })),
+      maxHelpers: MAX_HELPERS_PER_EVENT,
+      helpersOpen: helpers.length === 0 || helperErrors,
+      helperForm: helperForm ?? { values: {}, errors: {} },
+      messages: {
+        // On the panel page the header counts the replies that were new when listed (they are now marked seen).
+        newRepliesText: newRepliesText(replies ? replies.filter((r) => r.isNew).length : newReplies),
+        all: replies?.map(reply) ?? null,
+        preview: recent.preview.map(reply),
+      },
+      taskCount: countText(eventTasks.length, 'oppgave', 'oppgaver'),
+      doneCount: summary.done,
+      taskGroups: TASK_GROUPS.map((g) => ({
+        label: g.label,
+        tasks: eventTasks.filter((t) => groupOf(t) === g.key).map(row),
+      })).filter((g) => g.tasks.length > 0),
+      tasksOpen: editBox !== undefined || eventTasks.length === 0,
+      editBox,
+      add: add ?? { values: {}, errors: {} },
     });
   }
 
@@ -235,10 +336,13 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
 
   router.get(paths.event(':eventId'), async (req, res) => {
     const eventId = idParam(req, 'eventId');
-    if (req.query.panel !== 'messages') return renderEvent(res, eventId);
+    // D2: ?endre names the task whose edit box is open; anything else, or another event's task, opens none.
+    const endre = idSchema.safeParse(req.query.endre);
+    const editTaskId = endre.success ? endre.data : undefined;
+    if (req.query.panel !== 'messages') return renderEvent(res, eventId, { editTaskId });
     // AD-15: the one organizer GET that writes. Another organizer's event is not_found and marks nothing.
     const replies = await listAndMarkSeen(db, organizerOf(res).id, eventId, clock.now());
-    await renderEvent(res, eventId, { replies });
+    await renderEvent(res, eventId, { replies, editTaskId });
   });
 
   router.post(paths.tasks(':eventId'), async (req, res) => {
@@ -310,7 +414,12 @@ export function eventRoutes(db: Db, clock: Clock, templates: Templates, config: 
     const eventId = idParam(req, 'eventId');
     const organizerId = organizerOf(res).id;
     const task = await getTask(db, organizerId, eventId, idParam(req, 'taskId'));
-    const parsedHelper = idSchema.safeParse(req.body?.helperId);
+    // D7: no helper chosen is a form error under that select, not a 404.
+    if (req.body?.helperId === undefined || req.body.helperId === '') {
+      const from = req.body?.fra === 'trenger' ? 'needs' : 'edit';
+      return renderEvent(res, eventId, { assignError: { taskId: task.id, from } }, 422);
+    }
+    const parsedHelper = idSchema.safeParse(req.body.helperId);
     if (!parsedHelper.success) throw new DomainError('not_found');
     // Another organizer's helper is a 404; her own helper outside this event is refused by the rules.
     const helper = await getHelper(db, organizerId, parsedHelper.data);

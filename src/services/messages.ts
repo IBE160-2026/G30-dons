@@ -50,6 +50,56 @@ export async function countNewByEvent(db: Db, organizerId: number): Promise<Map<
   return new Map(rows.map((r) => [r.eventId, r.n]));
 }
 
+/** At most this many replies are previewed in the Meldinger card (story 5.1). */
+export const PREVIEW_REPLIES = 2;
+
+export interface RecentReplies {
+  /** The newest replies, newest first, for the Meldinger card. */
+  preview: Reply[];
+  /** The body of each task's newest reply, or null when that reply had no message. */
+  lastBodyByTask: Map<number, string | null>;
+}
+
+/**
+ * Story 5.1: the Meldinger preview and the helper's message on «Trenger deg nå» rows. Reads only,
+ * so the New count stays until the organizer opens ?panel=messages (AD-15).
+ */
+export async function recentReplies(db: Db, organizerId: number, eventId: number): Promise<RecentReplies> {
+  const rows = await db
+    .select({ message: messages, helper: { name: helpers.name, email: helpers.email }, taskTitle: tasks.title })
+    .from(messages)
+    .innerJoin(tasks, eq(messages.taskId, tasks.id))
+    .innerJoin(events, eq(tasks.eventId, events.id))
+    .innerJoin(helpers, eq(messages.helperId, helpers.id))
+    .where(ownedEvent(organizerId, eventId))
+    .orderBy(desc(messages.createdAt), desc(messages.id));
+
+  const lastBodyByTask = new Map<number, string | null>();
+  for (const { message } of rows) {
+    if (!lastBodyByTask.has(message.taskId)) lastBodyByTask.set(message.taskId, message.body);
+  }
+  return { preview: rows.slice(0, PREVIEW_REPLIES).map(toReply), lastBodyByTask };
+}
+
+type ReplyRow = {
+  message: typeof messages.$inferSelect;
+  helper: { name: string | null; email: string };
+  taskTitle: string;
+};
+
+function toReply({ message, helper, taskTitle }: ReplyRow): Reply {
+  return {
+    id: message.id,
+    helperName: displayName(helper),
+    taskTitle,
+    action: message.action,
+    statusAfter: message.statusAfter,
+    body: message.body,
+    createdAt: message.createdAt,
+    isNew: message.seenAt === null,
+  };
+}
+
 /**
  * The event's replies (at most 50): unseen ones first, then seen ones, each newest first. Marks the
  * unseen ones among them seen, in one transaction, so repeated openings clear every New reply. Another organizer's event is not_found and marks nothing.
@@ -77,15 +127,6 @@ export async function listAndMarkSeen(db: Db, organizerId: number, eventId: numb
         .where(and(inArray(messages.id, unseenIds), isNull(messages.seenAt)));
     }
 
-    return rows.map(({ message, helper, taskTitle }) => ({
-      id: message.id,
-      helperName: displayName(helper),
-      taskTitle,
-      action: message.action,
-      statusAfter: message.statusAfter,
-      body: message.body,
-      createdAt: message.createdAt,
-      isNew: message.seenAt === null,
-    }));
+    return rows.map(toReply);
   });
 }
